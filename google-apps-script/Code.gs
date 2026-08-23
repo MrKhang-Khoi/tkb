@@ -7,7 +7,7 @@
  */
 
 // 🌟 1. CẤU HÌNH BOT TOKEN (Lấy từ Zalo Bot Manager trên Zalo)
-const ZALO_BOT_TOKEN = ""; 
+const ZALO_BOT_TOKEN = "2294655560219778902:jzfmNEYGuXlSvmyKEYeCrbSWIKGrmumxQhoSsFXkgNBXsnOaWWDwTjSYqjoAdaqp"; 
 
 // Cấu hình URL hoặc ID Google Sheet (Tùy chọn: dán link Sheet của bạn vào đây)
 const GOOGLE_SPREADSHEET_URL = ""; 
@@ -30,17 +30,15 @@ function setZaloBotWebhook() {
     return;
   }
   
-  const apiUrl = "https://bot.zalo.me/api/v1/bot/setWebhook";
+  const apiUrl = "https://bot-api.zaloplatforms.com/bot" + ZALO_BOT_TOKEN + "/setWebhook";
   const payload = {
-    url: webAppUrl
+    url: webAppUrl,
+    secret_token: "ZaloBotTkb2026Secret"
   };
   
   const options = {
     method: "post",
     contentType: "application/json",
-    headers: {
-      "Authorization": "Bearer " + ZALO_BOT_TOKEN
-    },
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
   };
@@ -63,6 +61,7 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
       message: "Zalo Bot TKB Server đang hoạt động 24/7!",
+      bot: "Bot Tra Cuu TKB",
       guide: "Thêm ?query=tkb [Tên GV hoặc Lớp] vào URL để tra cứu."
     })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -97,10 +96,14 @@ function doPost(e) {
     let userMessage = "";
     let chatId = "";
     
-    // Cấu trúc gói tin từ Zalo Bot Manager / Webhook
-    if (postData.message && postData.message.text) {
-      userMessage = postData.message.text;
-      chatId = postData.message.chat ? postData.message.chat.id : (postData.chat_id || postData.from_id);
+    // Cấu trúc gói tin webhook từ Zalo Bot Platform
+    if (postData.message) {
+      userMessage = postData.message.text || "";
+      if (postData.message.chat) {
+        chatId = postData.message.chat.id;
+      } else if (postData.message.from) {
+        chatId = postData.message.from.id;
+      }
     } else if (postData.text) {
       userMessage = postData.text;
       chatId = postData.chat_id || postData.sender_id || postData.user_id;
@@ -109,14 +112,16 @@ function doPost(e) {
       chatId = postData.sender ? postData.sender.id : "";
     }
     
+    if (!chatId && postData.chat_id) {
+      chatId = postData.chat_id;
+    }
+    
     if (userMessage) {
       const replyText = processTimetableQuery(userMessage);
       
-      if (replyText) {
+      if (replyText && chatId) {
         // Gửi câu trả lời về Zalo Bot
-        if (ZALO_BOT_TOKEN && chatId) {
-          sendZaloBotReply(chatId, replyText);
-        }
+        sendZaloBotReply(chatId, replyText);
         
         return ContentService.createTextOutput(JSON.stringify({
           status: "success",
@@ -136,10 +141,10 @@ function doPost(e) {
  * 5. Gửi tin nhắn trả lời qua Zalo Bot API
  */
 function sendZaloBotReply(chatId, text) {
-  if (!ZALO_BOT_TOKEN) return;
-  const apiUrl = "https://bot.zalo.me/api/v1/bot/sendMessage";
+  if (!ZALO_BOT_TOKEN || !chatId) return;
+  const apiUrl = "https://bot-api.zaloplatforms.com/bot" + ZALO_BOT_TOKEN + "/sendMessage";
   const payload = {
-    chat_id: chatId,
+    chat_id: String(chatId),
     text: text
   };
   
@@ -147,9 +152,6 @@ function sendZaloBotReply(chatId, text) {
     UrlFetchApp.fetch(apiUrl, {
       method: "post",
       contentType: "application/json",
-      headers: {
-        "Authorization": "Bearer " + ZALO_BOT_TOKEN
-      },
       payload: JSON.stringify(payload),
       muteHttpExceptions: true
     });
@@ -338,7 +340,7 @@ function processTimetableQuery(messageText) {
   const text = (messageText || "").trim();
   const clean = removeVietnameseTones(text);
   
-  if (clean === "help" || clean === "giup do" || clean === "huong dan" || clean === "?") {
+  if (clean === "help" || clean === "giup do" || clean === "huong dan" || clean === "?" || clean === "start") {
     return "╔══════════════════════════╗\n" +
            "   🤖 TRỢ LÝ TRA CỨU TKB\n" +
            "╚══════════════════════════╝\n" +
