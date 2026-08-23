@@ -1,22 +1,60 @@
 /**
  * ================================================================================
- *   🤖 GOOGLE APPS SCRIPT: ZALO TKB BOT & GOOGLE SHEETS SYNC SERVER (MIỄN PHÍ 24/7)
+ *   🤖 GOOGLE APPS SCRIPT: ZALO BOT TKB SERVER (THEO CHUẨN BUILDERTV #411)
  * ================================================================================
  * Tác giả: Hệ thống Xếp Thời Khóa Biểu FET
- * Nền tảng: Google Apps Script (Chạy trực tiếp trên Google Drive, không cần máy tính)
+ * Nền tảng: Google Apps Script + Zalo Bot Manager + Google Sheets (Miễn phí 100%)
  */
+
+// 🌟 1. CẤU HÌNH BOT TOKEN (Lấy từ Zalo Bot Manager trên Zalo)
+const ZALO_BOT_TOKEN = ""; 
+
+// Cấu hình URL hoặc ID Google Sheet (Tùy chọn: dán link Sheet của bạn vào đây)
+const GOOGLE_SPREADSHEET_URL = ""; 
 
 const FIREBASE_DATABASE_URL = "https://tkb-fet-default-rtdb.asia-southeast1.firebasedatabase.app/school_data.json";
 
-// Cấu hình URL hoặc ID Google Sheet (Tùy chọn: bạn có thể dán link Google Sheet của bạn vào đây)
-const GOOGLE_SPREADSHEET_URL = ""; 
-
-// Cấu hình Zalo OA (Nếu dùng Zalo Official Account)
-const ZALO_OA_ACCESS_TOKEN = "";
+/**
+ * 2. Hàm đăng ký Webhook cho Zalo Bot (Chạy 1 lần trong Apps Script để kích hoạt Bot)
+ */
+function setZaloBotWebhook() {
+  if (!ZALO_BOT_TOKEN) {
+    Logger.log("❌ Vui lòng điền ZALO_BOT_TOKEN vào dòng 10 trước khi chạy hàm này!");
+    return;
+  }
+  
+  // Lấy URL Web App đã triển khai
+  const webAppUrl = ScriptApp.getService().getUrl();
+  if (!webAppUrl) {
+    Logger.log("❌ Hãy Triển khai (Deploy) dự án thành Web App trước!");
+    return;
+  }
+  
+  const apiUrl = "https://bot.zalo.me/api/v1/bot/setWebhook";
+  const payload = {
+    url: webAppUrl
+  };
+  
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      "Authorization": "Bearer " + ZALO_BOT_TOKEN
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+  
+  try {
+    const response = UrlFetchApp.fetch(apiUrl, options);
+    Logger.log("✅ Kết quả đăng ký Webhook: " + response.getContentText());
+  } catch (err) {
+    Logger.log("❌ Lỗi khi đăng ký Webhook: " + err.toString());
+  }
+}
 
 /**
- * 1. Xử lý yêu cầu GET (Dùng để test trên trình duyệt hoặc tích hợp chatbot)
- * Ví dụ: URL_WEBAPP?query=tkb Trọng
+ * 3. Xử lý yêu cầu GET (Kiểm tra trên trình duyệt)
  */
 function doGet(e) {
   const query = (e && e.parameter && e.parameter.query) ? e.parameter.query : (e && e.parameter && e.parameter.text ? e.parameter.text : "");
@@ -24,7 +62,7 @@ function doGet(e) {
   if (!query) {
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
-      message: "Zalo TKB Cloud Server đang hoạt động 24/7!",
+      message: "Zalo Bot TKB Server đang hoạt động 24/7!",
       guide: "Thêm ?query=tkb [Tên GV hoặc Lớp] vào URL để tra cứu."
     })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -34,9 +72,7 @@ function doGet(e) {
 }
 
 /**
- * 2. Xử lý yêu cầu POST:
- * - Nhận lệnh đồng bộ TKB từ Admin Web (action = "sync_timetable") -> Tự động ghi vào Google Sheets!
- * - Nhận Webhook tin nhắn từ Zalo OA / Chatbot platform (Fchat, Ahachat...)
+ * 4. Xử lý Webhook POST từ Zalo Bot hoặc Admin Web
  */
 function doPost(e) {
   try {
@@ -51,39 +87,43 @@ function doPost(e) {
       postData = e.parameter;
     }
     
-    // A. Xử lý lệnh đồng bộ TKB từ Admin Web lên Google Sheets
+    // A. Xử lý đồng bộ dữ liệu từ Admin Web lên Google Sheets
     if (postData.action === "sync_timetable") {
       const result = syncDataToGoogleSheets(postData);
       return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
     }
     
-    // B. Xử lý tin nhắn từ Zalo OA Webhook / Chatbot
+    // B. Xử lý tin nhắn nhận được từ Zalo Bot
     let userMessage = "";
-    let senderId = "";
+    let chatId = "";
     
-    if (postData.event_name === "user_send_text") {
+    // Cấu trúc gói tin từ Zalo Bot Manager / Webhook
+    if (postData.message && postData.message.text) {
+      userMessage = postData.message.text;
+      chatId = postData.message.chat ? postData.message.chat.id : (postData.chat_id || postData.from_id);
+    } else if (postData.text) {
+      userMessage = postData.text;
+      chatId = postData.chat_id || postData.sender_id || postData.user_id;
+    } else if (postData.event_name === "user_send_text") {
       userMessage = postData.message ? postData.message.text : "";
-      senderId = postData.sender ? postData.sender.id : "";
-    } else if (postData.text || postData.message) {
-      userMessage = postData.text || postData.message;
-      senderId = postData.sender_id || postData.user_id || "";
-    } else if (postData.query) {
-      userMessage = postData.query;
-      senderId = postData.sender || "";
+      chatId = postData.sender ? postData.sender.id : "";
     }
     
     if (userMessage) {
       const replyText = processTimetableQuery(userMessage);
       
-      // Nếu có Access Token Zalo OA, gửi tin phản hồi qua Zalo OpenAPI
-      if (ZALO_OA_ACCESS_TOKEN && senderId) {
-        sendZaloOAMessage(senderId, replyText);
+      if (replyText) {
+        // Gửi câu trả lời về Zalo Bot
+        if (ZALO_BOT_TOKEN && chatId) {
+          sendZaloBotReply(chatId, replyText);
+        }
+        
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "success",
+          chat_id: chatId,
+          text: replyText
+        })).setMimeType(ContentService.MimeType.JSON);
       }
-      
-      return ContentService.createTextOutput(JSON.stringify({
-        recipient: { user_id: senderId },
-        message: { text: replyText }
-      })).setMimeType(ContentService.MimeType.JSON);
     }
     
     return ContentService.createTextOutput(JSON.stringify({ status: "ignored" })).setMimeType(ContentService.MimeType.JSON);
@@ -93,12 +133,36 @@ function doPost(e) {
 }
 
 /**
- * 3. Tự động ghi dữ liệu Thời Khóa Biểu vào Google Sheets với định dạng chuẩn
+ * 5. Gửi tin nhắn trả lời qua Zalo Bot API
+ */
+function sendZaloBotReply(chatId, text) {
+  if (!ZALO_BOT_TOKEN) return;
+  const apiUrl = "https://bot.zalo.me/api/v1/bot/sendMessage";
+  const payload = {
+    chat_id: chatId,
+    text: text
+  };
+  
+  try {
+    UrlFetchApp.fetch(apiUrl, {
+      method: "post",
+      contentType: "application/json",
+      headers: {
+        "Authorization": "Bearer " + ZALO_BOT_TOKEN
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+  } catch (e) {
+    console.error("Lỗi gửi tin qua Zalo Bot API:", e);
+  }
+}
+
+/**
+ * 6. Tự động ghi dữ liệu Thời Khóa Biểu vào Google Sheets
  */
 function syncDataToGoogleSheets(payload) {
   let ss = null;
-  
-  // 1. Thử mở theo URL/ID truyền lên từ giao diện hoặc cấu hình
   const targetSheet = payload.spreadsheetUrl || payload.spreadsheetId || GOOGLE_SPREADSHEET_URL;
   if (targetSheet && targetSheet.trim() !== "") {
     try {
@@ -108,18 +172,16 @@ function syncDataToGoogleSheets(payload) {
         ss = SpreadsheetApp.openById(targetSheet.trim());
       }
     } catch (e) {
-      console.warn("Không thể mở Sheet theo link được cung cấp, sẽ sử dụng bảng tính hiện tại hoặc tạo mới:", e);
+      console.warn("Không thể mở Sheet theo link:", e);
     }
   }
   
-  // 2. Thử lấy bảng tính gắn liền (Container-bound Script)
   if (!ss) {
     try {
       ss = SpreadsheetApp.getActiveSpreadsheet();
     } catch (e) {}
   }
   
-  // 3. Nếu vẫn chưa có, tạo bảng tính mới bằng SpreadsheetApp (KHÔNG dùng DriveApp để tránh lỗi quyền)
   if (!ss) {
     ss = SpreadsheetApp.create("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
   }
@@ -133,31 +195,22 @@ function syncDataToGoogleSheets(payload) {
   const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7"];
   const weekLabels = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
   
-  // -------------------------------------------------------------
-  // Sheet 1: TKB Buổi Sáng (31 Cột chuẩn)
-  // -------------------------------------------------------------
+  // Sheet 1: Buổi Sáng
   let sheetMorning = ss.getSheetByName("TKB_Buoi_Sang");
   if (!sheetMorning) sheetMorning = ss.insertSheet("TKB_Buoi_Sang");
   sheetMorning.clear();
   
   const morningClasses = classes.filter(c => c && (c.session || "sáng").toLowerCase() === "sáng");
-  
-  // Tạo hàng tiêu đề đúng 31 phần tử
   const morningTitleRow = new Array(31).fill("");
   morningTitleRow[0] = "BẢNG THỜI KHÓA BIỂU BUỔI SÁNG - " + weekName.toUpperCase() + (applyDate ? " (" + applyDate + ")" : "");
   
   const morningHeaderDay = ["Lớp"];
-  weekLabels.forEach(lbl => {
-    morningHeaderDay.push(lbl, "", "", "", "");
-  });
+  weekLabels.forEach(lbl => morningHeaderDay.push(lbl, "", "", "", ""));
   
   const morningHeaderPeriod = [""];
-  for (let d = 0; d < 6; d++) {
-    morningHeaderPeriod.push("T1", "T2", "T3", "T4", "T5");
-  }
+  for (let d = 0; d < 6; d++) morningHeaderPeriod.push("T1", "T2", "T3", "T4", "T5");
   
   const morningRows = [morningTitleRow, morningHeaderDay, morningHeaderPeriod];
-  
   morningClasses.forEach(c => {
     const row = [c.name];
     weekdays.forEach(day => {
@@ -178,55 +231,26 @@ function syncDataToGoogleSheets(payload) {
     mRange.setValues(morningRows);
     mRange.setWrap(true);
     mRange.setVerticalAlignment("middle");
-    mRange.setFontFamily("Roboto");
-    
-    // Gộp ô tiêu đề
-    sheetMorning.getRange(1, 1, 1, 31).merge()
-      .setFontWeight("bold")
-      .setFontSize(13)
-      .setHorizontalAlignment("center")
-      .setBackground("#dbeafe")
-      .setFontColor("#1e3a8a");
-      
-    // Gộp ô thứ
+    sheetMorning.getRange(1, 1, 1, 31).merge().setFontWeight("bold").setFontSize(13).setHorizontalAlignment("center").setBackground("#dbeafe").setFontColor("#1e3a8a");
     for (let i = 0; i < 6; i++) {
-      const colStart = 2 + (i * 5);
-      sheetMorning.getRange(2, colStart, 1, 5).merge()
-        .setFontWeight("bold")
-        .setHorizontalAlignment("center")
-        .setBackground("#f1f5f9");
+      sheetMorning.getRange(2, 2 + (i * 5), 1, 5).merge().setFontWeight("bold").setHorizontalAlignment("center").setBackground("#f1f5f9");
     }
-    
-    sheetMorning.getRange(3, 1, 1, 31)
-      .setFontWeight("bold")
-      .setHorizontalAlignment("center")
-      .setBackground("#e2e8f0");
-      
-    if (morningClasses.length > 0) {
-      sheetMorning.getRange(4, 1, morningClasses.length, 1)
-        .setFontWeight("bold")
-        .setHorizontalAlignment("center")
-        .setBackground("#f8fafc");
-    }
-      
+    sheetMorning.getRange(3, 1, 1, 31).setFontWeight("bold").setHorizontalAlignment("center").setBackground("#e2e8f0");
+    if (morningClasses.length > 0) sheetMorning.getRange(4, 1, morningClasses.length, 1).setFontWeight("bold").setHorizontalAlignment("center").setBackground("#f8fafc");
     mRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
     sheetMorning.autoResizeColumns(1, 31);
   }
   
-  // -------------------------------------------------------------
-  // Sheet 2: TKB Buổi Chiều (31 Cột chuẩn)
-  // -------------------------------------------------------------
+  // Sheet 2: Buổi Chiều
   let sheetAfternoon = ss.getSheetByName("TKB_Buoi_Chieu");
   if (!sheetAfternoon) sheetAfternoon = ss.insertSheet("TKB_Buoi_Chieu");
   sheetAfternoon.clear();
   
   const afternoonClasses = classes.filter(c => c && (c.session || "sáng").toLowerCase() === "chiều");
-  
   const afternoonTitleRow = new Array(31).fill("");
   afternoonTitleRow[0] = "BẢNG THỜI KHÓA BIỂU BUỔI CHIỀU - " + weekName.toUpperCase() + (applyDate ? " (" + applyDate + ")" : "");
   
   const afternoonRows = [afternoonTitleRow, morningHeaderDay, morningHeaderPeriod];
-  
   afternoonClasses.forEach(c => {
     const row = [c.name];
     weekdays.forEach(day => {
@@ -247,51 +271,23 @@ function syncDataToGoogleSheets(payload) {
     aRange.setValues(afternoonRows);
     aRange.setWrap(true);
     aRange.setVerticalAlignment("middle");
-    aRange.setFontFamily("Roboto");
-    
-    // Gộp ô tiêu đề
-    sheetAfternoon.getRange(1, 1, 1, 31).merge()
-      .setFontWeight("bold")
-      .setFontSize(13)
-      .setHorizontalAlignment("center")
-      .setBackground("#fef3c7")
-      .setFontColor("#92400e");
-      
-    // Gộp ô thứ
+    sheetAfternoon.getRange(1, 1, 1, 31).merge().setFontWeight("bold").setFontSize(13).setHorizontalAlignment("center").setBackground("#fef3c7").setFontColor("#92400e");
     for (let i = 0; i < 6; i++) {
-      const colStart = 2 + (i * 5);
-      sheetAfternoon.getRange(2, colStart, 1, 5).merge()
-        .setFontWeight("bold")
-        .setHorizontalAlignment("center")
-        .setBackground("#f1f5f9");
+      sheetAfternoon.getRange(2, 2 + (i * 5), 1, 5).merge().setFontWeight("bold").setHorizontalAlignment("center").setBackground("#f1f5f9");
     }
-    
-    sheetAfternoon.getRange(3, 1, 1, 31)
-      .setFontWeight("bold")
-      .setHorizontalAlignment("center")
-      .setBackground("#e2e8f0");
-      
-    if (afternoonClasses.length > 0) {
-      sheetAfternoon.getRange(4, 1, afternoonClasses.length, 1)
-        .setFontWeight("bold")
-        .setHorizontalAlignment("center")
-        .setBackground("#f8fafc");
-    }
-      
+    sheetAfternoon.getRange(3, 1, 1, 31).setFontWeight("bold").setHorizontalAlignment("center").setBackground("#e2e8f0");
+    if (afternoonClasses.length > 0) sheetAfternoon.getRange(4, 1, afternoonClasses.length, 1).setFontWeight("bold").setHorizontalAlignment("center").setBackground("#f8fafc");
     aRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
     sheetAfternoon.autoResizeColumns(1, 31);
   }
   
-  // -------------------------------------------------------------
-  // Sheet 3: Danh sách Giáo viên & Lịch dạy (10 Cột chuẩn)
-  // -------------------------------------------------------------
+  // Sheet 3: Giáo Viên
   let sheetTeachers = ss.getSheetByName("TKB_Giao_Vien");
   if (!sheetTeachers) sheetTeachers = ss.insertSheet("TKB_Giao_Vien");
   sheetTeachers.clear();
   
   const teacherTitleRow = new Array(10).fill("");
   teacherTitleRow[0] = "DANH SÁCH THỜI KHÓA BIỂU GIÁO VIÊN - " + weekName.toUpperCase() + (applyDate ? " (" + applyDate + ")" : "");
-  
   const teacherHeader = ["STT", "Họ và tên", "Tên viết tắt", "Tổ chuyên môn", "Lịch dạy Thứ 2", "Lịch dạy Thứ 3", "Lịch dạy Thứ 4", "Lịch dạy Thứ 5", "Lịch dạy Thứ 6", "Lịch dạy Thứ 7"];
   const teacherRows = [teacherTitleRow, teacherHeader];
   
@@ -319,21 +315,8 @@ function syncDataToGoogleSheets(payload) {
     tRange.setValues(teacherRows);
     tRange.setWrap(true);
     tRange.setVerticalAlignment("middle");
-    tRange.setFontFamily("Roboto");
-    
-    // Gộp tiêu đề
-    sheetTeachers.getRange(1, 1, 1, 10).merge()
-      .setFontWeight("bold")
-      .setFontSize(13)
-      .setHorizontalAlignment("center")
-      .setBackground("#dcfce7")
-      .setFontColor("#166534");
-      
-    sheetTeachers.getRange(2, 1, 1, 10)
-      .setFontWeight("bold")
-      .setHorizontalAlignment("center")
-      .setBackground("#f1f5f9");
-      
+    sheetTeachers.getRange(1, 1, 1, 10).merge().setFontWeight("bold").setFontSize(13).setHorizontalAlignment("center").setBackground("#dcfce7").setFontColor("#166534");
+    sheetTeachers.getRange(2, 1, 1, 10).setFontWeight("bold").setHorizontalAlignment("center").setBackground("#f1f5f9");
     tRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
     sheetTeachers.autoResizeColumns(1, 10);
   }
@@ -349,7 +332,7 @@ function syncDataToGoogleSheets(payload) {
 }
 
 /**
- * 4. Bộ xử lý tra cứu TKB từ Firebase Realtime Database
+ * 7. Bộ xử lý tra cứu TKB từ Firebase Realtime Database
  */
 function processTimetableQuery(messageText) {
   const text = (messageText || "").trim();
@@ -381,7 +364,6 @@ function processTimetableQuery(messageText) {
     return "⚠️ Vui lòng nhập thêm Tên Giáo viên hoặc Lớp!\nVí dụ: 'tkb Trọng' hoặc 'tkb 6A1'.";
   }
   
-  // Tải dữ liệu từ Firebase
   const response = UrlFetchApp.fetch(FIREBASE_DATABASE_URL, { muteHttpExceptions: true });
   const data = JSON.parse(response.getContentText());
   if (!data) return "❌ Không thể kết nối cơ sở dữ liệu trường học.";
@@ -516,20 +498,4 @@ function parseDayFilter(keyword) {
 function removeVietnameseTones(str) {
   if (!str) return "";
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().trim();
-}
-
-function sendZaloOAMessage(userId, text) {
-  if (!ZALO_OA_ACCESS_TOKEN) return;
-  const url = "https://openapi.zalo.me/v3.0/oa/message/cs";
-  const payload = {
-    recipient: { user_id: userId },
-    message: { text: text }
-  };
-  UrlFetchApp.fetch(url, {
-    method: "post",
-    contentType: "application/json",
-    headers: { "access_token": ZALO_OA_ACCESS_TOKEN },
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  });
 }
