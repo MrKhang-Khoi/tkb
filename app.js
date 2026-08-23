@@ -8658,6 +8658,94 @@ function publishUploadedTimetable() {
     }
 }
 
+async function syncTimetableToGoogleSheets() {
+    const input = document.getElementById('googleSheetsWebhookInput');
+    const resultBox = document.getElementById('googleSheetsSyncResult');
+    let webhookUrl = input ? input.value.trim() : '';
+    
+    if (!webhookUrl) {
+        webhookUrl = state.googleSheetsWebhookUrl || localStorage.getItem('fet_google_sheets_webhook_url') || '';
+    }
+    
+    if (!webhookUrl) {
+        const defaultPrompt = prompt("Vui lòng nhập đường link Google Apps Script Web App URL của bạn:\n(Ví dụ: https://script.google.com/macros/s/AKfycb.../exec)");
+        if (!defaultPrompt || !defaultPrompt.trim()) return;
+        webhookUrl = defaultPrompt.trim();
+    }
+    
+    if (input) input.value = webhookUrl;
+    state.googleSheetsWebhookUrl = webhookUrl;
+    localStorage.setItem('fet_google_sheets_webhook_url', webhookUrl);
+    
+    // Lấy TKB đợt hiện hành
+    let currentTimetable = state.timetable || {};
+    let weekName = 'Đợt chính thức';
+    let applyDate = state.timetableApplyDate || '';
+    
+    if (state.currentWeekId && state.weeklyTimetables) {
+        const wt = state.weeklyTimetables.find(w => w && w.id === state.currentWeekId);
+        if (wt && wt.timetable) {
+            currentTimetable = wt.timetable;
+            weekName = wt.weekName || weekName;
+            applyDate = wt.applyDate || applyDate;
+        }
+    }
+    
+    if (resultBox) {
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `<span style="color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+            <span class="material-icons-round" style="animation: spin 1s infinite linear;">refresh</span> Đang đẩy toàn bộ dữ liệu TKB lên Google Sheets...
+        </span>`;
+    }
+    
+    try {
+        const payload = {
+            action: "sync_timetable",
+            teachers: state.teachers || [],
+            classes: state.classes || [],
+            timetable: currentTimetable,
+            weekName: weekName,
+            timetableApplyDate: applyDate
+        };
+        
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        
+        const resData = await response.json();
+        
+        if (resultBox) {
+            resultBox.style.display = 'block';
+            const sheetUrl = resData.spreadsheetUrl ? `<a href="${resData.spreadsheetUrl}" target="_blank" style="color: #34d399; font-weight: bold; text-decoration: underline; margin-left: 8px;">📊 Mở Google Sheet ngay</a>` : '';
+            resultBox.innerHTML = `
+                <div style="color: #34d399; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round">check_circle</span> ${resData.message || 'Đồng bộ dữ liệu lên Google Sheets thành công!'} ${sheetUrl}
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.4;">
+                    Đã đồng bộ <b>${resData.teachersCount || state.teachers.length}</b> giáo viên và <b>${resData.classesCount || state.classes.length}</b> lớp học. Bạn có thể dùng đường link Webhook này để tra cứu Zalo 24/7.
+                </div>
+            `;
+        }
+        
+        showToast("Đã đồng bộ TKB lên Google Sheets thành công!", "success");
+    } catch (err) {
+        console.error("Lỗi đồng bộ Google Sheets:", err);
+        if (resultBox) {
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = `
+                <div style="color: #f87171; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round">error</span> Lỗi kết nối Google Apps Script Web App!
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.78rem;">
+                    Chi tiết: ${err.message}. Vui lòng kiểm tra lại quyền truy cập của Web App (phải chọn 'Ai có quyền truy cập: Bất kỳ ai / Anyone').
+                </div>
+            `;
+        }
+        showToast("Không thể kết nối tới Google Apps Script Web App.", "danger");
+    }
+}
+
 // Đăng ký các hàm toàn cục cho đối tượng window trên trình duyệt
 window.togglePasswordVisibility = togglePasswordVisibility;
 window.toggleAccountPassword = toggleAccountPassword;
@@ -8698,9 +8786,15 @@ window.deleteLeaderAccount = deleteLeaderAccount;
 window.refreshGroupMatrix = refreshGroupMatrix;
 window.clearAllGroupAssignments = clearAllGroupAssignments;
 window.clearTeacherAssignments = clearTeacherAssignments;
+window.syncTimetableToGoogleSheets = syncTimetableToGoogleSheets;
 
 // Khởi chạy ứng dụng khi tải trang xong
 window.onload = function() {
     initFirebase();
     initDragAndDrop();
+    const savedWebhook = localStorage.getItem('fet_google_sheets_webhook_url');
+    const input = document.getElementById('googleSheetsWebhookInput');
+    if (input && savedWebhook) {
+        input.value = savedWebhook;
+    }
 }

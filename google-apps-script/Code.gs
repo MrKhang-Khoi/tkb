@@ -1,6 +1,6 @@
 /**
  * ================================================================================
- *   🤖 GOOGLE APPS SCRIPT: ZALO TKB BOT & WEBHOOK CLOUD SERVER (MIỄN PHÍ 24/7)
+ *   🤖 GOOGLE APPS SCRIPT: ZALO TKB BOT & GOOGLE SHEETS SYNC SERVER (MIỄN PHÍ 24/7)
  * ================================================================================
  * Tác giả: Hệ thống Xếp Thời Khóa Biểu FET
  * Nền tảng: Google Apps Script (Chạy trực tiếp trên Google Drive, không cần máy tính)
@@ -9,11 +9,11 @@
 const FIREBASE_DATABASE_URL = "https://tkb-fet-default-rtdb.asia-southeast1.firebasedatabase.app/school_data.json";
 
 // Cấu hình Zalo OA (Nếu dùng Zalo Official Account)
-const ZALO_OA_ACCESS_TOKEN = ""; // Điền Access Token nếu bạn dùng Zalo OA gửi tin chủ động
+const ZALO_OA_ACCESS_TOKEN = "";
 
 /**
  * 1. Xử lý yêu cầu GET (Dùng để test trên trình duyệt hoặc tích hợp chatbot)
- * Ví dụ: URL_WEBAPP?query=tkb Hiển
+ * Ví dụ: URL_WEBAPP?query=tkb Trọng
  */
 function doGet(e) {
   const query = (e && e.parameter && e.parameter.query) ? e.parameter.query : (e && e.parameter && e.parameter.text ? e.parameter.text : "");
@@ -31,16 +31,30 @@ function doGet(e) {
 }
 
 /**
- * 2. Xử lý Webhook POST từ Zalo OA / Chatbot platform (Fchat, Ahachat, ManyChat...)
+ * 2. Xử lý yêu cầu POST:
+ * - Nhận lệnh đồng bộ TKB từ Admin Web (action = "sync_timetable") -> Tự động ghi vào Google Sheets!
+ * - Nhận Webhook tin nhắn từ Zalo OA / Chatbot platform (Fchat, Ahachat...)
  */
 function doPost(e) {
   try {
     let postData = {};
     if (e && e.postData && e.postData.contents) {
-      postData = JSON.parse(e.postData.contents);
+      try {
+        postData = JSON.parse(e.postData.contents);
+      } catch (err) {
+        postData = e.parameter || {};
+      }
+    } else if (e && e.parameter) {
+      postData = e.parameter;
     }
     
-    // Xử lý tin nhắn từ Zalo OA Webhook
+    // A. Xử lý lệnh đồng bộ TKB từ Admin Web lên Google Sheets
+    if (postData.action === "sync_timetable") {
+      const result = syncDataToGoogleSheets(postData);
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // B. Xử lý tin nhắn từ Zalo OA Webhook / Chatbot
     let userMessage = "";
     let senderId = "";
     
@@ -50,6 +64,9 @@ function doPost(e) {
     } else if (postData.text || postData.message) {
       userMessage = postData.text || postData.message;
       senderId = postData.sender_id || postData.user_id || "";
+    } else if (postData.query) {
+      userMessage = postData.query;
+      senderId = postData.sender || "";
     }
     
     if (userMessage) {
@@ -60,7 +77,6 @@ function doPost(e) {
         sendZaloOAMessage(senderId, replyText);
       }
       
-      // Đồng thời trả về JSON cho Webhook
       return ContentService.createTextOutput(JSON.stringify({
         recipient: { user_id: senderId },
         message: { text: replyText }
@@ -74,7 +90,128 @@ function doPost(e) {
 }
 
 /**
- * 3. Bộ xử lý tra cứu TKB từ Firebase Realtime Database
+ * 3. Tự động ghi dữ liệu Thời Khóa Biểu vào Google Sheets
+ */
+function syncDataToGoogleSheets(payload) {
+  let ss = null;
+  try {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  } catch (e) {}
+  
+  if (!ss) {
+    // Tạo bảng tính mới nếu chưa gắn vào bảng tính nào
+    ss = SpreadsheetApp.create("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
+  }
+  
+  const teachers = payload.teachers || [];
+  const classes = payload.classes || [];
+  const timetable = payload.timetable || {};
+  const applyDate = payload.timetableApplyDate || "";
+  const weekName = payload.weekName || "Đợt chính thức";
+  
+  const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7"];
+  const weekLabels = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+  
+  // Sheet 1: TKB Buổi Sáng
+  let sheetMorning = ss.getSheetByName("TKB_Buoi_Sang");
+  if (!sheetMorning) sheetMorning = ss.insertSheet("TKB_Buoi_Sang");
+  sheetMorning.clear();
+  
+  const morningClasses = classes.filter(c => c && (c.session || "sáng").toLowerCase() === "sáng");
+  const morningRows = [
+    ["BẢNG THỜI KHÓA BIỂU BUỔI SÁNG - " + weekName.toUpperCase() + " (" + applyDate + ")"],
+    ["Lớp", "Thứ 2", "", "", "", "", "Thứ 3", "", "", "", "", "Thứ 4", "", "", "", "", "Thứ 5", "", "", "", "", "Thứ 6", "", "", "", "", "Thứ 7", "", "", "", ""],
+    ["", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5"]
+  ];
+  
+  morningClasses.forEach(c => {
+    const row = [c.name];
+    weekdays.forEach(day => {
+      for (let p = 1; p <= 5; p++) {
+        if (timetable[c.name] && timetable[c.name][day] && timetable[c.name][day][p]) {
+          const act = timetable[c.name][day][p];
+          row.push(act.subject + (act.teacher ? ` (${act.teacher})` : ""));
+        } else {
+          row.push("");
+        }
+      }
+    });
+    morningRows.push(row);
+  });
+  
+  sheetMorning.getRange(1, 1, morningRows.length, 31).setValues(morningRows);
+  
+  // Sheet 2: TKB Buổi Chiều
+  let sheetAfternoon = ss.getSheetByName("TKB_Buoi_Chieu");
+  if (!sheetAfternoon) sheetAfternoon = ss.insertSheet("TKB_Buoi_Chieu");
+  sheetAfternoon.clear();
+  
+  const afternoonClasses = classes.filter(c => c && (c.session || "sáng").toLowerCase() === "chiều");
+  const afternoonRows = [
+    ["BẢNG THỜI KHÓA BIỂU BUỔI CHIỀU - " + weekName.toUpperCase() + " (" + applyDate + ")"],
+    ["Lớp", "Thứ 2", "", "", "", "", "Thứ 3", "", "", "", "", "Thứ 4", "", "", "", "", "Thứ 5", "", "", "", "", "Thứ 6", "", "", "", "", "Thứ 7", "", "", "", ""],
+    ["", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5"]
+  ];
+  
+  afternoonClasses.forEach(c => {
+    const row = [c.name];
+    weekdays.forEach(day => {
+      for (let p = 1; p <= 5; p++) {
+        if (timetable[c.name] && timetable[c.name][day] && timetable[c.name][day][p]) {
+          const act = timetable[c.name][day][p];
+          row.push(act.subject + (act.teacher ? ` (${act.teacher})` : ""));
+        } else {
+          row.push("");
+        }
+      }
+    });
+    afternoonRows.push(row);
+  });
+  
+  sheetAfternoon.getRange(1, 1, afternoonRows.length, 31).setValues(afternoonRows);
+  
+  // Sheet 3: Danh sách Giáo viên & Lịch dạy
+  let sheetTeachers = ss.getSheetByName("TKB_Giao_Vien");
+  if (!sheetTeachers) sheetTeachers = ss.insertSheet("TKB_Giao_Vien");
+  sheetTeachers.clear();
+  
+  const teacherRows = [
+    ["DANH SÁCH THỜI KHÓA BIỂU GIÁO VIÊN - " + weekName.toUpperCase() + " (" + applyDate + ")"],
+    ["STT", "Họ và tên", "Tên viết tắt", "Tổ chuyên môn", "Lịch dạy Thứ 2", "Lịch dạy Thứ 3", "Lịch dạy Thứ 4", "Lịch dạy Thứ 5", "Lịch dạy Thứ 6", "Lịch dạy Thứ 7"]
+  ];
+  
+  teachers.filter(t => t && t.fullName && t.shortName).forEach((t, idx) => {
+    const row = [idx + 1, t.fullName, t.shortName, t.group || ""];
+    weekdays.forEach(day => {
+      const slots = [];
+      classes.forEach(c => {
+        if (timetable[c.name] && timetable[c.name][day]) {
+          for (let p = 1; p <= 5; p++) {
+            if (timetable[c.name][day][p] && timetable[c.name][day][p].teacher === t.shortName) {
+              slots.push(`T${p}(${c.name})`);
+            }
+          }
+        }
+      });
+      row.push(slots.join(", ") || "-");
+    });
+    teacherRows.push(row);
+  });
+  
+  sheetTeachers.getRange(1, 1, teacherRows.length, 10).setValues(teacherRows);
+  
+  return {
+    status: "success",
+    message: "Đã đồng bộ thành công lên Google Sheets!",
+    spreadsheetUrl: ss.getUrl(),
+    teachersCount: teachers.length,
+    classesCount: classes.length,
+    updatedAt: (new Date()).toLocaleString("vi-VN")
+  };
+}
+
+/**
+ * 4. Bộ xử lý tra cứu TKB từ Firebase Realtime Database
  */
 function processTimetableQuery(messageText) {
   const text = (messageText || "").trim();
