@@ -1,0 +1,10 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "school_data": {
+      ".read": true,
+      ".write": "newData.exists() && newData.hasChildren(['groups', 'teachers', 'classes', 'subjects'])"
+    }
+  }
+}

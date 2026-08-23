@@ -1,0 +1,958 @@
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('lib/outfit-300.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('lib/outfit-400.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('lib/outfit-500.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('lib/outfit-600.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('lib/outfit-700.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Material Icons Round';
+  font-style: normal;
+  font-weight: 400;
+  src: url('lib/materialiconsround.otf') format('opentype');
+}
+
+.material-icons-round {
+  font-family: 'Material Icons Round';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
+:root {
+    --primary: #4f46e5;
+    --primary-light: #818cf8;
+    --primary-dark: #3730a3;
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #334155;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --border: #475569;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-light);
+}
+
+/* Base Layout Containers */
+main {
+    flex: 1;
+    padding: 24px 32px;
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+    background: rgba(30, 41, 59, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+    margin-bottom: 24px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+.btn-primary:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+.btn-secondary {
+    background: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+    background: var(--border);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+}
+.btn-danger:hover {
+    background: #f87171;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: var(--success);
+    color: #fff;
+}
+.btn-success:hover {
+    background: #34d399;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+/* App Header & Brand */
+header {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-area span.icon {
+    font-size: 2.2rem;
+    color: var(--primary-light);
+}
+.logo-area h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #fff 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.badge {
+    background: var(--primary-dark);
+    color: var(--primary-light);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--primary);
+}
+
+.sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.dot-green { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+.dot-grey { background-color: var(--text-muted); }
+
+/* Login Portal */
+.login-container {
+    max-width: 440px;
+    margin: 80px auto;
+    width: 100%;
+}
+.login-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.login-header h2 {
+    font-size: 1.7rem;
+    margin-bottom: 6px;
+}
+
+/* Forms & Inputs */
+.form-group {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.form-group label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+.form-control {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    width: 100%;
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+}
+
+select option {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+}
+
+/* Layout Grids */
+.dashboard {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+}
+@media (max-width: 1024px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.flex-row-wrap {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.flex-col-50 {
+    flex: 1 1 45%;
+    min-width: 320px;
+}
+
+/* Tables & Matrix View */
+.matrix-container {
+    overflow-x: auto;
+    margin-top: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+table.matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+    background: var(--bg-card);
+}
+table.matrix-table th, table.matrix-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    vertical-align: middle;
+}
+table.matrix-table th {
+    background-color: var(--bg-card);
+    font-weight: 600;
+    color: var(--text-main);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 1px 0 var(--border);
+}
+table.matrix-table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.cell-assign {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 140px;
+}
+.cell-assign select {
+    background: var(--bg-dark);
+    color: #fff;
+    border: 1px solid var(--border);
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+.cell-input-periods {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cell-input-periods input {
+    width: 45px;
+    background: var(--bg-dark);
+    color: #fff;
+    border: 1px solid var(--border);
+    padding: 4px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.8rem;
+}
+
+/* Warnings and highlights */
+.cell-warn {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+    border: 2px solid var(--warning) !important;
+}
+.cell-danger {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    border: 2px solid rgba(239, 68, 68, 0.4) !important;
+}
+.text-danger {
+    color: var(--danger);
+    font-weight: 500;
+}
+.text-success {
+    color: var(--success);
+    font-weight: 500;
+}
+.text-warning {
+    color: var(--warning);
+    font-weight: 500;
+}
+
+/* Sidebar stats */
+.teacher-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    max-height: 550px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.teacher-stat-card {
+    background: var(--bg-dark);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+.teacher-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.progress-bar-container {
+    background: var(--bg-input);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    width: 100%;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+.bar-under { background-color: var(--warning); }
+.bar-ok { background-color: var(--success); }
+.bar-over { background-color: var(--danger); }
+
+/* Navigation Tabs */
+.tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: var(--transition);
+}
+.tab-btn:hover {
+    color: var(--text-main);
+}
+.tab-btn.active {
+    color: var(--primary-light);
+    border-bottom-color: var(--primary-light);
+}
+
+.tab-content {
+    display: none !important;
+}
+.tab-content.active {
+    display: block !important;
+}
+.tab-content.active.flex-row-wrap {
+    display: flex !important;
+}
+
+/* Drag and Drop Zone */
+.dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    background: rgba(30, 41, 59, 0.35);
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+.dropzone:hover {
+    border-color: var(--primary-light);
+    background: rgba(30, 41, 59, 0.55);
+    color: var(--text-main);
+}
+.dropzone span.icon {
+    font-size: 2.2rem;
+    color: var(--primary-light);
+}
+
+/* Timetable Grid View */
+.view-controls {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+.timetable-grid-view {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-top: 12px;
+}
+table.timetable-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+}
+table.timetable-table th, table.timetable-table td {
+    padding: 10px;
+    border: 1px solid var(--border);
+    text-align: center;
+    width: 14%;
+}
+table.timetable-table th {
+    background-color: rgba(15, 23, 42, 0.6);
+}
+.timetable-cell-content {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.timetable-cell-teacher {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+.cc-cell {
+    background-color: rgba(239, 68, 68, 0.18) !important;
+    color: #f87171 !important;
+    font-weight: 600;
+}
+.shl-cell {
+    background-color: rgba(16, 185, 129, 0.18) !important;
+    color: #34d399 !important;
+    font-weight: 600;
+}
+
+/* Checkbox group styling */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 150px;
+    overflow-y: auto;
+    width: 100%;
+}
+.checkbox-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: var(--bg-card);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    user-select: none;
+    color: var(--text-main);
+}
+.checkbox-item:hover {
+    border-color: var(--primary-light);
+    background: rgba(79, 70, 229, 0.15);
+}
+.checkbox-item input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: var(--primary-light);
+    width: 14px;
+    height: 14px;
+}
+.checkbox-group-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+/* Modal Dialog System */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeInModal 0.2s ease-out;
+}
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-card {
+    width: 90%;
+    max-width: 550px;
+    background: rgba(30, 41, 59, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
+    border-radius: 16px;
+    padding: 24px;
+    transform: scale(0.95);
+    animation: scaleUpModal 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes scaleUpModal {
+    to { transform: scale(1); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+}
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+}
+.modal-close-btn:hover {
+    color: var(--danger);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    margin-bottom: 20px;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+}
+
+/* Enhancing Checkbox Items to Toggle Chips */
+.checkbox-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: rgba(51, 65, 85, 0.4);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    user-select: none;
+    color: var(--text-main);
+    flex: 1 1 calc(50% - 8px); /* 2 columns grid */
+    min-width: 145px;
+}
+.checkbox-item:hover {
+    border-color: var(--primary-light);
+    background: rgba(79, 70, 229, 0.1);
+}
+.checkbox-item:has(input[type="checkbox"]:checked) {
+    border-color: var(--primary-light);
+    background: rgba(79, 70, 229, 0.18) !important;
+    box-shadow: 0 0 8px rgba(129, 140, 248, 0.25);
+}
+.checkbox-item input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: var(--primary-light);
+    width: 15px;
+    height: 15px;
+}
+
+/* Custom Searchable Dropdown styles */
+.searchable-select {
+    position: relative;
+    width: 100%;
+}
+.searchable-select .dropdown-menu {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: #1e293b !important;
+    border-radius: 6px;
+    padding: 4px 0;
+}
+.searchable-select .dropdown-item {
+    transition: all 0.15s ease;
+    background: transparent;
+    color: var(--text-main) !important;
+}
+.searchable-select .dropdown-item:hover,
+.searchable-select .dropdown-item.active {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+/* ================= PRINT STYLES FOR HIGH-QUALITY PDF/PRINT OUTPUT ================= */
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Times New Roman', Times, serif, Arial, sans-serif !important;
+    }
+    
+    /* Ẩn tất cả các phần tử không liên quan */
+    header, 
+    #loginSection, 
+    #adminDashboard, 
+    .view-controls, 
+    #publicTimetableActions, 
+    #publicApplyDateNotice,
+    #groupTKBStatusBanner,
+    #groupAssignTab,
+    #groupSubstituteTab,
+    #groupDashboard .tabs,
+    .btn,
+    .modal-overlay,
+    footer,
+    #syncDot,
+    #syncStatusText,
+    #groupTimetableTab h3,
+    #groupTimetableStatsTableBody,
+    .table-container {
+        display: none !important;
+    }
+    
+    /* Khi in ở màn hình tra cứu công khai */
+    body:not(.printing-group-timetable) #groupDashboard {
+        display: none !important;
+    }
+    body:not(.printing-group-timetable) #publicTimetableSection {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    body:not(.printing-group-timetable) #publicTimetableSection h2,
+    body:not(.printing-group-timetable) #publicTimetableSection p {
+        display: none !important;
+    }
+
+    /* Khi in ở màn hình Tổ trưởng (Thời khóa biểu Tổ) */
+    body.printing-group-timetable #publicTimetableSection {
+        display: none !important;
+    }
+    body.printing-group-timetable #groupDashboard {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    body.printing-group-timetable #groupTimetableTab {
+        display: block !important;
+    }
+    body.printing-group-timetable #groupTimetableHeaderTitle,
+    body.printing-group-timetable #groupTimetableTab > .glass-card > div:first-child p,
+    body.printing-group-timetable #groupTimetableTab > .glass-card > div:first-child h2 {
+        display: none !important;
+    }
+    
+    .glass-card {
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Khung bảng thời khóa biểu */
+    .timetable-grid-view {
+        overflow: visible !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+    }
+    
+    table.timetable-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    table.timetable-table th, 
+    table.timetable-table td {
+        border: 1px solid #000000 !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+        padding: 5px 3px !important;
+        font-size: 9.5pt !important;
+        text-align: center !important;
+    }
+    
+    table.timetable-table th {
+        font-weight: bold !important;
+        background: #f2f2f2 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    table.timetable-table td:first-child {
+        text-align: left !important;
+        padding-left: 8px !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important;
+    }
+
+    #groupTimetableGridContainer > div {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 25px !important;
+        background: none !important;
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+        padding: 10px !important;
+    }
+    
+    #groupTimetableGridContainer h4 {
+        color: #000000 !important;
+        font-size: 12pt !important;
+    }
+    
+    .timetable-cell-content {
+        color: #000000 !important;
+        font-weight: bold !important;
+        font-size: 10pt !important;
+    }
+    
+    .timetable-cell-teacher {
+        color: #333333 !important;
+        font-size: 9pt !important;
+        margin-top: 2px !important;
+    }
+    
+    /* Màu nền các tiết đặc biệt lúc in */
+    .cc-cell, .shl-cell {
+        background: #eaeaea !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Tiêu đề in ấn chuyên nghiệp */
+    .print-header {
+        display: block !important;
+        margin-bottom: 20px !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    
+    .print-header h2 {
+        display: block !important;
+        font-size: 18pt !important;
+        font-weight: bold !important;
+        margin: 0 0 6px 0 !important;
+        color: #000000 !important;
+        text-transform: uppercase !important;
+    }
+    
+    .print-header p {
+        display: block !important;
+        font-size: 11pt !important;
+        margin: 0 !important;
+        color: #111111 !important;
+        font-style: italic !important;
+    }
+}
+
+/* Ẩn tiêu đề in ấn ở màn hình thường */
+.print-header {
+    display: none;
+}
+
+/* Kiểu dáng cho phần tử dạy thay (Substitutions) */
+.substitution-cell {
+    background: rgba(245, 158, 11, 0.15) !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    position: relative;
+    transition: var(--transition);
+}
+.substitution-cell:hover {
+    background: rgba(245, 158, 11, 0.22) !important;
+}
+.substitution-cell-absent {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border: 1px dashed rgba(239, 68, 68, 0.3) !important;
+    position: relative;
+    transition: var(--transition);
+}
+.substitution-cell-absent:hover {
+    background: rgba(239, 68, 68, 0.12) !important;
+}
+.sub-affected-card {
+    transition: all 0.25s ease-in-out;
+}
+.sub-affected-card:hover {
+    border-color: rgba(129, 140, 248, 0.4) !important;
+    background: rgba(30, 41, 59, 0.65) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+

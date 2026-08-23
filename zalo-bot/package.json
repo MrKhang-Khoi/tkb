@@ -1,0 +1,22 @@
+{
+  "name": "zalo-timetable-bot",
+  "version": "1.0.0",
+  "description": "Bot Zalo Cá Nhân Tra Cứu Thời Khóa Biểu Tự Động Kết Nối Firebase Realtime",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "zalo-bot",
+    "timetable",
+    "fet",
+    "education"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "zca-js": "^1.3.15",
+    "qrcode-terminal": "^0.12.0",
+    "qrcode": "^1.5.4"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "botName": "Trợ Lý Thời Khóa Biểu",
+  "firebaseEndpoint": "https://tkb-fet-default-rtdb.asia-southeast1.firebasedatabase.app/school_data.json",
+  "autoReplyDirect": true,
+  "autoReplyGroup": true,
+  "replyDelayMs": 600,
+  "requirePrefix": false,
+  "adminPhone": ""
+}

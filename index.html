@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Phân Công Chuyên Môn & Tra Cứu TKB - Tích hợp Firebase & FET</title>
+    <meta name="description" content="Ứng dụng phân công chuyên môn và đồng bộ thời khóa biểu trực tuyến dành cho nhà trường, tích hợp phần xếp lịch FET.">
+    <!-- Local Fonts and Styling -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Local Firebase & Excel Libraries (Offline First) -->
+    <script src="lib/firebase-app-compat.js"></script>
+    <script src="lib/firebase-database-compat.js"></script>
+    <script src="lib/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <!-- App Header -->
+    <header>
+        <div class="logo-area">
+            <span class="material-icons-round icon">schedule</span>
+            <div>
+                <h1>FET Timetable Hub</h1>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Hệ thống phân công chuyên môn số hóa chuẩn Việt Nam</p>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="sync-indicator">
+                <span id="syncDot" class="dot dot-grey"></span>
+                <span id="syncStatusText" style="color: var(--text-muted);">Đang dùng Offline</span>
+            </div>
+            <div class="user-info" id="headerUserInfo" style="display: none;">
+                <span class="badge" id="userRoleBadge">Đang đăng nhập...</span>
+                <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="padding: 6px 12px; font-size: 0.8rem;">
+                    <span class="material-icons-round" style="font-size: 1rem;">logout</span> Đăng xuất
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main>
+        
+        <!-- ================= LOGIN PORTAL ================= -->
+        <section id="loginSection" class="login-container">
+            <div class="glass-card">
+                <div class="login-header">
+                    <h2>Đăng Nhập Hệ Thống</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Chọn tài khoản và nhập mật khẩu</p>
+                </div>
+                <div class="form-group">
+                    <label for="loginUsername">Tên đăng nhập</label>
+                    <input type="text" id="loginUsername" class="form-control" placeholder="Tên đăng nhập (ví dụ: admin, toan)..." onkeydown="if(event.key === 'Enter') login()">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Mật khẩu</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="loginPassword" class="form-control" placeholder="Nhập mật khẩu..." style="padding-right: 40px; width: 100%;" onkeydown="if(event.key === 'Enter') login()">
+                        <span id="toggleLoginPassword" class="material-icons-round" onclick="togglePasswordVisibility('loginPassword', this)" style="position: absolute; right: 12px; cursor: pointer; color: var(--text-muted); user-select: none;">visibility</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="login()" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    Đăng nhập <span class="material-icons-round">login</span>
+                </button>
+                <div style="text-align: center; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+                    <a href="#" onclick="showPublicTimetable(); return false;" style="color: var(--primary-light); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
+                        <span class="material-icons-round" style="font-size: 1.15rem;">search</span> Tra cứu Thời khóa biểu Công khai (Online)
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PUBLIC TIMETABLE LOOKUP WORKSPACE ================= -->
+        <section id="publicTimetableSection" class="dashboard" style="display: none; max-width: 1200px; margin: 0 auto; padding: 20px;">
+            <div class="glass-card">
+                <!-- Header dành riêng cho chế độ in -->
+                <div class="print-header" id="publicPrintHeader" style="text-align: center; margin-bottom: 20px;">
+                    <h2 id="publicPrintTitle" style="font-weight: bold; margin-bottom: 6px;">THỜI KHÓA BIỂU</h2>
+                    <p id="publicPrintSubtitle" style="font-size: 0.95rem; color: #374151; font-weight: 500;"></p>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h2>Tra Cứu Thời Khóa Biểu Nhà Trường</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">
+                            Xem thời khóa biểu chính thức của học sinh và giáo viên trực tuyến.
+                        </p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="backToLogin()" style="padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons-round" style="font-size: 1.1rem;">arrow_back</span> Quay lại Đăng nhập
+                    </button>
+                </div>
+                
+                <!-- Ghi chú thời gian áp dụng và Số tiết -->
+                <div id="publicApplyDateNotice" style="display: none; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px; color: #fef08a; font-size: 0.88rem; font-weight: 500;">
+                        <span class="material-icons-round" style="color: #facc15; font-size: 1.25rem;">info</span>
+                        <span id="publicApplyDateText">Lưu ý: Thời khóa biểu chính thức của nhà trường</span>
+                    </div>
+                    <div id="publicPeriodBadge" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(79, 70, 229, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 20px; color: var(--primary-light); font-size: 0.85rem; font-weight: 600;">
+                        <span class="material-icons-round" style="font-size: 1.05rem;">hourglass_empty</span>
+                        <span id="publicPeriodText">Tổng số: 0 tiết</span>
+                    </div>
+                </div>
+
+                <div class="view-controls" style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.4); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center;" id="publicWeekSelectWrapper">
+                        <label for="publicWeekSelect" style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">Đợt TKB / Tuần:</label>
+                        <select id="publicWeekSelect" class="form-control" style="width: 220px; padding: 6px; height: 32px; font-size: 0.85rem;" onchange="onPublicWeekChange()">
+                            <!-- Dynamic weekly options -->
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <label for="publicSearchType" style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">Tra cứu theo:</label>
+                        <select id="publicSearchType" class="form-control" style="width: 130px; padding: 6px; height: 32px; font-size: 0.85rem;" onchange="updatePublicSearchDropdown()">
+                            <option value="class">Lớp học</option>
+                            <option value="teacher">Giáo viên</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <label for="publicSearchTarget" style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">Chọn đối tượng:</label>
+                        <div class="searchable-select" id="publicSearchTargetContainer" style="position: relative; width: 280px;">
+                            <input type="text" id="publicSearchTarget" class="form-control search-input" placeholder="Gõ hoặc chọn lớp/giáo viên..." style="padding: 6px 30px 6px 12px; font-size: 0.85rem; height: 32px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%;" autocomplete="off">
+                            <span class="dropdown-arrow" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--text-muted); pointer-events: none;">▼</span>
+                            <div id="publicSearchTargetMenu" class="dropdown-menu" style="position: absolute; top: 100%; left: 0; width: 100%; max-height: 250px; overflow-y: auto; background: #1e293b; border: 1px solid var(--border); border-radius: 6px; margin-top: 4px; z-index: 1000; display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tác vụ tải file Excel hoặc In / Lưu PDF -->
+                <div id="publicTimetableActions" style="display: none; justify-content: flex-end; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="downloadPublicExcel()" style="padding: 6px 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; border-radius: 6px;">
+                        <span class="material-icons-round" style="font-size: 1.1rem;">table_view</span> Tải Excel (.xls)
+                    </button>
+                    <button class="btn btn-primary" onclick="printPublicPDF()" style="padding: 6px 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; border-radius: 6px; background: var(--primary);">
+                        <span class="material-icons-round" style="font-size: 1.1rem;">print</span> In / Lưu PDF
+                    </button>
+                </div>
+
+                <div class="timetable-grid-view">
+                    <table class="timetable-table" id="publicTimetableGrid">
+                        <!-- Dynamic Grid -->
+                    </table>
+                </div>
+
+                <!-- Bảng Thông Báo Dạy Thay Trong Ngày -->
+                <div id="publicSubstitutionSection" style="margin-top: 24px; display: none;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #facc15; border-top: 1px solid var(--border); padding-top: 20px;">
+                        <span class="material-icons-round" style="color: #facc15; font-size: 1.25rem;">notification_important</span>
+                        Thông Báo Lịch Dạy Thay & Học Thay Của Nhà Trường
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px;">
+                        Danh sách các ca dạy thay, học thay được cập nhật theo thời gian thực cho các lớp trong tuần này.
+                    </p>
+                    <div class="table-container" style="background: rgba(30, 41, 59, 0.2); border-radius: 8px; border: 1px solid var(--border); overflow-x: auto;">
+                        <table class="table" style="margin: 0; font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Tiết</th>
+                                    <th>Lớp</th>
+                                    <th>Môn học</th>
+                                    <th>Giáo viên vắng</th>
+                                    <th>Giáo viên dạy thay</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody id="publicSubstitutionTableBody">
+                                <!-- Dynamic entries -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= GROUP LEADER DASHBOARD WORKSPACE ================= -->
+        <section id="groupDashboard" class="dashboard">
+            <!-- Tab Buttons for Group Leader -->
+            <div class="tabs" style="margin-bottom: 20px;">
+                <button class="tab-btn active" id="groupAssignTabBtn" onclick="switchGroupTab('groupAssignTab')">
+                    <span class="material-icons-round" style="font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">assignment</span>
+                    1. Phân Công Chuyên Môn
+                </button>
+                <button class="tab-btn" id="groupSubstituteTabBtn" onclick="switchGroupTab('groupSubstituteTab')">
+                    <span class="material-icons-round" style="font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">people_outline</span>
+                    2. Gợi Ý Dạy Thay
+                </button>
+                <button class="tab-btn" id="groupTimetableTabBtn" onclick="switchGroupTab('groupTimetableTab')">
+                    <span class="material-icons-round" style="font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">calendar_month</span>
+                    3. Thời Khóa Biểu Tổ
+                </button>
+            </div>
+
+            <!-- Tab 1: Phân Công Chuyên Môn -->
+            <div id="groupAssignTab" class="tab-content active">
+                <div class="grid-layout">
+                <!-- Left Panel: Assignment Matrix -->
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h2 id="groupTitle" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Bảng Phân Công Chuyên Môn</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; margin-bottom: 0;">
+                                Chỉ phân công giáo viên giảng dạy các môn học thuộc tổ chuyên môn quản lý.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                            <button class="btn btn-success" onclick="exportGroupAssignmentExcel()">
+                                <span class="material-icons-round">table_view</span> Xuất Excel Phân Công (.xlsx)
+                            </button>
+                            <button class="btn btn-primary" onclick="exportGroupData()">
+                                <span class="material-icons-round">download</span> Tải file của Tổ (.json)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Trạng thái Chốt/Khóa của Tổ -->
+                    <div id="groupLockStatusBanner" style="display: none; align-items: center; justify-content: space-between; padding: 12px 18px; border-radius: 8px; margin-bottom: 16px; font-size: 0.9rem; font-weight: 500; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="material-icons-round" id="groupLockStatusIcon" style="font-size: 1.25rem;">lock_open</span>
+                            <span id="groupLockStatusText">Trạng thái phân công: Chưa khóa</span>
+                        </div>
+                        <button class="btn btn-danger" id="groupLockBtn" onclick="confirmLockGroupAssignment()" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 4px;">
+                            <span class="material-icons-round" style="font-size: 1rem;">lock</span> Chốt & Khóa phân công
+                        </button>
+                    </div>
+                    
+                    <!-- Phân Công Nhanh Panel -->
+                    <div id="batchAssignPanel" style="margin-bottom: 24px; padding: 20px; border-radius: 12px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                            <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.25rem;">bolt</span>
+                            Phân Công Nhanh Hàng Loạt
+                        </h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 16px;">
+                            Tối ưu hóa thao tác: Chọn giáo viên, môn học và tích chọn nhiều lớp cùng lúc để gán phân công nhanh.
+                        </p>
+
+                        <!-- Banner hiệu chỉnh phân công -->
+                        <div id="batchEditBanner" style="display: none; align-items: center; justify-content: space-between; background: rgba(79, 70, 229, 0.2); border: 1px solid var(--primary-light); padding: 12px 18px; border-radius: 8px; margin-bottom: 16px; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.2rem;">edit_note</span>
+                                <span id="batchEditBannerText" style="font-size: 0.85rem; font-weight: 500; color: var(--text-main);">Đang chỉnh sửa phân công...</span>
+                            </div>
+                            <button class="btn btn-secondary" onclick="cancelReassignment()" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;">Hủy hiệu chỉnh</button>
+                        </div>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px;">
+                            <div class="form-group" style="flex: 1 1 200px; margin-bottom: 0; position: relative;">
+                                <label for="batchTeacherSelect">1. Chọn giáo viên</label>
+                                <div class="searchable-select" id="batchTeacherContainer" style="position: relative;">
+                                    <input type="text" id="batchTeacherSelect" class="form-control search-input" placeholder="Gõ hoặc chọn giáo viên..." style="padding: 8px 30px 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%;" autocomplete="off">
+                                    <span class="dropdown-arrow" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--text-muted); pointer-events: none;">▼</span>
+                                    <div id="batchTeacherMenu" class="dropdown-menu" style="position: absolute; top: 100%; left: 0; width: 100%; max-height: 200px; overflow-y: auto; background: #1e293b; border: 1px solid var(--border); border-radius: 6px; margin-top: 4px; z-index: 1000; display: none;"></div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="flex: 1 1 200px; margin-bottom: 0; position: relative;">
+                                <label for="batchSubjectSelect">2. Chọn môn học</label>
+                                <div class="searchable-select" id="batchSubjectContainer" style="position: relative;">
+                                    <input type="text" id="batchSubjectSelect" class="form-control search-input" placeholder="Gõ hoặc chọn môn học..." style="padding: 8px 30px 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%;" autocomplete="off">
+                                    <span class="dropdown-arrow" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--text-muted); pointer-events: none;">▼</span>
+                                    <div id="batchSubjectMenu" class="dropdown-menu" style="position: absolute; top: 100%; left: 0; width: 100%; max-height: 200px; overflow-y: auto; background: #1e293b; border: 1px solid var(--border); border-radius: 6px; margin-top: 4px; z-index: 1000; display: none;"></div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="width: 100px; margin-bottom: 0;">
+                                <label for="batchPeriodsInput">Số tiết dạy</label>
+                                <input type="number" id="batchPeriodsInput" class="form-control" min="0" max="10" placeholder="Chuẩn" style="padding: 8px 12px; font-size: 0.85rem; text-align: center;">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-primary" onclick="applyBatchAssignment()" style="padding: 9px 16px; font-size: 0.85rem;">
+                                    <span class="material-icons-round" style="font-size: 1.1rem;">done_all</span> Áp dụng
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearBatchSelections()" style="padding: 9px 16px; font-size: 0.85rem;">
+                                    Làm mới
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label id="batchClassCheckboxesLabel" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px;">
+                                <span style="font-weight: 500; font-size: 0.85rem; color: var(--text-muted);">3. Chọn các lớp học được phân công:</span>
+                                <div style="display: flex; gap: 10px; font-size: 0.75rem;">
+                                    <a href="#" onclick="toggleBatchClasses('all'); return false;" style="color: var(--primary-light); text-decoration: none; font-weight: 500;">Tất cả</a>
+                                    <span style="color: var(--border);">|</span>
+                                    <a href="#" onclick="toggleBatchClasses('none'); return false;" style="color: var(--text-muted); text-decoration: none; font-weight: 500;">Bỏ chọn</a>
+                                    <span style="color: var(--border);">|</span>
+                                    <a href="#" onclick="toggleBatchClasses('grade6'); return false;" style="color: var(--primary-light); text-decoration: none;">Khối 6</a>
+                                    <a href="#" onclick="toggleBatchClasses('grade7'); return false;" style="color: var(--primary-light); text-decoration: none;">Khối 7</a>
+                                    <a href="#" onclick="toggleBatchClasses('grade8'); return false;" style="color: var(--primary-light); text-decoration: none;">Khối 8</a>
+                                    <a href="#" onclick="toggleBatchClasses('grade9'); return false;" style="color: var(--primary-light); text-decoration: none;">Khối 9</a>
+                                </div>
+                            </label>
+                            <div id="batchClassCheckboxes" style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(15, 23, 42, 0.2);">
+                                <!-- Dynamic checkboxes grouped by Grade -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Danh mục lớp chưa phân công (đưa lên trên cùng, sát dưới batchAssignPanel) -->
+                    <div id="groupUnassignedClassesContainer" style="margin-top: 20px;"></div>
+                    
+                    <!-- Tiêu đề danh mục và bộ lọc (bên dưới phần cảnh báo chưa phân công) -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <h3 style="font-size: 1.05rem; font-weight: 600; margin: 0; display: inline-flex; align-items: center; gap: 6px; color: var(--text-main);">
+                                <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.25rem;">assignment_ind</span>
+                                Chi Tiết Phân Công Tổ Viên
+                            </h3>
+                            
+                            <!-- Bộ lọc trạng thái tổ viên (Sát với tiêu đề danh sách) -->
+                            <div style="display: inline-flex; align-items: center; gap: 4px; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px;">
+                                <span class="material-icons-round" style="font-size: 0.95rem; color: var(--primary-light);">filter_list</span>
+                                <select id="filterMemberAssignmentStatus" class="form-control" style="width: 190px; padding: 2px 4px; height: 22px; font-size: 0.75rem; border: none; background: transparent; color: var(--text-main); cursor: pointer;" onchange="refreshGroupMatrix()">
+                                    <option value="all">Tất cả tổ viên</option>
+                                    <option value="assigned">Đã phân công (>0 tiết)</option>
+                                    <option value="unassigned">Chưa phân công (0 tiết)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" onclick="clearAllGroupAssignments()" style="padding: 5px 12px; font-size: 0.78rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: var(--danger); font-weight: 500;" onmouseover="this.style.background='var(--danger)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='var(--danger)';">
+                            <span class="material-icons-round" style="font-size: 1.05rem;">delete_sweep</span> Xóa tất cả phân công của tổ
+                        </button>
+                    </div>
+                    
+                    <div id="teacherAssignmentsContainer" style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
+                        <!-- Generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right Panel: Sidebar Stats -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="glass-card" style="margin-bottom: 0;">
+                        <h3>Định Mức Tiết Dạy Tổ Viên</h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 15px;">
+                            Giám sát tổng số tiết học đã phân công so với hạn mức (quota) của giáo viên.
+                        </p>
+                        <div class="teacher-stats-list" id="teacherStatsList" style="max-height: 300px;">
+                            <!-- Generated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Môn Học Thiếu/Lệch Tiết</h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 15px;">
+                            Danh sách môn học của lớp còn thiếu chưa phân công giáo viên hoặc lệch số tiết.
+                        </p>
+                        <div class="teacher-stats-list" id="unassignedSubjectsList" style="max-height: 300px;">
+                            <!-- Generated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 2: Gợi Ý Dạy Thay -->
+        <div id="groupSubstituteTab" class="tab-content">
+                <div class="grid-layout">
+                    <!-- Left Panel: Setup & Suggestions -->
+                    <div class="glass-card">
+                        <div style="margin-bottom: 20px;">
+                            <h2>Công Cụ Gợi Ý & Phân Công Dạy Thay</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">
+                                Tìm kiếm giáo viên trống lịch và xếp lớp dạy thay nhanh khi có giáo viên vắng.
+                            </p>
+                        </div>
+                        
+                        <!-- Form selection -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 24px; padding: 16px; border-radius: 8px; background: rgba(15, 23, 42, 0.3); border: 1px solid var(--border);">
+                            <div class="form-group" style="flex: 1 1 180px; margin-bottom: 0;">
+                                <label for="subAbsenceDate" style="margin-bottom: 6px;">1. Ngày vắng mặt</label>
+                                <input type="date" id="subAbsenceDate" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%;" onchange="analyzeSubstituteSlots()">
+                            </div>
+                            <div class="form-group" style="flex: 1 1 220px; margin-bottom: 0;">
+                                <label for="subAbsenceTeacher" style="margin-bottom: 6px;">2. Giáo viên vắng mặt</label>
+                                <select id="subAbsenceTeacher" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%; height: 38px;" onchange="analyzeSubstituteSlots()">
+                                    <!-- Dynamic list of teachers -->
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-primary" onclick="analyzeSubstituteSlots()" style="padding: 10px 16px; font-size: 0.85rem; height: 38px;">
+                                    <span class="material-icons-round" style="font-size: 1.1rem; vertical-align: middle;">analytics</span> Phân tích
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Analysis Results Container -->
+                        <div id="subAffectedSlotsHeader" style="margin-bottom: 12px; display: none;">
+                            <h3 style="font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: var(--primary-light);">
+                                Lịch Dạy Bị Ảnh Hưởng & Gợi Ý Giáo Viên Thay Thế
+                            </h3>
+                        </div>
+                        <div id="subAffectedSlotsContainer" style="display: flex; flex-direction: column; gap: 16px;">
+                            <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 30px;">
+                                Vui lòng chọn ngày vắng mặt và giáo viên để bắt đầu phân tích gợi ý dạy thay.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Substitution Log -->
+                    <div class="glass-card">
+                        <div style="margin-bottom: 20px;">
+                            <h2>Lịch Sử Dạy Thay Đã Xếp</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">
+                                Danh sách các lượt dạy thay đã được phân công trong tổ chuyên môn.
+                            </p>
+                        </div>
+                        <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table" style="font-size: 0.82rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th>Tiết & Lớp</th>
+                                        <th>Môn</th>
+                                        <th>GV Vắng</th>
+                                        <th>GV Thay</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subHistoryTableBody">
+                                    <!-- Dynamic log rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Thời Khóa Biểu Tổ -->
+            <div id="groupTimetableTab" class="tab-content">
+                <div class="glass-card">
+                    <!-- Print Header for PDF / In ấn -->
+                    <div class="print-header" id="groupPrintHeader" style="text-align: center; margin-bottom: 20px; display: none;">
+                        <h2 id="groupPrintTitle" style="font-weight: bold; margin-bottom: 6px;">THỜI KHÓA BIỂU TỔ CHUYÊN MÔN</h2>
+                        <p id="groupPrintSubtitle" style="font-size: 0.95rem; color: #374151; font-weight: 500;"></p>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h2 id="groupTimetableHeaderTitle" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Thời Khóa Biểu Tổ Chuyên Môn</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; margin-bottom: 0;">
+                                Xem lịch dạy và xuất thời khóa biểu chính thức của các giáo viên trong tổ chuyên môn.
+                            </p>
+                        </div>
+                        <!-- Action Buttons for Group Timetable Export -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-success" onclick="exportGroupTimetableExcel()" id="btnExportGroupTimetableExcel" style="display: flex; align-items: center; gap: 6px;">
+                                <span class="material-icons-round">table_view</span> Xuất Excel TKB Tổ (.xls)
+                            </button>
+                            <button class="btn btn-primary" onclick="printGroupTimetablePDF()" style="display: flex; align-items: center; gap: 6px; background: var(--primary);">
+                                <span class="material-icons-round">print</span> In / Lưu PDF TKB Tổ
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Banner thông tin TKB áp dụng -->
+                    <div id="groupTKBStatusBanner" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; padding: 12px 18px; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: #fef08a; font-size: 0.88rem; font-weight: 500;">
+                            <span class="material-icons-round" style="color: #facc15; font-size: 1.25rem;">event_available</span>
+                            <span id="groupTKBApplyDateText">Thời khóa biểu chính thức của nhà trường</span>
+                        </div>
+                        <div id="groupTKBTotalPeriodsBadge" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(79, 70, 229, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 20px; color: var(--primary-light); font-size: 0.85rem; font-weight: 600;">
+                            <span class="material-icons-round" style="font-size: 1.05rem;">school</span>
+                            <span id="groupTKBTotalPeriodsText">Tổng số: 0 tiết / tuần</span>
+                        </div>
+                    </div>
+
+                    <!-- Thanh điều khiển chọn Tuần và chọn Giáo viên -->
+                    <div class="view-controls" style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; background: rgba(15, 23, 42, 0.4); padding: 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center;" id="groupWeekSelectWrapper">
+                            <label for="groupWeekSelect" style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">Đợt TKB / Tuần:</label>
+                            <select id="groupWeekSelect" class="form-control" style="width: 220px; padding: 6px 10px; height: 34px; font-size: 0.85rem;" onchange="onGroupWeekChange()">
+                                <!-- Dynamic weekly options -->
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label for="groupTeacherFilterSelect" style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">Xem giáo viên:</label>
+                            <select id="groupTeacherFilterSelect" class="form-control" style="width: 240px; padding: 6px 10px; height: 34px; font-size: 0.85rem;" onchange="onGroupTeacherSelectChange()">
+                                <option value="all">-- Tất cả giáo viên trong tổ --</option>
+                                <!-- Dynamic teachers of group -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Bảng Thống kê TKB Tổ Viên -->
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="font-size: 1.05rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+                            <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.2rem;">format_list_bulleted</span>
+                            Bảng Tổng Hợp Tiết Dạy TKB Các Thành Viên Trong Tổ
+                        </h3>
+                        <div class="table-container" style="overflow-x: auto;">
+                            <table class="table" style="font-size: 0.85rem; width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px; text-align: center;">STT</th>
+                                        <th>Họ và tên</th>
+                                        <th style="text-align: center;">Tên viết tắt</th>
+                                        <th style="text-align: center;">Định mức</th>
+                                        <th style="text-align: center;">Tiết TKB</th>
+                                        <th style="text-align: center;">Chênh lệch</th>
+                                        <th style="text-align: center;">Buổi dạy</th>
+                                        <th style="text-align: center;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="groupTimetableStatsTableBody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Lưới Thời Khóa Biểu (Preview) -->
+                    <div id="groupTimetableGridSection">
+                        <h3 style="font-size: 1.05rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+                            <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.2rem;">grid_view</span>
+                            <span id="groupTimetableGridHeading">Lịch Giảng Dạy Chi Tiết</span>
+                        </h3>
+                        <div class="timetable-grid-view" id="groupTimetableGridContainer" style="overflow-x: auto;">
+                            <!-- Dynamic timetable tables -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN DASHBOARD WORKSPACE ================= -->
+        <section id="adminDashboard" class="dashboard">
+            <!-- Dynamic tab buttons arranged in scientific sequencing -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchAdminTab('schoolSetupTab')">1. Cấu Hình Trường Học</button>
+                <button class="tab-btn" onclick="switchAdminTab('staffSetupTab')">2. Nhân Sự & Tài Khoản</button>
+                <button class="tab-btn" onclick="switchAdminTab('curriculumTab')">3. Chương Trình Học & Số Tiết</button>
+                <button class="tab-btn" onclick="switchAdminTab('mergeTab')">4. Gộp Phân Công & FET CSV</button>
+                <button class="tab-btn" onclick="switchAdminTab('fetConverterTab')">5. Chuyển Đổi FET Sang Excel</button>
+            </div>
+
+            <!-- Tab 1: School Setup -->
+            <div id="schoolSetupTab" class="tab-content active">
+                <div class="flex-row-wrap">
+                    <!-- Column Left: Global Subjects Directory (1.1) -->
+                    <div class="glass-card flex-col-50">
+                        <h2>1.1. Quản Lý Danh Mục Môn Học & Nhiệm Vụ Kiêm Nhiệm</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Đăng ký danh mục môn học và nhiệm vụ kiêm nhiệm toàn trường.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="newGlobalSubName" class="form-control" placeholder="Tên môn học/nhiệm vụ (Toán, Lý, Chủ nhiệm, Tổ trưởng...)" style="flex:1;">
+                                <button class="btn btn-primary" onclick="addGlobalSubject()" style="width: 110px; font-size: 0.85rem; padding: 8px;">Khai báo</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; gap: 12px; flex-wrap: wrap;">
+                            <h3 style="margin: 0; font-size: 1rem;">Danh Mục Môn Học & Nhiệm Vụ Đã Đăng Ký</h3>
+                            <input type="text" id="searchGlobalSubjectListName" class="form-control" placeholder="Tìm kiếm môn..." style="width: 140px; padding: 4px 8px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" oninput="renderGlobalSubjects()">
+                        </div>
+                        <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">STT</th>
+                                        <th>Tên môn / nhiệm vụ</th>
+                                        <th style="width: 140px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="globalSubjectListTable">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Column Right: Groups (1.2) -->
+                    <div class="glass-card flex-col-50">
+                        <h2>1.2. Quản Lý Tổ Chuyên Môn</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Thiết lập các tổ bộ môn trong hội đồng sư phạm nhà trường.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="newGroupName" class="form-control" placeholder="Tên tổ chuyên môn (Ví dụ: Tổ Toán - Tin)..." style="flex:1;">
+                                <button class="btn btn-primary" onclick="addSubjectGroup()" style="width: 120px;">Thêm tổ</button>
+                            </div>
+                        </div>
+                        <h3 style="margin: 16px 0 8px 0; font-size: 1rem;">Danh Sách Tổ Chuyên Môn</h3>
+                        <div style="overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">STT</th>
+                                        <th>Tên tổ chuyên môn</th>
+                                        <th style="width: 140px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="groupListTable">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Column Bottom/Left: Classes (1.3) -->
+                    <div class="glass-card flex-col-50">
+                        <h2>1.3. Quản Lý Khối Lớp & Lớp Học</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Khai báo danh sách các lớp học và giáo viên chủ nhiệm.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <input type="text" id="newClassName" class="form-control" placeholder="Tên lớp (Ví dụ: 6A1)..." style="flex: 1.5; min-width: 120px;">
+                                <select id="newClassGrade" class="form-control" style="flex: 1; min-width: 90px;">
+                                    <option value="6">Khối 6</option>
+                                    <option value="7">Khối 7</option>
+                                    <option value="8">Khối 8</option>
+                                    <option value="9">Khối 9</option>
+                                    <option value="10">Khối 10</option>
+                                    <option value="11">Khối 11</option>
+                                    <option value="12">Khối 12</option>
+                                </select>
+                                <select id="newClassSession" class="form-control" style="flex: 1; min-width: 100px;">
+                                    <option value="Tự động">Buổi (Tự động)</option>
+                                    <option value="sáng">Buổi Sáng</option>
+                                    <option value="chiều">Buổi Chiều</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 4px;">
+                                <button class="btn btn-primary" onclick="addClass()" style="flex: 1;">Thêm lớp</button>
+                                <button class="btn btn-secondary" onclick="downloadClassesExcelTemplate()">
+                                    <span class="material-icons-round" style="font-size:1.1rem;">download</span> Tải file mẫu
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="dropzone" onclick="document.getElementById('classesExcelFileInput').click();">
+                            <span class="material-icons-round icon">grid_on</span>
+                            <p>Nhập danh sách lớp học từ Excel (.xlsx)</p>
+                            <input type="file" id="classesExcelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importClassesExcel(event)">
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; gap: 12px; flex-wrap: wrap;">
+                            <h3 style="margin: 0; font-size: 1rem;">Danh Sách Lớp Học</h3>
+                            <input type="text" id="searchClassListName" class="form-control" placeholder="Tìm kiếm lớp..." style="width: 140px; padding: 4px 8px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" oninput="renderClasses()">
+                        </div>
+                        <div style="overflow-x: auto; max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">STT</th>
+                                        <th>Tên lớp</th>
+                                        <th>Khối</th>
+                                        <th>Buổi</th>
+                                        <th style="width: 140px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="classListTable">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Staff & Accounts -->
+            <div id="staffSetupTab" class="tab-content">
+                <div class="flex-row-wrap">
+                    <!-- Column Left: Teachers (2.1) -->
+                    <div class="glass-card flex-col-50" style="flex: 1 1 55%; min-width: 320px;">
+                        <h2>2.1. Quản Lý Nhân Sự Giáo Viên</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Khai báo danh sách giáo viên, môn dạy chéo tổ, và định mức tiết dạy giảm trừ.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="newTeacherFullName" class="form-control" placeholder="Họ và tên giáo viên..." style="flex: 2;" oninput="autoGenerateShortName(this.value)">
+                                <input type="text" id="newTeacherShort" class="form-control" placeholder="Tên viết tắt..." style="flex: 1;">
+                                <select id="newTeacherGroupSelect" class="form-control" style="flex: 1.5; min-width: 130px;">
+                                    <!-- Dynamic groups -->
+                                </select>
+                            </div>
+                            
+                            <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 4px;">
+                                <button class="btn btn-primary" onclick="addTeacherManual()" style="flex: 1;">Thêm giáo viên</button>
+                                <button class="btn btn-secondary" onclick="downloadTeachersExcelTemplate()">
+                                    <span class="material-icons-round" style="font-size:1.1rem;">download</span> Tải file mẫu
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="dropzone" onclick="document.getElementById('teachersExcelFileInput').click();">
+                            <span class="material-icons-round icon">grid_on</span>
+                            <p>Nhập danh sách giáo viên từ Excel (.xlsx)</p>
+                            <input type="file" id="teachersExcelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importTeachersExcel(event)">
+                        </div>
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px; margin-bottom: 16px;">
+                            <input type="checkbox" id="overwriteExistingTeachersCheck" style="cursor: pointer; width: 14px; height: 14px;">
+                            <label for="overwriteExistingTeachersCheck" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; user-select: none;">Cập nhật/Ghi đè thông tin nếu giáo viên đã tồn tại</label>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; gap: 12px; flex-wrap: wrap;">
+                            <h3 style="font-size: 1rem; margin: 0;">Danh Sách Giáo Viên</h3>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="searchTeacherListName" class="form-control" placeholder="Tìm tên/viết tắt..." style="width: 150px; padding: 4px 8px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" oninput="renderTeachers()">
+                                <label for="filterTeacherListGroup" style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">Lọc tổ:</label>
+                                <select id="filterTeacherListGroup" class="form-control" style="width: 140px; padding: 4px 8px; height: 28px; font-size: 0.8rem;" onchange="renderTeachers()">
+                                    <option value="all">Tất cả các tổ</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteAllTeachers()" style="padding: 5px 12px; font-size: 0.8rem; gap: 4px;">
+                                <span class="material-icons-round" style="font-size: 1rem;">delete_sweep</span> Xóa tất cả
+                            </button>
+                        </div>
+                        <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">STT</th>
+                                        <th>Họ và tên</th>
+                                        <th>Viết tắt</th>
+                                        <th>Tổ chuyên môn</th>
+                                        <th style="width: 140px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teachersListTable">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Column Right: Accounts -->
+                    <div class="glass-card flex-col-50">
+                        <h2>2.2. Cấp Tài Khoản Cho Tổ Trưởng</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Cung cấp quyền truy cập riêng cho từng tổ trưởng để phân công nội bộ tổ.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="newAccUsername" class="form-control" placeholder="Tên đăng nhập..." style="flex:1;">
+                                <input type="password" id="newAccPassword" class="form-control" placeholder="Mật khẩu..." style="flex:1;">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <select id="newAccGroup" class="form-control" style="flex:2;">
+                                    <!-- Dynamic -->
+                                </select>
+                                <button class="btn btn-primary" onclick="addLeaderAccount()" style="flex: 1;">Cấp tài khoản</button>
+                            </div>
+                        </div>
+                        <h3 style="margin: 16px 0 8px 0; font-size: 1rem;">Danh Sách Tài Khoản Tổ Trưởng</h3>
+                        <div style="overflow-x: auto; max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên đăng nhập</th>
+                                        <th>Mật khẩu</th>
+                                        <th>Tổ chuyên môn quản lý</th>
+                                        <th style="width: 140px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountListTable">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Curriculum & Periods -->
+            <div id="curriculumTab" class="tab-content">
+                <div class="flex-row-wrap">
+                    <!-- Column Left: Subject Distribution Config by Grade (3.1) -->
+                    <div class="glass-card flex-col-50" style="flex: 1 1 48%; min-width: 320px;">
+                        <h2>3.1. Cấu Hình Số Tiết Dạy Theo Khối</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Quy định định mức phân phối số tiết học trên tuần của từng môn theo khối.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px;">
+                                <select id="newSubNameSelect" class="form-control" style="flex:2;">
+                                    <!-- Dynamic -->
+                                </select>
+                                <select id="newSubGrade" class="form-control" style="flex:1;">
+                                    <option value="all">Tất cả các khối (6-12)</option>
+                                    <option value="6">Khối 6</option>
+                                    <option value="7">Khối 7</option>
+                                    <option value="8">Khối 8</option>
+                                    <option value="9">Khối 9</option>
+                                    <option value="10">Khối 10</option>
+                                    <option value="11">Khối 11</option>
+                                    <option value="12">Khối 12</option>
+                                </select>
+                                <input type="number" id="newSubPeriods" class="form-control" min="1" max="10" value="4" style="width: 80px;" placeholder="Số tiết...">
+                            </div>
+                            <div style="display: flex; gap: 8px; justify-content: space-between;">
+                                <button class="btn btn-primary" onclick="addSubjectConfig()" style="flex: 1;">Áp dụng số tiết</button>
+                                <button class="btn btn-secondary" onclick="downloadSubjectsExcelTemplate()">
+                                    <span class="material-icons-round" style="font-size:1.1rem;">download</span> Tải file mẫu
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="dropzone" onclick="document.getElementById('subjectsExcelFileInput').click();">
+                            <span class="material-icons-round icon">grid_on</span>
+                            <p>Nhập phân phối chương trình môn học từ Excel (.xlsx)</p>
+                            <input type="file" id="subjectsExcelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importSubjectsExcel(event)">
+                        </div>
+
+                        <h3 style="margin: 16px 0 8px 0; font-size: 1rem;">Bảng Phân Phối Số Tiết Đã Thiết Lập</h3>
+                        <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">STT</th>
+                                        <th>Tên môn</th>
+                                        <th>Khối</th>
+                                        <th>Số tiết</th>
+                                        <th style="width: 140px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectsListTable">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Column Right: Duty Configuration (3.2) -->
+                    <div class="glass-card flex-col-50" style="flex: 1 1 48%; min-width: 320px;">
+                        <h2>3.2. Cấu Hình Số Tiết Hoạt Động Kiêm Nhiệm</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Quy định định mức số tiết học/tuần cho các hoạt động kiêm nhiệm (không có lớp).</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px;">
+                                <select id="newDutyNameSelect" class="form-control" style="flex:2;">
+                                    <!-- Dynamic -->
+                                </select>
+                                <input type="number" id="newDutyPeriods" class="form-control" min="1" max="15" value="4" style="width: 80px;" placeholder="Số tiết...">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-primary" onclick="addDutyConfig()" style="flex: 1;">Khai báo số tiết</button>
+                            </div>
+                        </div>
+
+                        <h3 style="margin: 16px 0 8px 0; font-size: 1rem;">Danh Sách Hoạt Động Kiêm Nhiệm</h3>
+                        <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">STT</th>
+                                        <th>Tên hoạt động</th>
+                                        <th>Số tiết</th>
+                                        <th style="width: 140px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dutiesListTable">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Merge & FET Export -->
+            <div id="mergeTab" class="tab-content glass-card">
+                <h2>Tổng Hợp Phân Công & Xuất File Hoạt Động Cho FET</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+                    Dữ liệu phân công từ các tổ trưởng được tự động đồng bộ qua hệ thống thời gian thực. Tại đây, Admin phê duyệt, thiết lập quy tắc chia tiết và tải file CSV để import vào phần mềm xếp thời khóa biểu tự động FET.
+                </p>
+                <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click();">
+                    <span class="material-icons-round icon">cloud_upload</span>
+                    <p>Tải lên tệp phân công ngoại tuyến (.json) từ các tổ (nếu không có kết nối Internet)</p>
+                    <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFilesUpload(event)">
+                </div>
+                <div id="uploadStatus" style="margin-top: 12px; font-weight: 500; font-size: 0.95rem;"></div>
+
+                <div style="margin-top: 32px;">
+                    <h3>Thiết Lập Quy Tắc Chia Tách Tiết Dạy (FET Split Rules)</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+                        Tách tổng số tiết trên tuần của môn học thành các buổi (Ví dụ môn 4 tiết/tuần nên chia thành 2+2 tức 2 buổi học tiết đôi để xếp lịch tối ưu).
+                    </p>
+                    <table class="matrix-table" style="max-width: 650px;">
+                        <thead>
+                            <tr>
+                                <th>Tổng số tiết học/tuần</th>
+                                <th>Quy tắc chia tách buổi học</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>5 tiết/tuần (Toán/Văn 9...)</td>
+                                <td>
+                                    <select id="splitRule5" class="form-control" style="padding: 6px;">
+                                        <option value="2+2+1">2+2+1 (2 buổi tiết đôi, 1 buổi tiết đơn - Khuyên dùng)</option>
+                                        <option value="2+1+1+1">2+1+1+1 (1 buổi tiết đôi, 3 buổi tiết đơn)</option>
+                                        <option value="1+1+1+1+1">1+1+1+1+1 (5 buổi tiết đơn)</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4 tiết/tuần</td>
+                                <td>
+                                    <select id="splitRule4" class="form-control" style="padding: 6px;">
+                                        <option value="2+2">2+2 (2 buổi tiết đôi - Khuyên dùng)</option>
+                                        <option value="2+1+1">2+1+1 (1 buổi tiết đôi, 2 buổi tiết đơn)</option>
+                                        <option value="1+1+1+1">1+1+1+1 (4 buổi tiết đơn)</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3 tiết/tuần</td>
+                                <td>
+                                    <select id="splitRule3" class="form-control" style="padding: 6px;">
+                                        <option value="2+1">2+1 (1 buổi tiết đôi, 1 buổi tiết đơn - Khuyên dùng)</option>
+                                        <option value="1+1+1">1+1+1 (3 buổi tiết đơn)</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2 tiết/tuần</td>
+                                <td>
+                                    <select id="splitRule2" class="form-control" style="padding: 6px;">
+                                        <option value="2">2 (1 buổi học tiết đôi)</option>
+                                        <option value="1+1">1+1 (2 buổi học tiết đơn)</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 32px; margin-bottom: 24px;">
+                    <h3 style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Bảng Tổng Hợp Phân Công Toàn Trường</span>
+                        <span id="mergedAssignmentsCountText" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);"></span>
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+                        Tự động tổng hợp dữ liệu thời gian thực từ phân công chuyên môn của tất cả các tổ để Admin dễ dàng phê duyệt.
+                    </p>
+
+                    <!-- Bộ lọc bảng tổng hợp phân công -->
+                    <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; background: rgba(30, 41, 59, 0.4); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                            <span class="material-icons-round" style="font-size: 1.1rem;">filter_alt</span> Lọc tìm kiếm:
+                        </span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label for="filterMergedGroup" style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">Tổ chuyên môn:</label>
+                            <select id="filterMergedGroup" class="form-control" style="width: 180px; padding: 6px; height: 32px; font-size: 0.8rem;" onchange="renderMergedAssignments()">
+                                <option value="all">Tất cả các tổ</option>
+                                <!-- Dynamic groups -->
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label for="filterMergedStatus" style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">Trạng thái:</label>
+                            <select id="filterMergedStatus" class="form-control" style="width: 180px; padding: 6px; height: 32px; font-size: 0.8rem;" onchange="renderMergedAssignments()">
+                                <option value="all">Tất cả trạng thái</option>
+                                <option value="unassigned">Chưa phân công (Thiếu tiết)</option>
+                                <option value="assigned">Đã phân công đủ</option>
+                                <option value="mismatch">Lệch số tiết</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label for="filterMergedTeacher" style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">Giáo viên:</label>
+                            <select id="filterMergedTeacher" class="form-control" style="width: 180px; padding: 6px; height: 32px; font-size: 0.8rem;" onchange="renderMergedAssignments()">
+                                <option value="all">Tất cả giáo viên</option>
+                            </select>
+                        </div>
+                        <span id="mergedTeacherPeriodsText" style="font-size: 0.85rem; font-weight: 600; color: var(--primary-light); display: none; margin-left: 8px; align-items: center; gap: 4px;"></span>
+                        <button class="btn btn-secondary" onclick="clearMergedFilters()" style="padding: 4px 12px; font-size: 0.8rem; height: 32px; display: flex; align-items: center; gap: 4px;">
+                            <span class="material-icons-round" style="font-size: 1rem;">clear_all</span> Làm mới bộ lọc
+                        </button>
+                    </div>
+
+                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">STT</th>
+                                    <th>Lớp</th>
+                                    <th>Khối</th>
+                                    <th>Môn học</th>
+                                    <th>Số tiết (Phân công / Chuẩn)</th>
+                                    <th>Giáo viên phụ trách</th>
+                                    <th>Tổ chuyên môn</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mergedAssignmentsListTable">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Theo dõi trạng thái chốt phân công của các tổ -->
+                <div style="margin-top: 32px; padding: 20px; border-radius: 12px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 24px;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.25rem;">fact_check</span>
+                        Trạng Thái Chốt Phân Công Từ Các Tổ Chuyên Môn
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 16px;">
+                        Danh sách các tổ chuyên môn và tình trạng xác nhận chốt số liệu phân công gửi về nhà trường.
+                    </p>
+                    <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>Tên tổ chuyên môn</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thời gian chốt</th>
+                                    <th>Người xác nhận</th>
+                                    <th style="width: 160px; text-align: center;">Hành động (Admin)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminGroupLockStatusTable">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quản lý phiên bản phân công chuyên môn -->
+                <div style="margin-top: 32px; padding: 20px; border-radius: 12px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 24px;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.25rem;">history_edu</span>
+                        Quản Lý Các Đợt Phân Công (Lịch Sử Phiên Bản)
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 16px;">
+                        Lưu trữ và khôi phục các đợt phân công chuyên môn khác nhau trong năm học (ví dụ: Đầu năm, Sau khi đổi TKB giữa kỳ...).
+                    </p>
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <input type="text" id="newVersionName" class="form-control" placeholder="Nhập tên đợt phân công mới (ví dụ: Đợt 1 Học kỳ I, Giữa kỳ II)..." style="flex:1; min-width: 250px;">
+                        <button class="btn btn-primary" onclick="saveAssignmentVersion()" style="white-space: nowrap;">
+                            <span class="material-icons-round" style="font-size: 1.1rem;">save</span> Lưu đợt hiện tại
+                        </button>
+                    </div>
+                    <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center;">STT</th>
+                                    <th>Tên đợt phân công</th>
+                                    <th>Thời gian lưu</th>
+                                    <th style="width: 280px; text-align: center;">Thao tác (Admin)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignmentVersionsTable">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top: 32px; text-align: right; display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="exportAllAssignmentsExcel()">
+                        <span class="material-icons-round">table_view</span> Xuất Excel Phân Công Toàn Trường (.xlsx)
+                    </button>
+                    <button class="btn btn-primary" onclick="exportFETCSV()">
+                        <span class="material-icons-round">receipt_long</span> Xuất file CSV Hoạt Động cho FET
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 5: Dedicated FET to Excel Converter -->
+            <div id="fetConverterTab" class="tab-content glass-card" style="display: none;">
+                <div class="tab-header" style="margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 16px;">
+                    <h2 style="display: flex; align-items: center; gap: 10px; color: var(--text-main);">
+                        <span class="material-icons-round" style="color: var(--primary-light); font-size: 2rem;">transform</span>
+                        5. Chuyển Đổi File Thời Khóa Biểu FET Sang Excel
+                    </h2>
+                    <p class="tab-desc" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 6px;">
+                        Tải lên tệp kết quả thời khóa biểu từ phần mềm FET (.fet hoặc .xml) để phân tích chi tiết dữ liệu và xuất bản thành file Excel tổng hợp 3 Sheets đẹp mắt.
+                    </p>
+                </div>
+
+                <!-- Drag & Drop Upload Zone -->
+                <div class="dropzone" id="fetConverterDropzone" onclick="document.getElementById('fetConverterInput').click();" style="margin-bottom: 24px; padding: 48px 24px; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: var(--transition); background: rgba(30, 41, 59, 0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+                    <span class="material-icons-round icon" style="font-size: 3.5rem; color: var(--primary-light); transition: var(--transition);">cloud_upload</span>
+                    <div>
+                        <p style="font-weight: 600; font-size: 1.15rem; color: var(--text-main); margin-bottom: 6px;">Kéo thả hoặc Click để chọn tệp kết quả từ FET</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Chấp nhận tệp dữ liệu thời khóa biểu dạng .fet hoặc tệp XML kết quả từ FET (_subgroups.xml, _teachers.xml)</p>
+                    </div>
+                    <input type="file" id="fetConverterInput" accept=".fet,.xml" style="display: none;" onchange="handleFetConverterUpload(event)">
+                </div>
+
+                <!-- Instructions Alert Box -->
+                <div class="instruction-box" style="background: rgba(79, 70, 229, 0.1); border-left: 4px solid var(--primary-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                    <h4 style="color: var(--primary-light); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.95rem; font-weight: 600;">
+                        <span class="material-icons-round" style="font-size: 1.2rem;">info</span> Hướng dẫn lấy file kết quả từ FET
+                    </h4>
+                    <ul style="list-style-type: none; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; padding-left: 4px; line-height: 1.4;">
+                        <li>📅 <strong>Bước 1:</strong> Sau khi xếp thời khóa biểu thành công trong phần mềm FET, hãy mở thư mục lưu kết quả (thường là thư mục <code>fet-results/timetables/</code>).</li>
+                        <li>📂 <strong>Bước 2:</strong> Chọn tệp có đuôi <code>_data_and_timetable.fet</code> (Tệp đã được xếp lịch đầy đủ cho tất cả các tiết).</li>
+                        <li>💡 <strong>Mẹo:</strong> Bạn cũng có thể kéo thả tệp XML phân rã thời khóa biểu học sinh (<code>*_subgroups.xml</code>) hoặc giáo viên (<code>*_teachers.xml</code>) vào đây để chuyển đổi trực tiếp.</li>
+                    </ul>
+                </div>
+
+                <!-- Cấu hình đợt TKB theo tuần và ngày áp dụng cho học sinh / giáo viên -->
+                <div style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(255, 255, 255, 0.05); padding: 18px; border-radius: 12px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
+                    <label for="timetableWeekNameInput" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.25rem;">date_range</span>
+                        Cấu hình Đợt Thời Khóa Biểu & Thời Gian Áp Dụng:
+                    </label>
+                    <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0;">
+                        Đặt tên đợt TKB theo tuần (Ví dụ: "Tuần 23", "Học kỳ II (Tuần 19 - 35)") để lưu trữ và quản lý đa tuần khoa học.
+                    </p>
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 4px;">
+                        <input type="text" id="timetableWeekNameInput" class="form-control" placeholder="Tên đợt TKB/Tuần (VD: Tuần 23, Học kỳ II...)" style="flex: 1; min-width: 220px; font-size: 0.85rem; padding: 8px 12px; height: 36px;">
+                        <input type="text" id="timetableApplyDateInput" class="form-control" placeholder="Ghi chú áp dụng (VD: Áp dụng từ Thứ Hai 02/03/2026...)" style="flex: 1.5; min-width: 260px; font-size: 0.85rem; padding: 8px 12px; height: 36px;">
+                        <button class="btn btn-secondary" onclick="saveTimetableApplyDateOnly()" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; height: 36px;">
+                            <span class="material-icons-round" style="font-size: 1.15rem;">save</span> Chỉ cập nhật ghi chú
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Preview (hidden by default) -->
+                <div id="fetConverterPreview" style="display: none;">
+                    <hr style="border: 0; height: 1px; background: rgba(255, 255, 255, 0.08); margin: 32px 0 24px 0;">
+                    
+                    <h3 style="margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round" style="color: var(--primary-light);">insights</span>
+                        Báo Cáo Phân Tích Dữ Liệu FET
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px;">
+                        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Đơn vị chủ quản</span>
+                            <span id="fetInstName" style="font-size: 0.95rem; font-weight: 600; color: var(--text-main); word-break: break-word; line-height: 1.4;">N/A</span>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px; text-align: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Lớp Học</span>
+                            <span id="fetClassCount" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-light);">0</span>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px; text-align: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Giáo Viên</span>
+                            <span id="fetTeacherCount" style="font-size: 1.8rem; font-weight: 700; color: var(--secondary-light, #f43f5e);">0</span>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px; text-align: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Môn Học</span>
+                            <span id="fetSubjectCount" style="font-size: 1.8rem; font-weight: 700; color: var(--warning);">0</span>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px; text-align: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Tiết Phân Bổ</span>
+                            <span id="fetSlotCount" style="font-size: 1.8rem; font-weight: 700; color: var(--success);">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Centered premium action button -->
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; margin-bottom: 32px;">
+                        <div style="display: flex; gap: 16px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                            <button class="btn btn-success" onclick="downloadParsedFetExcel()" style="padding: 14px 28px; font-size: 1.05rem; font-weight: 600; border-radius: 12px; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                <span class="material-icons-round" style="font-size: 1.4rem;">file_download</span> Tải Excel Tổng Hợp (.xlsx)
+                            </button>
+                            <button class="btn btn-primary" onclick="publishUploadedTimetable()" style="padding: 14px 28px; font-size: 1.05rem; font-weight: 600; border-radius: 12px; box-shadow: 0 8px 24px rgba(79, 70, 229, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--primary);">
+                                <span class="material-icons-round" style="font-size: 1.4rem;">publish</span> Công bố TKB lên Hệ thống
+                            </button>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                            <span class="material-icons-round" style="font-size: 1rem; color: var(--success);">verified</span>
+                            Thời khóa biểu xuất bản chứa 3 trang tính gộp ô dọc: Buổi sáng, Buổi chiều, và Giáo viên riêng.
+                        </p>
+                    </div>
+
+                    <!-- Class List Badge Preview -->
+                    <div style="background: rgba(30, 41, 59, 0.5); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.04);">
+                        <p style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-icons-round" style="font-size: 1.1rem; color: var(--primary-light);">people</span>
+                            Danh sách các lớp học được phân tích từ file:
+                        </p>
+                        <div id="fetClassListPreview" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 180px; overflow-y: auto; padding: 4px;">
+                            <!-- Classes Badges will go here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng Quản Lý Danh Sách Thời Khóa Biểu Theo Tuần (Admin) -->
+                <div style="margin-top: 32px; padding: 20px; border-radius: 12px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 24px;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+                        <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.25rem;">event_note</span>
+                        Quản Lý Danh Sách Thời Khóa Biểu Theo Tuần
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 16px;">
+                        Lưu trữ và quản lý các đợt TKB theo tuần trong năm học. Admin có thể kích hoạt đợt TKB bất kỳ làm TKB chính thức toàn trường.
+                    </p>
+                    <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center;">STT</th>
+                                    <th>Tên đợt TKB / Tuần</th>
+                                    <th>Ghi chú áp dụng</th>
+                                    <th>Thời gian công bố</th>
+                                    <th style="width: 150px; text-align: center;">Trạng thái</th>
+                                    <th style="width: 260px; text-align: center;">Thao tác (Admin)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weeklyTimetableTableBody">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Reusable Modal Dialog System -->
+    <div id="customModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Chỉnh Sửa Thông Tin</h3>
+                <button class="modal-close-btn" onclick="closeModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content injected dynamically -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- Action buttons injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Local Application Logic -->
+    <script src="app.js" defer></script>
+</body>
+</html>

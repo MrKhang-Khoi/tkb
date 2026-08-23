@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng Dẫn Lấy Cookie Zalo Cho Bot</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 30px 20px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 750px;
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid #334155;
+        }
+        h1 {
+            color: #38bdf8;
+            font-size: 1.5rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step {
+            margin-bottom: 24px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 16px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #38bdf8;
+        }
+        .step-title {
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .code-block {
+            background: #0f172a;
+            color: #a7f3d0;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-family: Consolas, monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            position: relative;
+            border: 1px solid #334155;
+            margin: 10px 0;
+        }
+        .btn-copy {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-copy:hover {
+            background: #0369a1;
+        }
+        .highlight {
+            color: #facc15;
+            font-weight: bold;
+        }
+        .note {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #fef08a;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Hướng Dẫn Cấu Hình Đăng Nhập Zalo Bot (Chỉ 1 Phút)</h1>
+        <p style="color: #94a3b8; line-height: 1.6;">Để Bot Zalo có thể hoạt động ổn định và tự động trả lời tin nhắn, bạn chỉ cần lấy Cookie đăng nhập một lần duy nhất từ tài khoản Zalo Web theo 3 bước sau:</p>
+
+        <div class="step">
+            <div class="step-title">👉 Bước 1: Mở Zalo Web trên trình duyệt</div>
+            <div>Mở trình duyệt (Chrome, Cốc Cốc, hoặc Edge) và đăng nhập vào: <a href="https://chat.zalo.me" target="_blank" style="color: #38bdf8; font-weight: bold;">https://chat.zalo.me</a></div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">👉 Bước 2: Bấm F12 để mở Console</div>
+            <div>Tại trang Zalo Web, bấm phím <span class="highlight">F12</span> (hoặc nhấp chuột phải bất kỳ đâu &rarr; chọn <i>Kiểm tra / Inspect</i>). Sau đó bấm vào tab <span class="highlight">Console</span>.</div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">👉 Bước 3: Dán mã lấy Cookie tự động</div>
+            <div>Bấm nút sao chép bên dưới, sau đó dán vào tab <b>Console</b> của Zalo Web và bấm <b>Enter</b>:</div>
+            
+            <div class="code-block" id="codeText">copy(JSON.stringify({ cookie: document.cookie, imei: localStorage.getItem('z_uuid') || localStorage.getItem('imei') || 'bot-zalo', userAgent: navigator.userAgent }, null, 2)); console.log('%cĐÃ COPY XONG! Hãy dán vào file credentials.json', 'color: lightgreen; font-size: 16px; font-weight: bold;');</div>
+            
+            <button class="btn-copy" onclick="copyScript()">📋 Sao chép đoạn mã</button>
+            <span id="copyNotice" style="color: #4ade80; margin-left: 10px; display: none; font-weight: bold;">Đã sao chép!</span>
+        </div>
+
+        <div class="step">
+            <div class="step-title">👉 Bước 4: Dán vào file credentials.json</div>
+            <div>Mở file <b style="color: #38bdf8;">credentials.json</b> trong thư mục <code>zalo-bot</code>, dán toàn bộ nội dung vừa copy (phím <span class="highlight">Ctrl + V</span>) và bấm <b>Lưu lại (Ctrl + S)</b>.</div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">👉 Bước 5: Bật Bot</div>
+            <div>Chạy lại file <b style="color: #38bdf8;">Chay_Bot_Zalo.bat</b> là Bot sẽ hoạt động ngay lập tức!</div>
+        </div>
+
+        <div class="note">
+            💡 <b>Lưu ý:</b> Cookie này giúp Bot đăng nhập an toàn từ chính tài khoản Zalo của bạn. Không chia sẻ file <code>credentials.json</code> cho người khác.
+        </div>
+    </div>
+
+    <script>
+        function copyScript() {
+            const text = document.getElementById('codeText').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const notice = document.getElementById('copyNotice');
+                notice.style.display = 'inline';
+                setTimeout(() => notice.style.display = 'none', 3000);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+zalo-bot/node_modules/
+
+# Private credentials
+zalo-bot/credentials.json
+
+# Test and scratch scripts
+_verify_new_features.js
+check_*.js
+_test_*.js
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
