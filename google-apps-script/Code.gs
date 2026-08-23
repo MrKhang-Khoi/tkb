@@ -90,7 +90,7 @@ function doPost(e) {
 }
 
 /**
- * 3. Tự động ghi dữ liệu Thời Khóa Biểu vào Google Sheets
+ * 3. Tự động ghi dữ liệu Thời Khóa Biểu vào Google Sheets với định dạng chuẩn
  */
 function syncDataToGoogleSheets(payload) {
   let ss = null;
@@ -99,8 +99,13 @@ function syncDataToGoogleSheets(payload) {
   } catch (e) {}
   
   if (!ss) {
-    // Tạo bảng tính mới nếu chưa gắn vào bảng tính nào
-    ss = SpreadsheetApp.create("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
+    // Tìm file đã tồn tại hoặc tạo mới
+    const files = DriveApp.getFilesByName("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
+    if (files.hasNext()) {
+      ss = SpreadsheetApp.open(files.next());
+    } else {
+      ss = SpreadsheetApp.create("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
+    }
   }
   
   const teachers = payload.teachers || [];
@@ -112,17 +117,30 @@ function syncDataToGoogleSheets(payload) {
   const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7"];
   const weekLabels = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
   
-  // Sheet 1: TKB Buổi Sáng
+  // -------------------------------------------------------------
+  // Sheet 1: TKB Buổi Sáng (31 Cột chuẩn)
+  // -------------------------------------------------------------
   let sheetMorning = ss.getSheetByName("TKB_Buoi_Sang");
   if (!sheetMorning) sheetMorning = ss.insertSheet("TKB_Buoi_Sang");
   sheetMorning.clear();
   
   const morningClasses = classes.filter(c => c && (c.session || "sáng").toLowerCase() === "sáng");
-  const morningRows = [
-    ["BẢNG THỜI KHÓA BIỂU BUỔI SÁNG - " + weekName.toUpperCase() + " (" + applyDate + ")"],
-    ["Lớp", "Thứ 2", "", "", "", "", "Thứ 3", "", "", "", "", "Thứ 4", "", "", "", "", "Thứ 5", "", "", "", "", "Thứ 6", "", "", "", "", "Thứ 7", "", "", "", ""],
-    ["", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5"]
-  ];
+  
+  // Tạo hàng tiêu đề đúng 31 phần tử
+  const morningTitleRow = new Array(31).fill("");
+  morningTitleRow[0] = "BẢNG THỜI KHÓA BIỂU BUỔI SÁNG - " + weekName.toUpperCase() + (applyDate ? " (" + applyDate + ")" : "");
+  
+  const morningHeaderDay = ["Lớp"];
+  weekLabels.forEach(lbl => {
+    morningHeaderDay.push(lbl, "", "", "", "");
+  });
+  
+  const morningHeaderPeriod = [""];
+  for (let d = 0; d < 6; d++) {
+    morningHeaderPeriod.push("T1", "T2", "T3", "T4", "T5");
+  }
+  
+  const morningRows = [morningTitleRow, morningHeaderDay, morningHeaderPeriod];
   
   morningClasses.forEach(c => {
     const row = [c.name];
@@ -130,7 +148,7 @@ function syncDataToGoogleSheets(payload) {
       for (let p = 1; p <= 5; p++) {
         if (timetable[c.name] && timetable[c.name][day] && timetable[c.name][day][p]) {
           const act = timetable[c.name][day][p];
-          row.push(act.subject + (act.teacher ? ` (${act.teacher})` : ""));
+          row.push(act.subject + (act.teacher ? "\n(" + act.teacher + ")" : ""));
         } else {
           row.push("");
         }
@@ -139,19 +157,57 @@ function syncDataToGoogleSheets(payload) {
     morningRows.push(row);
   });
   
-  sheetMorning.getRange(1, 1, morningRows.length, 31).setValues(morningRows);
+  if (morningRows.length > 0) {
+    const mRange = sheetMorning.getRange(1, 1, morningRows.length, 31);
+    mRange.setValues(morningRows);
+    mRange.setWrap(true);
+    mRange.setVerticalAlignment("middle");
+    mRange.setFontFamily("Roboto");
+    
+    // Gộp ô tiêu đề
+    sheetMorning.getRange(1, 1, 1, 31).merge()
+      .setFontWeight("bold")
+      .setFontSize(13)
+      .setHorizontalAlignment("center")
+      .setBackground("#dbeafe")
+      .setFontColor("#1e3a8a");
+      
+    // Gộp ô thứ
+    for (let i = 0; i < 6; i++) {
+      const colStart = 2 + (i * 5);
+      sheetMorning.getRange(2, colStart, 1, 5).merge()
+        .setFontWeight("bold")
+        .setHorizontalAlignment("center")
+        .setBackground("#f1f5f9");
+    }
+    
+    sheetMorning.getRange(3, 1, 1, 31)
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center")
+      .setBackground("#e2e8f0");
+      
+    sheetMorning.getRange(4, 1, morningClasses.length, 1)
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center")
+      .setBackground("#f8fafc");
+      
+    mRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
+    sheetMorning.autoResizeColumns(1, 31);
+  }
   
-  // Sheet 2: TKB Buổi Chiều
+  // -------------------------------------------------------------
+  // Sheet 2: TKB Buổi Chiều (31 Cột chuẩn)
+  // -------------------------------------------------------------
   let sheetAfternoon = ss.getSheetByName("TKB_Buoi_Chieu");
   if (!sheetAfternoon) sheetAfternoon = ss.insertSheet("TKB_Buoi_Chieu");
   sheetAfternoon.clear();
   
   const afternoonClasses = classes.filter(c => c && (c.session || "sáng").toLowerCase() === "chiều");
-  const afternoonRows = [
-    ["BẢNG THỜI KHÓA BIỂU BUỔI CHIỀU - " + weekName.toUpperCase() + " (" + applyDate + ")"],
-    ["Lớp", "Thứ 2", "", "", "", "", "Thứ 3", "", "", "", "", "Thứ 4", "", "", "", "", "Thứ 5", "", "", "", "", "Thứ 6", "", "", "", "", "Thứ 7", "", "", "", ""],
-    ["", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5", "T1", "T2", "T3", "T4", "T5"]
-  ];
+  
+  const afternoonTitleRow = new Array(31).fill("");
+  afternoonTitleRow[0] = "BẢNG THỜI KHÓA BIỂU BUỔI CHIỀU - " + weekName.toUpperCase() + (applyDate ? " (" + applyDate + ")" : "");
+  
+  const afternoonRows = [afternoonTitleRow, morningHeaderDay, morningHeaderPeriod];
   
   afternoonClasses.forEach(c => {
     const row = [c.name];
@@ -159,7 +215,7 @@ function syncDataToGoogleSheets(payload) {
       for (let p = 1; p <= 5; p++) {
         if (timetable[c.name] && timetable[c.name][day] && timetable[c.name][day][p]) {
           const act = timetable[c.name][day][p];
-          row.push(act.subject + (act.teacher ? ` (${act.teacher})` : ""));
+          row.push(act.subject + (act.teacher ? "\n(" + act.teacher + ")" : ""));
         } else {
           row.push("");
         }
@@ -168,19 +224,59 @@ function syncDataToGoogleSheets(payload) {
     afternoonRows.push(row);
   });
   
-  sheetAfternoon.getRange(1, 1, afternoonRows.length, 31).setValues(afternoonRows);
+  if (afternoonRows.length > 0) {
+    const aRange = sheetAfternoon.getRange(1, 1, afternoonRows.length, 31);
+    aRange.setValues(afternoonRows);
+    aRange.setWrap(true);
+    aRange.setVerticalAlignment("middle");
+    aRange.setFontFamily("Roboto");
+    
+    // Gộp ô tiêu đề
+    sheetAfternoon.getRange(1, 1, 1, 31).merge()
+      .setFontWeight("bold")
+      .setFontSize(13)
+      .setHorizontalAlignment("center")
+      .setBackground("#fef3c7")
+      .setFontColor("#92400e");
+      
+    // Gộp ô thứ
+    for (let i = 0; i < 6; i++) {
+      const colStart = 2 + (i * 5);
+      sheetAfternoon.getRange(2, colStart, 1, 5).merge()
+        .setFontWeight("bold")
+        .setHorizontalAlignment("center")
+        .setBackground("#f1f5f9");
+    }
+    
+    sheetAfternoon.getRange(3, 1, 1, 31)
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center")
+      .setBackground("#e2e8f0");
+      
+    sheetAfternoon.getRange(4, 1, afternoonClasses.length, 1)
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center")
+      .setBackground("#f8fafc");
+      
+    aRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
+    sheetAfternoon.autoResizeColumns(1, 31);
+  }
   
-  // Sheet 3: Danh sách Giáo viên & Lịch dạy
+  // -------------------------------------------------------------
+  // Sheet 3: Danh sách Giáo viên & Lịch dạy (10 Cột chuẩn)
+  // -------------------------------------------------------------
   let sheetTeachers = ss.getSheetByName("TKB_Giao_Vien");
   if (!sheetTeachers) sheetTeachers = ss.insertSheet("TKB_Giao_Vien");
   sheetTeachers.clear();
   
-  const teacherRows = [
-    ["DANH SÁCH THỜI KHÓA BIỂU GIÁO VIÊN - " + weekName.toUpperCase() + " (" + applyDate + ")"],
-    ["STT", "Họ và tên", "Tên viết tắt", "Tổ chuyên môn", "Lịch dạy Thứ 2", "Lịch dạy Thứ 3", "Lịch dạy Thứ 4", "Lịch dạy Thứ 5", "Lịch dạy Thứ 6", "Lịch dạy Thứ 7"]
-  ];
+  const teacherTitleRow = new Array(10).fill("");
+  teacherTitleRow[0] = "DANH SÁCH THỜI KHÓA BIỂU GIÁO VIÊN - " + weekName.toUpperCase() + (applyDate ? " (" + applyDate + ")" : "");
   
-  teachers.filter(t => t && t.fullName && t.shortName).forEach((t, idx) => {
+  const teacherHeader = ["STT", "Họ và tên", "Tên viết tắt", "Tổ chuyên môn", "Lịch dạy Thứ 2", "Lịch dạy Thứ 3", "Lịch dạy Thứ 4", "Lịch dạy Thứ 5", "Lịch dạy Thứ 6", "Lịch dạy Thứ 7"];
+  const teacherRows = [teacherTitleRow, teacherHeader];
+  
+  const validTeachers = teachers.filter(t => t && t.fullName && t.fullName.trim() !== "");
+  validTeachers.forEach((t, idx) => {
     const row = [idx + 1, t.fullName, t.shortName, t.group || ""];
     weekdays.forEach(day => {
       const slots = [];
@@ -198,13 +294,35 @@ function syncDataToGoogleSheets(payload) {
     teacherRows.push(row);
   });
   
-  sheetTeachers.getRange(1, 1, teacherRows.length, 10).setValues(teacherRows);
+  if (teacherRows.length > 0) {
+    const tRange = sheetTeachers.getRange(1, 1, teacherRows.length, 10);
+    tRange.setValues(teacherRows);
+    tRange.setWrap(true);
+    tRange.setVerticalAlignment("middle");
+    tRange.setFontFamily("Roboto");
+    
+    // Gộp tiêu đề
+    sheetTeachers.getRange(1, 1, 1, 10).merge()
+      .setFontWeight("bold")
+      .setFontSize(13)
+      .setHorizontalAlignment("center")
+      .setBackground("#dcfce7")
+      .setFontColor("#166534");
+      
+    sheetTeachers.getRange(2, 1, 1, 10)
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center")
+      .setBackground("#f1f5f9");
+      
+    tRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
+    sheetTeachers.autoResizeColumns(1, 10);
+  }
   
   return {
     status: "success",
     message: "Đã đồng bộ thành công lên Google Sheets!",
     spreadsheetUrl: ss.getUrl(),
-    teachersCount: teachers.length,
+    teachersCount: validTeachers.length,
     classesCount: classes.length,
     updatedAt: (new Date()).toLocaleString("vi-VN")
   };

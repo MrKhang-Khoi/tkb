@@ -8710,6 +8710,9 @@ async function syncTimetableToGoogleSheets() {
         
         const response = await fetch(webhookUrl, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            },
             body: JSON.stringify(payload)
         });
         
