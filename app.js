@@ -619,7 +619,10 @@ function refreshActiveViews() {
         initGroupDashboard(state.currentUser);
     }
     
-    // Tự động cập nhật view tra cứu công khai nếu phần tử đang hiển thị
+    // Tự động cập nhật view tra cứu công khai hoặc chuyển thẳng tới trang tra cứu nếu có tham số trên URL
+    if (!state.currentUser) {
+        checkUrlDirectLookup();
+    }
     const publicSec = document.getElementById('publicTimetableSection');
     if (publicSec && publicSec.style.display !== 'none') {
         updatePublicSearchDropdown();
@@ -6457,6 +6460,38 @@ function clearMergedFilters() {
     if (statusFilter) statusFilter.value = 'all';
     if (teacherFilter) teacherFilter.value = 'all';
     renderMergedAssignments();
+}
+
+function checkUrlDirectLookup() {
+    if (typeof window === 'undefined' || !window.location || !window.location.search) return;
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasLookup = urlParams.has('tra-cuu') || urlParams.has('lookup') || urlParams.has('gv') || urlParams.has('lop') || urlParams.has('t') || urlParams.has('c');
+        
+        if (hasLookup && !state.currentUser) {
+            showPublicTimetable();
+            const gv = urlParams.get('gv') || urlParams.get('t');
+            const lop = urlParams.get('lop') || urlParams.get('c');
+            const typeSelect = document.getElementById('publicSearchType');
+            const targetInput = document.getElementById('publicSearchTarget');
+            
+            if (gv && typeSelect && targetInput) {
+                typeSelect.value = 'teacher';
+                updatePublicSearchDropdown();
+                targetInput.value = gv;
+                targetInput.dataset.value = gv;
+                renderPublicTimetableGrid();
+            } else if (lop && typeSelect && targetInput) {
+                typeSelect.value = 'class';
+                updatePublicSearchDropdown();
+                targetInput.value = lop;
+                targetInput.dataset.value = lop;
+                renderPublicTimetableGrid();
+            }
+        }
+    } catch(e) {
+        console.warn("Lỗi phân tích URL tra cứu:", e);
+    }
 }
 
 function showPublicTimetable() {
