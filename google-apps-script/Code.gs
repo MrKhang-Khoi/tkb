@@ -4,17 +4,6 @@
  * ====================================================================================================
  * Tác giả: Hệ thống Xếp Thời Khóa Biểu FET
  * Nền tảng: Google Apps Script + Zalo Bot Platform + Google Sheets + Firebase Realtime Database
- * 
- * CÁC TÍNH NĂNG ĐỈNH CAO:
- *  1. 📱 Menu Tương Tác Trực Quan Bằng Lệnh Nhanh & 1 Chạm.
- *  2. 🧠 Xử Lý Ngôn Ngữ Tự Nhiên AI (Hỏi đáp tự nhiên: "mai tôi có tiết không", "chiều thứ 5 7a1 học gì"...).
- *  3. 👥 Tìm Giáo Viên Trống Tiết Dạy Thay Thông Minh ("tim gv trong toan t3", "ai ranh van tiet 2 thu 4"...).
- *  4. 🔄 Tra Cứu Lịch Dạy Thay & Học Thay Của Toàn Trường Trong Tuần.
- *  5. 📢 Thông Báo Công Bố Đợt TKB Mới & Ngày Áp Dụng.
- *  6. 📄 Xuất Link Tải PDF / Excel & Xem TKB Cá Nhân 1 Chạm Trên Mobile.
- *  7. ⏰ Tự Động Gửi Lời Nhắc Lịch Dạy Sáng Sớm (Daily Morning Brief 6h30).
- *  8. 📊 Đồng Bộ 1 Chạm Toàn Bộ Ma Trận TKB Lên Google Sheets (Sáng, Chiều, Giáo Viên).
- * ====================================================================================================
  */
 
 // 🌟 1. CẤU HÌNH BOT TOKEN & HỆ THỐNG
@@ -103,6 +92,7 @@ function doPost(e) {
     // B. Tin nhắn nhận được từ Zalo Bot
     let userMessage = "";
     let chatId = "";
+    let eventName = postData.event_name || "";
     
     if (postData.message) {
       userMessage = postData.message.text || "";
@@ -120,8 +110,16 @@ function doPost(e) {
     }
     
     if (!chatId && postData.chat_id) chatId = postData.chat_id;
+    if (!chatId && postData.sender) chatId = postData.sender.id;
     
-    if (userMessage) {
+    // Nếu người dùng vừa mở Bot / Follow / Bắt đầu cuộc trò chuyện
+    if (eventName === "follow" || eventName === "user_open_bot" || eventName === "join") {
+      const welcomeText = getWelcomeGuideText();
+      if (chatId) sendZaloBotReply(chatId, welcomeText);
+      return ContentService.createTextOutput(JSON.stringify({ status: "welcome_sent" })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (userMessage || chatId) {
       const replyText = processSmartTimetableQuery(userMessage);
       
       if (replyText && chatId) {
@@ -180,9 +178,9 @@ function sendDailyMorningBrief() {
   if (!schoolData) return;
   
   const dateStr = (new Date()).toLocaleDateString("vi-VN");
-  let message = "╔══════════════════════════════╗\n" +
+  let message = "╔════════════════════════════════════════╗\n" +
                 "  🌅 LỊCH GIẢNG DẠY HÔM NAY (" + dayNames[todayDay] + " - " + dateStr + ")\n" +
-                "╚══════════════════════════════╝\n" +
+                "╚════════════════════════════════════════╝\n" +
                 "✨ Chúc quý Thầy/Cô một ngày làm việc tràn đầy năng lượng!\n\n" +
                 "📌 Để tra cứu chi tiết lịch dạy của mình, Thầy/Cô vui lòng gõ:\n" +
                 "👉 tkb [Tên của Thầy/Cô] (Ví dụ: tkb Trọng)\n\n" +
@@ -199,11 +197,9 @@ function processSmartTimetableQuery(rawMessage) {
   const text = (rawMessage || "").trim();
   const clean = removeVietnameseTones(text);
   
-  if (!text) return null;
-  
-  // 1. Lệnh Trợ giúp / Menu chính
-  if (clean === "menu" || clean === "help" || clean === "start" || clean === "/start" || clean === "tro giup" || clean === "huong dan" || clean === "?") {
-    return getHelpMenuText();
+  // 1. Khi mở bot hoặc gõ lệnh chào hỏi / trợ giúp / menu
+  if (!text || clean === "menu" || clean === "help" || clean === "start" || clean === "/start" || clean === "tro giup" || clean === "huong dan" || clean === "?" || clean === "chao" || clean === "xin chao" || clean === "hi" || clean === "hello" || clean === "alo" || clean === "bat dau" || clean === "hoi") {
+    return getWelcomeGuideText();
   }
   
   // 2. Tra cứu Lịch Dạy Thay / Đổi Tiết
@@ -231,26 +227,41 @@ function processSmartTimetableQuery(rawMessage) {
 }
 
 /**
- * Menu trợ giúp trực quan & hướng dẫn cú pháp
+ * Giao diện Chào mừng & Bảng Hướng Dẫn Sử Dụng Đẹp Mắt, Khoa Học
  */
-function getHelpMenuText() {
-  return "╔══════════════════════════════╗\n" +
-         "  🤖 TRỢ LÝ THỜI KHÓA BIỂU 4.0\n" +
-         "╚══════════════════════════════╝\n" +
-         "Chào Thầy/Cô! Dưới đây là các lệnh tra cứu nhanh:\n\n" +
-         "📅 1. TRA CỨU THỜI KHÓA BIỂU:\n" +
-         "• tkb [Tên GV] -> Lịch dạy cả tuần (VD: tkb Trọng)\n" +
-         "• tkb [Lớp] -> Lịch học cả tuần (VD: tkb 6a1)\n" +
-         "• tkb [Tên/Lớp] hôm nay (hoặc mai, t2, t3, t4...)\n\n" +
-         "👥 2. TÌM GV TRỐNG TIẾT DẠY THAY:\n" +
-         "• tim gv toan t3 -> Tìm GV Toán trống tiết Thứ 3\n" +
-         "• ai ranh van tiet 2 thu 4\n\n" +
-         "🔄 3. LỊCH DẠY THAY TOÀN TRƯỜNG:\n" +
-         "• day thay -> Xem danh sách các ca dạy thay tuần này\n\n" +
-         "📄 4. TẢI FILE PDF / EXCEL:\n" +
-         "• in tkb [Tên GV] (VD: in tkb Trọng)\n\n" +
-         "🌐 5. CỔNG TRA CỨU WEB 1 CHẠM:\n" +
-         PUBLIC_WEB_PORTAL + "?tra-cuu";
+function getWelcomeGuideText() {
+  const schoolData = fetchSchoolData();
+  let currentInfo = "";
+  if (schoolData) {
+    const active = getActiveTimetable(schoolData);
+    if (active.weekName) {
+      currentInfo = `\n📌 Đợt áp dụng: ${active.weekName}` + (active.applyDate ? ` (từ ${active.applyDate})` : "");
+    }
+  }
+
+  return "╔════════════════════════════════════════╗\n" +
+         "   🏫 TRỢ LÝ THỜI KHÓA BIỂU THÔNG MINH 4.0\n" +
+         "╚════════════════════════════════════════╝\n" +
+         "Chào mừng Quý Thầy/Cô và các em học sinh!" + currentInfo + "\n" +
+         "────────────────────────────────────────\n\n" +
+         "📋 HƯỚNG DẪN TRA CỨU NHANH (GÕ HOẶC CHẠM):\n\n" +
+         "🔹 1. TRA CỨU THỜI KHÓA BIỂU:\n" +
+         "  • tkb [Tên GV]      👉 Ví dụ: tkb Trọng\n" +
+         "  • tkb [Lớp]         👉 Ví dụ: tkb 6a1\n" +
+         "  • tkb [Tên] hôm nay 👉 Ví dụ: tkb Trọng hôm nay\n" +
+         "  • tkb [Tên] ngày mai (hoặc thứ 2, thứ 3...)\n\n" +
+         "🔹 2. TÌM GIÁO VIÊN DẠY THAY (TRỐNG TIẾT):\n" +
+         "  • tim gv toan t3    👉 Tìm GV Toán rảnh Tiết 1 Thứ 3\n" +
+         "  • ai ranh van tiet 2 thu 4\n\n" +
+         "🔹 3. LỊCH DẠY THAY & THÔNG BÁO:\n" +
+         "  • day thay          👉 Xem danh sách ca dạy thay tuần\n" +
+         "  • tkb moi           👉 Xem thông báo đợt TKB mới\n\n" +
+         "🔹 4. IN / TẢI BẢN ĐẸP KHỔ A4 (PDF & EXCEL):\n" +
+         "  • in tkb [Tên GV]   👉 Ví dụ: in tkb Trọng\n\n" +
+         "────────────────────────────────────────\n" +
+         "🌐 CỔNG TRA CỨU WEB MOBILE 1 CHẠM:\n" +
+         "👉 " + PUBLIC_WEB_PORTAL + "?tra-cuu\n\n" +
+         "💡 Gợi ý: Hãy thử gõ ngay 'tkb Trọng' hoặc 'tkb 6a1' để trải nghiệm!";
 }
 
 /**
@@ -262,15 +273,15 @@ function handleSubstitutionQuery(text) {
   
   const subs = schoolData.substitutions || [];
   if (subs.length === 0) {
-    return "╔══════════════════════════════╗\n" +
+    return "╔════════════════════════════════════════╗\n" +
            "  🔄 LỊCH DẠY THAY & HỌC THAY\n" +
-           "╚══════════════════════════════╝\n" +
+           "╚════════════════════════════════════════╝\n" +
            "✨ Hiện tại không có ca dạy thay / học thay nào trong tuần này.";
   }
   
-  let out = "╔══════════════════════════════╗\n" +
+  let out = "╔════════════════════════════════════════╗\n" +
             "  🔄 LỊCH DẠY THAY & HỌC THAY\n" +
-            "╚══════════════════════════════╝\n" +
+            "╚════════════════════════════════════════╝\n" +
             "📌 Cập nhật danh sách phân công dạy thay:\n\n";
             
   subs.forEach((s, idx) => {
@@ -279,7 +290,7 @@ function handleSubstitutionQuery(text) {
     out += `   • GV nghỉ: ${s.originalTeacher || "N/A"}\n`;
     out += `   • 👉 GV DẠY THAY: ${s.substituteTeacher || "Chưa phân công"}\n`;
     if (s.note) out += `   • Ghi chú: ${s.note}\n`;
-    out += "   ────────────────────────\n";
+    out += "   ────────────────────────────────────\n";
   });
   
   return out;
@@ -319,13 +330,11 @@ function handleFindFreeTeacherQuery(text) {
     }
   });
   
-  // Lọc danh sách GV thuộc môn/tổ đó (hoặc toàn bộ GV nếu không chỉ định môn)
   let candidateTeachers = teachers.filter(t => t && t.fullName && t.shortName);
   if (matchedGroup) {
     candidateTeachers = candidateTeachers.filter(t => t.group === matchedGroup.name || (t.groupId && t.groupId === matchedGroup.id));
   }
   
-  // Kiểm tra ai đang TRỐNG tiết đó
   const freeTeachers = [];
   candidateTeachers.forEach(t => {
     let isBusy = false;
@@ -342,12 +351,12 @@ function handleFindFreeTeacherQuery(text) {
   });
   
   const dayNames = { "T2": "Thứ Hai", "T3": "Thứ Ba", "T4": "Thứ Tư", "T5": "Thứ Năm", "T6": "Thứ Sáu", "T7": "Thứ Bảy" };
-  let out = "╔══════════════════════════════╗\n" +
+  let out = "╔════════════════════════════════════════╗\n" +
             "  👥 GIÁO VIÊN TRỐNG TIẾT DẠY THAY\n" +
-            "╚══════════════════════════════╝\n" +
+            "╚════════════════════════════════════════╝\n" +
             `🗓️ Thời gian: ${dayNames[day] || day} - Tiết ${period}\n` +
             (matchedGroup ? `📚 Bộ môn / Tổ: ${matchedGroup.name}\n` : "") +
-            "────────────────────────────\n";
+            "────────────────────────────────────────\n";
             
   if (freeTeachers.length === 0) {
     out += `⚠️ Rất tiếc, không có giáo viên nào đang trống ở Tiết ${period} ${dayNames[day] || day}.`;
@@ -369,12 +378,12 @@ function handleNewTimetableAnnouncement() {
   if (!schoolData) return "❌ Không thể kết nối cơ sở dữ liệu trường.";
   
   const active = getActiveTimetable(schoolData);
-  return "╔══════════════════════════════╗\n" +
+  return "╔════════════════════════════════════════╗\n" +
          "  📢 THÔNG BÁO THỜI KHÓA BIỂU\n" +
-         "╚══════════════════════════════╝\n" +
+         "╚════════════════════════════════════════╝\n" +
          `📌 Đợt TKB hiện hành: ${active.weekName || "Thời khóa biểu chính thức"}\n` +
          `🗓️ Thời gian áp dụng: ${active.applyDate || "Đang áp dụng toàn trường"}\n` +
-         "────────────────────────────\n" +
+         "────────────────────────────────────────\n" +
          "Thầy/Cô và các em học sinh có thể tra cứu nhanh bằng cách gõ:\n" +
          "👉 tkb [Tên GV hoặc Lớp]\n\n" +
          "🌐 Hoặc xem chi tiết tại Cổng trực tuyến:\n" +
@@ -388,9 +397,9 @@ function handleExportLinkQuery(text) {
   const parts = text.split(/\s+/);
   const keyword = parts[parts.length - 1];
   
-  return "╔══════════════════════════════╗\n" +
+  return "╔════════════════════════════════════════╗\n" +
          "  📄 TẢI FILE THỜI KHÓA BIỂU\n" +
-         "╚══════════════════════════════╝\n" +
+         "╚════════════════════════════════════════╝\n" +
          `Dành cho đối tượng: ${keyword.toUpperCase()}\n\n` +
          "👉 Xem trực quan & In PDF / Xuất Excel 1 chạm tại:\n" +
          `${PUBLIC_WEB_PORTAL}?gv=${encodeURIComponent(keyword)}\n\n` +
@@ -403,7 +412,6 @@ function handleExportLinkQuery(text) {
 function handleNaturalTimetableQuery(text, clean) {
   let queryTarget = "";
   
-  // Bóc tách đối tượng từ câu hỏi tự nhiên
   if (clean.startsWith("tkb")) queryTarget = text.substring(3).trim();
   else if (clean.startsWith("thoi khoa bieu")) queryTarget = text.substring(14).trim();
   else if (clean.startsWith("lich day")) queryTarget = text.substring(8).trim();
@@ -418,7 +426,6 @@ function handleNaturalTimetableQuery(text, clean) {
   const activeTkb = getActiveTimetable(schoolData);
   const timetable = activeTkb.timetable;
   
-  // Xác định ngày lọc
   const dayFilter = parseDayFilter(clean);
   const weekdays = dayFilter ? [dayFilter] : ["T2", "T3", "T4", "T5", "T6", "T7"];
   const weekDayLabels = { "T2": "Thứ 2", "T3": "Thứ 3", "T4": "Thứ 4", "T5": "Thứ 5", "T6": "Thứ 6", "T7": "Thứ 7" };
@@ -427,11 +434,11 @@ function handleNaturalTimetableQuery(text, clean) {
   const matchedClass = classes.find(c => c && clean.includes(removeVietnameseTones(c.name)));
   if (matchedClass) {
     const clsSchedule = timetable[matchedClass.name] || {};
-    let out = "╔══════════════════════════════╗\n" +
+    let out = "╔════════════════════════════════════════╗\n" +
               "  🏫 THỜI KHÓA BIỂU LỚP " + matchedClass.name + "\n" +
-              "╚══════════════════════════════╝\n" +
+              "╚════════════════════════════════════════╝\n" +
               (activeTkb.weekName ? (`📌 ${activeTkb.weekName}` + (activeTkb.applyDate ? ` (${activeTkb.applyDate})\n` : "\n")) : "") +
-              "────────────────────────────\n";
+              "────────────────────────────────────────\n";
     let hasSlots = false;
     weekdays.forEach(day => {
       const slots = [];
@@ -460,12 +467,12 @@ function handleNaturalTimetableQuery(text, clean) {
   }
   
   if (matchedTeacher) {
-    let out = "╔══════════════════════════════╗\n" +
+    let out = "╔════════════════════════════════════════╗\n" +
               "  📅 LỊCH GIẢNG DẠY GIÁO VIÊN\n" +
-              "╚══════════════════════════════╝\n" +
+              "╚════════════════════════════════════════╝\n" +
               `👤 ${matchedTeacher.fullName} (${matchedTeacher.shortName})\n` +
               (activeTkb.weekName ? (`📌 ${activeTkb.weekName}` + (activeTkb.applyDate ? ` (${activeTkb.applyDate})\n` : "\n")) : "") +
-              "────────────────────────────\n";
+              "────────────────────────────────────────\n";
               
     let hasSlots = false;
     weekdays.forEach(day => {
@@ -503,12 +510,12 @@ function handleNaturalTimetableQuery(text, clean) {
     return out;
   }
   
-  return "❌ Bot chưa nhận diện được Giáo viên hoặc Lớp trong câu hỏi của bạn.\n" +
-         "💡 Gợi ý: Hãy gõ 'tkb [Tên]' (VD: 'tkb Trọng') hoặc 'help' để xem hướng dẫn.";
+  // Trả về hướng dẫn thân thiện nếu không tìm thấy
+  return getWelcomeGuideText();
 }
 
 /**
- * Hàm lấy TKB đợt hiện hành
+ * Lấy TKB đợt hiện hành
  */
 function getActiveTimetable(schoolData) {
   let timetable = schoolData.timetable || {};
