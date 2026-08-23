@@ -8,6 +8,9 @@
 
 const FIREBASE_DATABASE_URL = "https://tkb-fet-default-rtdb.asia-southeast1.firebasedatabase.app/school_data.json";
 
+// Cấu hình URL hoặc ID Google Sheet (Tùy chọn: bạn có thể dán link Google Sheet của bạn vào đây)
+const GOOGLE_SPREADSHEET_URL = ""; 
+
 // Cấu hình Zalo OA (Nếu dùng Zalo Official Account)
 const ZALO_OA_ACCESS_TOKEN = "";
 
@@ -94,18 +97,31 @@ function doPost(e) {
  */
 function syncDataToGoogleSheets(payload) {
   let ss = null;
-  try {
-    ss = SpreadsheetApp.getActiveSpreadsheet();
-  } catch (e) {}
   
-  if (!ss) {
-    // Tìm file đã tồn tại hoặc tạo mới
-    const files = DriveApp.getFilesByName("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
-    if (files.hasNext()) {
-      ss = SpreadsheetApp.open(files.next());
-    } else {
-      ss = SpreadsheetApp.create("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
+  // 1. Thử mở theo URL/ID truyền lên từ giao diện hoặc cấu hình
+  const targetSheet = payload.spreadsheetUrl || payload.spreadsheetId || GOOGLE_SPREADSHEET_URL;
+  if (targetSheet && targetSheet.trim() !== "") {
+    try {
+      if (targetSheet.startsWith("http")) {
+        ss = SpreadsheetApp.openByUrl(targetSheet.trim());
+      } else {
+        ss = SpreadsheetApp.openById(targetSheet.trim());
+      }
+    } catch (e) {
+      console.warn("Không thể mở Sheet theo link được cung cấp, sẽ sử dụng bảng tính hiện tại hoặc tạo mới:", e);
     }
+  }
+  
+  // 2. Thử lấy bảng tính gắn liền (Container-bound Script)
+  if (!ss) {
+    try {
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+    } catch (e) {}
+  }
+  
+  // 3. Nếu vẫn chưa có, tạo bảng tính mới bằng SpreadsheetApp (KHÔNG dùng DriveApp để tránh lỗi quyền)
+  if (!ss) {
+    ss = SpreadsheetApp.create("Thời Khóa Biểu - Dữ Liệu Tra Cứu Zalo");
   }
   
   const teachers = payload.teachers || [];
@@ -186,10 +202,12 @@ function syncDataToGoogleSheets(payload) {
       .setHorizontalAlignment("center")
       .setBackground("#e2e8f0");
       
-    sheetMorning.getRange(4, 1, morningClasses.length, 1)
-      .setFontWeight("bold")
-      .setHorizontalAlignment("center")
-      .setBackground("#f8fafc");
+    if (morningClasses.length > 0) {
+      sheetMorning.getRange(4, 1, morningClasses.length, 1)
+        .setFontWeight("bold")
+        .setHorizontalAlignment("center")
+        .setBackground("#f8fafc");
+    }
       
     mRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
     sheetMorning.autoResizeColumns(1, 31);
@@ -253,10 +271,12 @@ function syncDataToGoogleSheets(payload) {
       .setHorizontalAlignment("center")
       .setBackground("#e2e8f0");
       
-    sheetAfternoon.getRange(4, 1, afternoonClasses.length, 1)
-      .setFontWeight("bold")
-      .setHorizontalAlignment("center")
-      .setBackground("#f8fafc");
+    if (afternoonClasses.length > 0) {
+      sheetAfternoon.getRange(4, 1, afternoonClasses.length, 1)
+        .setFontWeight("bold")
+        .setHorizontalAlignment("center")
+        .setBackground("#f8fafc");
+    }
       
     aRange.setBorder(true, true, true, true, true, true, "#cbd5e1", SpreadsheetApp.BorderStyle.SOLID);
     sheetAfternoon.autoResizeColumns(1, 31);

@@ -8698,9 +8698,19 @@ async function syncTimetableToGoogleSheets() {
         </span>`;
     }
     
+    const sheetInput = document.getElementById('googleSheetUrlInput');
+    let directSheetUrl = sheetInput ? sheetInput.value.trim() : '';
+    if (directSheetUrl) {
+        localStorage.setItem('fet_google_sheet_direct_url', directSheetUrl);
+    } else {
+        directSheetUrl = localStorage.getItem('fet_google_sheet_direct_url') || '';
+        if (sheetInput && directSheetUrl) sheetInput.value = directSheetUrl;
+    }
+    
     try {
         const payload = {
             action: "sync_timetable",
+            spreadsheetUrl: directSheetUrl,
             teachers: state.teachers || [],
             classes: state.classes || [],
             timetable: currentTimetable,
@@ -8799,5 +8809,10 @@ window.onload = function() {
     const input = document.getElementById('googleSheetsWebhookInput');
     if (input && savedWebhook) {
         input.value = savedWebhook;
+    }
+    const savedSheetUrl = localStorage.getItem('fet_google_sheet_direct_url');
+    const sheetInput = document.getElementById('googleSheetUrlInput');
+    if (sheetInput && savedSheetUrl) {
+        sheetInput.value = savedSheetUrl;
     }
 }
