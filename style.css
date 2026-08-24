@@ -942,8 +942,9 @@ table.timetable-table th {
     }
 }
 
-/* Ẩn tiêu đề in ấn ở màn hình thường */
-.print-header {
+/* Ẩn tiêu đề và khung in ấn ở màn hình thường */
+.print-header,
+#substitutionPrintContainer {
     display: none;
 }
 

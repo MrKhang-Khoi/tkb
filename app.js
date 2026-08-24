@@ -8680,6 +8680,77 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+function normalizeSubjectName(sub) {
+    if (!sub) return '';
+    let s = sub.toString().toLowerCase().trim();
+    // Loại bỏ dấu ngoặc, số khối (ví dụ: "Tin (9)", "Tin 9", "Toán 8", "Ngữ văn 6" -> "tin học", "toán", "ngữ văn")
+    s = s.replace(/\s*\([^\)]*\)/g, '').replace(/\s+[6-9]$/, '').replace(/\s+1[0-2]$/, '').trim();
+    
+    const map = {
+        'tin': 'tin học',
+        'tin học': 'tin học',
+        'tinhoc': 'tin học',
+        'toán': 'toán',
+        'toán học': 'toán',
+        'toan': 'toán',
+        'văn': 'ngữ văn',
+        'ngữ văn': 'ngữ văn',
+        'ngu van': 'ngữ văn',
+        'van': 'ngữ văn',
+        'tiếng anh': 'tiếng anh',
+        'tieng anh': 'tiếng anh',
+        'anh': 'tiếng anh',
+        'ngoại ngữ': 'tiếng anh',
+        'khtn': 'khoa học tự nhiên',
+        'khoa học tự nhiên': 'khoa học tự nhiên',
+        'lý': 'vật lý',
+        'vật lý': 'vật lý',
+        'vật lí': 'vật lý',
+        'hóa': 'hóa học',
+        'hóa học': 'hóa học',
+        'sinh': 'sinh học',
+        'sinh học': 'sinh học',
+        'sử': 'lịch sử',
+        'lịch sử': 'lịch sử',
+        'địa': 'địa lí',
+        'địa lí': 'địa lí',
+        'địa lý': 'địa lí',
+        'lịch sử và địa lí': 'lịch sử và địa lí',
+        'lịch sử & địa lí': 'lịch sử và địa lí',
+        'ls&đl': 'lịch sử và địa lí',
+        'ls-đl': 'lịch sử và địa lí',
+        'gdcd': 'giáo dục công dân',
+        'giáo dục công dân': 'giáo dục công dân',
+        'gdtc': 'giáo dục thể chất',
+        'thể dục': 'giáo dục thể chất',
+        'giáo dục thể chất': 'giáo dục thể chất',
+        'công nghệ': 'công nghệ',
+        'cn': 'công nghệ',
+        'âm nhạc': 'âm nhạc',
+        'nhạc': 'âm nhạc',
+        'mỹ thuật': 'mỹ thuật',
+        'hội họa': 'mỹ thuật',
+        'mĩ thuật': 'mỹ thuật',
+        'hđtn': 'hoạt động trải nghiệm',
+        'hoạt động trải nghiệm': 'hoạt động trải nghiệm',
+        'hđtn,hn': 'hoạt động trải nghiệm',
+        'hđtn&hn': 'hoạt động trải nghiệm'
+    };
+
+    return map[s] || s;
+}
+
+function isSameOrRelatedSubject(subA, subB) {
+    if (!subA || !subB) return false;
+    const normA = normalizeSubjectName(subA);
+    const normB = normalizeSubjectName(subB);
+    if (!normA || !normB) return false;
+    if (normA === normB) return true;
+    if (normA.startsWith(normB) || normB.startsWith(normA)) return true;
+    if (normA.includes(normB) || normB.includes(normA)) return true;
+    return false;
+}
+
 function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass, subject, absentTeacherShort, includeOutsideGroup = false) {
     const currentUserGroup = state.currentUser;
     const suggestions = [];
@@ -8728,21 +8799,40 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
         }
         if (isAlreadySubbing) return;
         
-        // 3. Kiểm tra chuyên môn dạy môn học này
+        // 3. Kiểm tra chuyên môn dạy môn học này (kết hợp cả Hồ sơ GV, Bảng phân công, và TKB thực tế)
         let teachesThisSubject = false;
         if (subject) {
-            const subLower = subject.toLowerCase().trim();
+            // A. Kiểm tra danh sách môn đăng ký trong hồ sơ giáo viên (teacher.subjects)
             if (teacher.subjects && Array.isArray(teacher.subjects)) {
-                teachesThisSubject = teacher.subjects.some(s => s && s.toLowerCase().trim() === subLower);
+                teachesThisSubject = teacher.subjects.some(s => isSameOrRelatedSubject(s, subject));
             }
+            // B. Kiểm tra bảng phân công chuyên môn (state.assignments)
             if (!teachesThisSubject && state.assignments) {
                 Object.keys(state.assignments).forEach(key => {
                     const assign = state.assignments[key];
                     if (assign && assign.teacher === teacher.shortName && assign.periods > 0) {
                         const parsed = parseAssignmentKey(key);
-                        if (parsed.subName && parsed.subName.toLowerCase().trim() === subLower) {
+                        if (parsed.subName && isSameOrRelatedSubject(parsed.subName, subject)) {
                             teachesThisSubject = true;
                         }
+                    }
+                });
+            }
+            // C. Kiểm tra Thời khóa biểu thực tế (state.timetable): nếu GV này dạy môn này ở bất kỳ lớp nào trên TKB
+            if (!teachesThisSubject && state.timetable) {
+                Object.keys(state.timetable).forEach(cName => {
+                    const cTkb = state.timetable[cName];
+                    if (cTkb) {
+                        Object.keys(cTkb).forEach(d => {
+                            if (cTkb[d]) {
+                                Object.keys(cTkb[d]).forEach(p => {
+                                    const act = cTkb[d][p];
+                                    if (act && act.teacher === teacher.shortName && act.subject && isSameOrRelatedSubject(act.subject, subject)) {
+                                        teachesThisSubject = true;
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
             }
@@ -9818,100 +9908,218 @@ function getSortedSubsList(subsList) {
     });
 }
 
-function exportSubstitutionsToExcelFile(subsList, title, groupName, dateRangeText, filename) {
+function generateSubstitutionsHTMLExcel(subsList, title, groupName, dateRangeText) {
     const sortedSubs = getSortedSubsList(subsList);
     
-    if (typeof XLSX !== 'undefined' && XLSX.utils && XLSX.writeFile) {
-        const rowsData = [];
-        
-        // Header cơ quan & Quốc hiệu
-        rowsData.push(["TRƯỜNG THCS & THPT", "", "", "", "", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", "", "", "", "", ""]);
-        rowsData.push([`TỔ: ${groupName.toUpperCase()}`, "", "", "", "", "Độc lập - Tự do - Hạnh phúc", "", "", "", "", ""]);
-        rowsData.push(["", "", "", "", "", "", "", "", "", "", ""]);
-        rowsData.push([title.toUpperCase(), "", "", "", "", "", "", "", "", "", ""]);
-        rowsData.push([`${dateRangeText} | Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}`, "", "", "", "", "", "", "", "", "", ""]);
-        rowsData.push(["", "", "", "", "", "", "", "", "", "", ""]);
-        
-        // Table Columns Header
-        rowsData.push([
-            "STT", "Ngày dạy", "Thứ", "Buổi", "Tiết", "Lớp", "Môn học", "Giáo viên vắng", "Giáo viên dạy thay", "Ghi chú", "Ký nhận"
-        ]);
-        
-        // Data Rows
-        sortedSubs.forEach((s, idx) => {
-            const [y, m, d] = (s.date || '').split('-');
-            const formattedDate = d ? `${d}/${m}/${y}` : s.date;
-            const dayLabel = getSubDayLabel(s.date);
-            const sessionLabel = s.session === 'chiều' ? 'Chiều' : 'Sáng';
-            
-            const absentTeacherObj = (state.teachers || []).find(t => t.shortName === s.absentTeacher);
-            const absentTeacherFullName = absentTeacherObj ? `${absentTeacherObj.fullName} (${s.absentTeacher})` : s.absentTeacher;
-            
-            const subTeacherObj = (state.teachers || []).find(t => t.shortName === s.substituteTeacher);
-            const subTeacherFullName = subTeacherObj ? `${subTeacherObj.fullName} (${s.substituteTeacher})` : s.substituteTeacher;
-            
-            rowsData.push([
-                idx + 1,
-                formattedDate,
-                dayLabel,
-                sessionLabel,
-                s.period,
-                s.className,
-                s.subject,
-                absentTeacherFullName,
-                subTeacherFullName,
-                s.note || "",
-                ""
-            ]);
-        });
-        
-        // Signatures
-        rowsData.push(["", "", "", "", "", "", "", "", "", "", ""]);
-        rowsData.push(["", "", "", "", "", "", "", `Ngày ..... tháng ..... năm 202...`, "", "", ""]);
-        rowsData.push(["GIÁO VIÊN DẠY THAY", "", "", "TỔ TRƯỞNG CHUYÊN MÔN", "", "", "", "BAN GIÁM HIỆU DUYỆT", "", "", ""]);
-        rowsData.push(["(Ký nhận)", "", "", "(Ký và ghi rõ họ tên)", "", "", "", "(Ký và đóng dấu)", "", "", ""]);
-        
-        const ws = XLSX.utils.aoa_to_sheet(rowsData);
-        
-        // Merges
-        ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
-            { s: { r: 0, c: 5 }, e: { r: 0, c: 10 } },
-            { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
-            { s: { r: 1, c: 5 }, e: { r: 1, c: 10 } },
-            { s: { r: 3, c: 0 }, e: { r: 3, c: 10 } },
-            { s: { r: 4, c: 0 }, e: { r: 4, c: 10 } },
-            // Signature merges
-            { s: { r: rowsData.length - 3, c: 7 }, e: { r: rowsData.length - 3, c: 10 } },
-            { s: { r: rowsData.length - 2, c: 0 }, e: { r: rowsData.length - 2, c: 2 } },
-            { s: { r: rowsData.length - 2, c: 3 }, e: { r: rowsData.length - 2, c: 6 } },
-            { s: { r: rowsData.length - 2, c: 7 }, e: { r: rowsData.length - 2, c: 10 } },
-            { s: { r: rowsData.length - 1, c: 0 }, e: { r: rowsData.length - 1, c: 2 } },
-            { s: { r: rowsData.length - 1, c: 3 }, e: { r: rowsData.length - 1, c: 6 } },
-            { s: { r: rowsData.length - 1, c: 7 }, e: { r: rowsData.length - 1, c: 10 } }
-        ];
-        
-        // Column widths
-        ws['!cols'] = [
-            { wch: 6 },  // STT
-            { wch: 14 }, // Ngay
-            { wch: 12 }, // Thu
-            { wch: 10 }, // Buoi
-            { wch: 8 },  // Tiet
-            { wch: 10 }, // Lop
-            { wch: 14 }, // Mon
-            { wch: 28 }, // GV Vang
-            { wch: 28 }, // GV Thay
-            { wch: 22 }, // Ghi chu
-            { wch: 14 }  // Ky nhan
-        ];
-        
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "PhanCongDayThay");
-        XLSX.writeFile(wb, filename);
-        return true;
+    let tableRowsHtml = '';
+    sortedSubs.forEach((s, idx) => {
+        const [y, m, d] = (s.date || '').split('-');
+        const formattedDate = d ? `${d}/${m}/${y}` : s.date;
+        const dayLabel = getSubDayLabel(s.date);
+        const sessionLabel = s.session === 'chiều' ? 'Chiều' : 'Sáng';
+
+        const absentTeacherObj = (state.teachers || []).find(t => t.shortName === s.absentTeacher);
+        const absentTeacherFullName = absentTeacherObj ? `${absentTeacherObj.fullName} (${s.absentTeacher})` : s.absentTeacher;
+
+        const subTeacherObj = (state.teachers || []).find(t => t.shortName === s.substituteTeacher);
+        const subTeacherFullName = subTeacherObj ? `${subTeacherObj.fullName} (${s.substituteTeacher})` : s.substituteTeacher;
+
+        tableRowsHtml += `
+            <tr style="height: 28px;">
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt;">${idx + 1}</td>
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt; mso-number-format:'\\@';">${formattedDate}</td>
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt;">${dayLabel}</td>
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt;">${sessionLabel}</td>
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt; font-weight: bold;">${s.period}</td>
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt; font-weight: bold;">${s.className}</td>
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt; font-weight: bold; color: #1e3a8a;">${s.subject}</td>
+                <td style="border: 1px solid #000000; text-align: left; font-size: 11pt; font-weight: bold; color: #991b1b; background-color: #fef2f2;">${absentTeacherFullName}</td>
+                <td style="border: 1px solid #000000; text-align: left; font-size: 11pt; font-weight: bold; color: #065f46; background-color: #ecfdf5;">${subTeacherFullName}</td>
+                <td style="border: 1px solid #000000; text-align: left; font-size: 11pt;">${s.note || ''}</td>
+                <td style="border: 1px solid #000000; text-align: center; font-size: 11pt;"></td>
+            </tr>
+        `;
+    });
+
+    return `
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--[if gte mso 9]>
+<xml>
+ <x:ExcelWorkbook>
+  <x:ExcelWorksheets>
+   <x:ExcelWorksheet>
+    <x:Name>PhanCongDayThay</x:Name>
+    <x:WorksheetOptions>
+     <x:DisplayGridlines/>
+     <x:Print>
+      <x:Orientation>Landscape</x:Orientation>
+      <x:ValidPrinterInfo/>
+      <x:PaperSizeIndex>9</x:PaperSizeIndex>
+     </x:Print>
+    </x:WorksheetOptions>
+   </x:ExcelWorksheet>
+  </x:ExcelWorksheets>
+ </x:ExcelWorkbook>
+</xml>
+<![endif]-->
+<style>
+  body { font-family: 'Times New Roman', Times, serif, Arial, sans-serif; font-size: 11pt; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { font-family: 'Times New Roman', Times, serif, Arial, sans-serif; font-size: 11pt; }
+</style>
+</head>
+<body>
+<table>
+  <!-- Header cơ quan & quốc hiệu -->
+  <tr style="height: 24px;">
+    <td colspan="5" style="text-align: center; font-weight: bold; font-size: 11pt; text-transform: uppercase;">TRƯỜNG THCS &amp; THPT</td>
+    <td colspan="6" style="text-align: center; font-weight: bold; font-size: 11pt;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</td>
+  </tr>
+  <tr style="height: 24px;">
+    <td colspan="5" style="text-align: center; font-weight: bold; font-size: 11pt; color: #1e3a8a; text-transform: uppercase;">TỔ: ${groupName.toUpperCase()}</td>
+    <td colspan="6" style="text-align: center; font-weight: bold; font-size: 11pt;">Độc lập - Tự do - Hạnh phúc</td>
+  </tr>
+  <tr style="height: 12px;"><td colspan="11"></td></tr>
+
+  <!-- Tiêu đề biểu mẫu -->
+  <tr style="height: 32px;">
+    <td colspan="11" style="text-align: center; font-size: 15pt; font-weight: bold; color: #1e3a8a; text-transform: uppercase;">${title.toUpperCase()}</td>
+  </tr>
+  <tr style="height: 22px;">
+    <td colspan="11" style="text-align: center; font-size: 11pt; font-style: italic; color: #334155;">${dateRangeText} | Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}</td>
+  </tr>
+  <tr style="height: 12px;"><td colspan="11"></td></tr>
+
+  <!-- Tiêu đề các cột dữ liệu (Nền xanh đậm, chữ trắng, viền rõ nét) -->
+  <tr style="height: 32px; background-color: #1e40af; color: #ffffff;">
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 45px;">STT</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 95px;">Ngày dạy</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 75px;">Thứ</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 60px;">Buổi</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 50px;">Tiết</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 65px;">Lớp</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 85px;">Môn học</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 170px;">Giáo viên vắng</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 170px;">Giáo viên dạy thay</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 150px;">Ghi chú</th>
+    <th style="border: 1px solid #000000; background-color: #1e40af; color: #ffffff; font-weight: bold; text-align: center; width: 85px;">Ký nhận</th>
+  </tr>
+
+  <!-- Các dòng dữ liệu -->
+  ${tableRowsHtml}
+
+  <!-- Chữ ký cuối trang tính -->
+  <tr style="height: 16px;"><td colspan="11"></td></tr>
+  <tr style="height: 24px;">
+    <td colspan="7"></td>
+    <td colspan="4" style="text-align: center; font-style: italic; font-size: 11pt;">Ngày ..... tháng ..... năm 202...</td>
+  </tr>
+  <tr style="height: 26px;">
+    <td colspan="3" style="text-align: center; font-weight: bold; font-size: 11pt;">GIÁO VIÊN DẠY THAY</td>
+    <td colspan="4" style="text-align: center; font-weight: bold; font-size: 11pt;">TỔ TRƯỞNG CHUYÊN MÔN</td>
+    <td colspan="4" style="text-align: center; font-weight: bold; font-size: 11pt;">BAN GIÁM HIỆU DUYỆT</td>
+  </tr>
+  <tr style="height: 20px;">
+    <td colspan="3" style="text-align: center; font-style: italic; font-size: 10pt; color: #475569;">(Ký nhận)</td>
+    <td colspan="4" style="text-align: center; font-style: italic; font-size: 10pt; color: #475569;">(Ký và ghi rõ họ tên)</td>
+    <td colspan="4" style="text-align: center; font-style: italic; font-size: 10pt; color: #475569;">(Ký và đóng dấu)</td>
+  </tr>
+  <tr style="height: 60px;"><td colspan="11"></td></tr>
+</table>
+</body>
+</html>
+    `;
+}
+
+function downloadExcelHTMLFile(htmlContent, filename) {
+    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportSubstitutionsExcel() {
+    const groupId = state.currentUser;
+    const groupObj = (state.groups || []).find(g => g && g.id === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
+
+    let subsList = state.substitutions || [];
+    if (groupId && groupId !== 'admin') {
+        subsList = subsList.filter(s => s.createdByGroup === groupId);
     }
-    return false;
+
+    if (!subsList || subsList.length === 0) {
+        showToast("Chưa có lịch phân công dạy thay nào để xuất file Excel!", "warning");
+        return;
+    }
+
+    try {
+        const safeGroupName = groupName.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
+        const todayStr = new Date().toISOString().split('T')[0];
+        const filename = `PhanCongDayThay_${safeGroupName}_${todayStr}.xls`;
+        
+        const htmlContent = generateSubstitutionsHTMLExcel(subsList, "BẢNG TỔNG HỢP PHÂN CÔNG GIÁO VIÊN DẠY THAY", groupName, `Tổ chuyên môn: ${groupName}`);
+        downloadExcelHTMLFile(htmlContent, filename);
+        showToast(`Đã tải xuống file Excel Báo cáo dạy thay của ${groupName}!`, "success");
+    } catch(e) {
+        console.error(e);
+        showToast("Lỗi khi xuất file Excel báo cáo dạy thay!", "danger");
+    }
+}
+
+function exportCurrentAnalyzedSubstitutionsExcel() {
+    if (!lastAnalyzedSubstituteData || !lastAnalyzedSubstituteData.allAffectedSlots) {
+        showToast("Vui lòng nhấn Phân tích và phân công trước khi xuất Excel!", "warning");
+        return;
+    }
+
+    const { absentTeacherFullName, teacherShort, allAffectedSlots, startDateVal, endDateVal } = lastAnalyzedSubstituteData;
+    const groupId = state.currentUser;
+    const groupObj = (state.groups || []).find(g => g && g.id === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
+
+    const assignedSubs = [];
+    allAffectedSlots.forEach(dayGroup => {
+        dayGroup.slots.forEach(slot => {
+            const sub = (state.substitutions || []).find(s => 
+                s.date === slot.dateStr && 
+                parseInt(s.period, 10) === parseInt(slot.period, 10) && 
+                s.session === slot.session && 
+                s.className === slot.className && 
+                s.absentTeacher === teacherShort
+            );
+            if (sub) {
+                assignedSubs.push(sub);
+            }
+        });
+    });
+
+    if (assignedSubs.length === 0) {
+        showToast("Chưa có tiết nào trong đợt này được phân công dạy thay để xuất!", "warning");
+        return;
+    }
+
+    try {
+        const title = `BẢNG PHÂN CÔNG DẠY THAY GIÁO VIÊN ${absentTeacherFullName.toUpperCase()}`;
+        const dateRangeText = `Thời gian vắng: ${startDateVal} đến ${endDateVal}`;
+        const safeTeacher = teacherShort.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
+        const filename = `PhanCongDayThay_${safeTeacher}_${startDateVal}.xls`;
+
+        const htmlContent = generateSubstitutionsHTMLExcel(assignedSubs, title, groupName, dateRangeText);
+        downloadExcelHTMLFile(htmlContent, filename);
+        showToast(`Đã xuất file Excel phân công dạy thay cho giáo viên ${absentTeacherFullName}!`, "success");
+    } catch(e) {
+        console.error(e);
+        showToast("Lỗi khi xuất file Excel!", "danger");
+    }
 }
 
 function generateSubstitutionsPrintHTML(subsList, title, groupName, dateRangeText) {
@@ -10024,88 +10232,6 @@ function generateSubstitutionsPrintHTML(subsList, title, groupName, dateRangeTex
             </table>
         </div>
     `;
-}
-
-function exportSubstitutionsExcel() {
-    const groupId = state.currentUser;
-    const groupObj = (state.groups || []).find(g => g && g.id === groupId);
-    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
-
-    let subsList = state.substitutions || [];
-    if (groupId && groupId !== 'admin') {
-        subsList = subsList.filter(s => s.createdByGroup === groupId);
-    }
-
-    if (!subsList || subsList.length === 0) {
-        showToast("Chưa có lịch phân công dạy thay nào để xuất file Excel!", "warning");
-        return;
-    }
-
-    try {
-        const safeGroupName = groupName.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
-        const todayStr = new Date().toISOString().split('T')[0];
-        const filename = `PhanCongDayThay_${safeGroupName}_${todayStr}.xlsx`;
-        
-        const ok = exportSubstitutionsToExcelFile(subsList, "BẢNG TỔNG HỢP PHÂN CÔNG GIÁO VIÊN DẠY THAY", groupName, `Tổ chuyên môn: ${groupName}`, filename);
-        if (ok) {
-            showToast(`Đã tải xuống file Excel Báo cáo dạy thay của ${groupName}!`, "success");
-        } else {
-            showToast("Lỗi khi tạo file Excel!", "danger");
-        }
-    } catch(e) {
-        console.error(e);
-        showToast("Lỗi khi xuất file Excel báo cáo dạy thay!", "danger");
-    }
-}
-
-function exportCurrentAnalyzedSubstitutionsExcel() {
-    if (!lastAnalyzedSubstituteData || !lastAnalyzedSubstituteData.allAffectedSlots) {
-        showToast("Vui lòng nhấn Phân tích và phân công trước khi xuất Excel!", "warning");
-        return;
-    }
-
-    const { absentTeacherFullName, teacherShort, allAffectedSlots, startDateVal, endDateVal } = lastAnalyzedSubstituteData;
-    const groupId = state.currentUser;
-    const groupObj = (state.groups || []).find(g => g && g.id === groupId);
-    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
-
-    const assignedSubs = [];
-    allAffectedSlots.forEach(dayGroup => {
-        dayGroup.slots.forEach(slot => {
-            const sub = (state.substitutions || []).find(s => 
-                s.date === slot.dateStr && 
-                parseInt(s.period, 10) === parseInt(slot.period, 10) && 
-                s.session === slot.session && 
-                s.className === slot.className && 
-                s.absentTeacher === teacherShort
-            );
-            if (sub) {
-                assignedSubs.push(sub);
-            }
-        });
-    });
-
-    if (assignedSubs.length === 0) {
-        showToast("Chưa có tiết nào trong đợt này được phân công dạy thay để xuất!", "warning");
-        return;
-    }
-
-    try {
-        const title = `BẢNG PHÂN CÔNG DẠY THAY GIÁO VIÊN ${absentTeacherFullName.toUpperCase()}`;
-        const dateRangeText = `Thời gian vắng: ${startDateVal} đến ${endDateVal}`;
-        const safeTeacher = teacherShort.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
-        const filename = `PhanCongDayThay_${safeTeacher}_${startDateVal}.xlsx`;
-
-        const ok = exportSubstitutionsToExcelFile(assignedSubs, title, groupName, dateRangeText, filename);
-        if (ok) {
-            showToast(`Đã xuất file Excel phân công dạy thay cho giáo viên ${absentTeacherFullName}!`, "success");
-        } else {
-            showToast("Lỗi khi tạo file Excel!", "danger");
-        }
-    } catch(e) {
-        console.error(e);
-        showToast("Lỗi khi xuất file Excel!", "danger");
-    }
 }
 
 function printSubstitutionsPDF() {
