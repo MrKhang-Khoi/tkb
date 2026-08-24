@@ -1304,7 +1304,7 @@ function renderBatchAssignPanel(groupId) {
     const allUniqueSubjectNames = [...new Set([...subjectNamesFromGlobal, ...subjectNamesFromSubjects])]
         .filter(name => name && !dutyNames.has(name.toLowerCase()));
 
-    // Sắp xếp: Môn của tổ lên trước, các môn khác xuống sau
+    // Sắp xếp môn của tổ
     const groupList = [];
     const otherList = [];
     allUniqueSubjectNames.forEach(name => {
@@ -1317,16 +1317,19 @@ function renderBatchAssignPanel(groupId) {
     groupList.sort((a, b) => a.localeCompare(b, 'vi'));
     otherList.sort((a, b) => a.localeCompare(b, 'vi'));
 
-    const subjectItems = [
-        ...groupList.map(name => ({
+    // Nếu tổ đã có danh sách môn phụ trách -> Chỉ hiển thị các môn này để tránh rối
+    let subjectItems = [];
+    if (groupList.length > 0) {
+        subjectItems = groupList.map(name => ({
             value: name,
-            label: `⭐ ${name} (Môn của tổ)`
-        })),
-        ...otherList.map(name => ({
+            label: `⭐ ${name}`
+        }));
+    } else {
+        subjectItems = allUniqueSubjectNames.sort((a, b) => a.localeCompare(b, 'vi')).map(name => ({
             value: name,
             label: name
-        }))
-    ];
+        }));
+    }
 
     initSearchableDropdown('batchSubjectSelect', 'batchSubjectMenu', subjectItems, (val) => {
         onBatchSubjectChange();
@@ -3076,17 +3079,138 @@ function renderGroups() {
     groupTable.innerHTML = '';
 
     state.groups.forEach((g, index) => {
+        // Thu thập các môn được gán cho tổ này
+        const assignedSubs = new Set();
+        if (g.subjects && Array.isArray(g.subjects)) {
+            g.subjects.forEach(s => s && assignedSubs.add(s));
+        }
+        state.globalSubjects.forEach(gs => {
+            if (gs && (gs.groupId === g.id || gs.group === g.id || gs.group === g.name)) {
+                assignedSubs.add(gs.name);
+            }
+        });
+        const subList = Array.from(assignedSubs).sort((a, b) => a.localeCompare(b, 'vi'));
+
+        let badgesHtml = '';
+        if (subList.length === 0) {
+            badgesHtml = `<span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">Chưa gán môn</span>`;
+        } else {
+            badgesHtml = subList.map(s => `
+                <span class="badge" style="background: rgba(79, 70, 229, 0.15); border: 1px solid rgba(129, 140, 248, 0.35); color: var(--primary-light); margin: 2px 4px 2px 0; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; display: inline-block;">
+                    ${s}
+                </span>
+            `).join('');
+        }
+
         groupTable.innerHTML += `
             <tr>
-                <td>${index + 1}</td>
-                <td><b>${g.name}</b></td>
+                <td style="text-align: center;">${index + 1}</td>
+                <td><b style="color: var(--text-main);">${g.name}</b></td>
                 <td>
-                    <button class="btn btn-secondary" onclick="startGroupEdit('${g.id}')" style="padding: 4px 8px; font-size: 0.8rem; margin-right: 4px;">Sửa</button>
-                    <button class="btn btn-danger" onclick="deleteSubjectGroup('${g.id}')" style="padding: 4px 8px; font-size: 0.8rem;">Xóa</button>
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; max-height: 70px; overflow-y: auto;">
+                        ${badgesHtml}
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="openAssignSubjectsToGroupModal('${g.id}')" style="padding: 4px 8px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(79, 70, 229, 0.2); border: 1px solid var(--primary-light); color: var(--primary-light);">
+                            <span class="material-icons-round" style="font-size: 0.95rem;">checklist</span> Gán môn
+                        </button>
+                        <button class="btn btn-secondary" onclick="startGroupEdit('${g.id}')" style="padding: 4px 8px; font-size: 0.78rem;">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteSubjectGroup('${g.id}')" style="padding: 4px 8px; font-size: 0.78rem;">Xóa</button>
+                    </div>
                 </td>
             </tr>
         `;
     });
+}
+
+function openAssignSubjectsToGroupModal(groupId) {
+    const g = state.groups.find(group => group.id === groupId);
+    if (!g) return;
+
+    // Lấy toàn bộ môn học duy nhất trong trường (loại trừ kiêm nhiệm thuần túy nếu muốn, hoặc cho phép chọn cả HĐTN/GDĐP)
+    const subjectNamesFromGlobal = state.globalSubjects.filter(gs => gs).map(gs => gs.name);
+    const subjectNamesFromSubjects = state.subjects.filter(s => s).map(s => s.name);
+    const allUniqueSubjects = [...new Set([...subjectNamesFromGlobal, ...subjectNamesFromSubjects])]
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, 'vi'));
+
+    // Các môn hiện đang được gán cho tổ này
+    const currentlyAssigned = new Set();
+    if (g.subjects && Array.isArray(g.subjects)) {
+        g.subjects.forEach(s => s && currentlyAssigned.add(s.toLowerCase().trim()));
+    }
+    state.globalSubjects.forEach(gs => {
+        if (gs && (gs.groupId === g.id || gs.group === g.id || gs.group === g.name)) {
+            currentlyAssigned.add(gs.name.toLowerCase().trim());
+        }
+    });
+
+    let checkboxesHtml = allUniqueSubjects.map(subName => {
+        const isChecked = currentlyAssigned.has(subName.toLowerCase().trim());
+        return `
+            <label style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; cursor: pointer; font-size: 0.88rem; transition: var(--transition);">
+                <input type="checkbox" class="group-sub-assign-cb" value="${subName}" ${isChecked ? 'checked' : ''} style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-light);">
+                <span>${subName}</span>
+            </label>
+        `;
+    }).join('');
+
+    const bodyHtml = `
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                Chọn các môn học do <b>${g.name}</b> phụ trách giảng dạy. Khi Tổ trưởng đăng nhập, <b>hệ thống sẽ chỉ hiển thị các môn này</b> để phân công nhanh và không bị nhầm lẫn.
+            </p>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-secondary" onclick="document.querySelectorAll('.group-sub-assign-cb').forEach(cb => cb.checked = true)" style="padding: 2px 8px; font-size: 0.75rem;">Chọn tất cả</button>
+                <button class="btn btn-secondary" onclick="document.querySelectorAll('.group-sub-assign-cb').forEach(cb => cb.checked = false)" style="padding: 2px 8px; font-size: 0.75rem;">Bỏ chọn</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; max-height: 280px; overflow-y: auto; padding: 4px;">
+                ${checkboxesHtml}
+            </div>
+        </div>
+    `;
+
+    const footerHtml = `
+        <button class="btn btn-primary" onclick="saveAssignSubjectsToGroup('${g.id}')">💾 Lưu Danh Sách Môn</button>
+        <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+    `;
+
+    openModal(`Phân Công Môn Giảng Dạy - ${g.name}`, bodyHtml, footerHtml);
+}
+
+function saveAssignSubjectsToGroup(groupId) {
+    const g = state.groups.find(group => group.id === groupId);
+    if (!g) return;
+
+    const checkedCbs = Array.from(document.querySelectorAll('.group-sub-assign-cb:checked'));
+    const selectedSubjects = checkedCbs.map(cb => cb.value.trim());
+
+    // Cập nhật mảng subjects của tổ
+    g.subjects = selectedSubjects;
+
+    // Đồng bộ thuộc tính groupId cho các môn trong globalSubjects
+    state.globalSubjects.forEach(gs => {
+        if (gs) {
+            if (selectedSubjects.includes(gs.name)) {
+                gs.groupId = g.id;
+                gs.group = g.id;
+            } else if (gs.groupId === g.id || gs.group === g.id || gs.group === g.name) {
+                // Nếu bị bỏ chọn khỏi tổ này
+                gs.groupId = '';
+                gs.group = '';
+            }
+        }
+    });
+
+    persistData();
+    closeModal();
+    refreshActiveViews();
+    
+    if (typeof showToast === 'function') {
+        showToast(`Đã cập nhật ${selectedSubjects.length} môn học cho ${g.name}!`, 'success');
+    }
 }
 
 function addSubjectGroup() {
@@ -9044,6 +9168,8 @@ window.clearAllGroupAssignments = clearAllGroupAssignments;
 window.clearTeacherAssignments = clearTeacherAssignments;
 window.syncTimetableToGoogleSheets = syncTimetableToGoogleSheets;
 window.handleExcelTimetableUpload = handleExcelTimetableUpload;
+window.openAssignSubjectsToGroupModal = openAssignSubjectsToGroupModal;
+window.saveAssignSubjectsToGroup = saveAssignSubjectsToGroup;
 
 // Khởi chạy ứng dụng khi tải trang xong
 window.onload = function() {
