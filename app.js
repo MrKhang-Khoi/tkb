@@ -1316,6 +1316,7 @@ function initGroupDashboard(groupId) {
     renderTeacherStats(groupId);
     renderUnassignedSubjects(groupId);
     renderBatchAssignPanel(groupId);
+    initGroupSubstituteTab(groupId);
 
     const timetableTab = document.getElementById('groupTimetableTab');
     if (timetableTab && timetableTab.classList.contains('active')) {
@@ -8461,23 +8462,37 @@ function printGroupTimetablePDF() {
 function initGroupSubstituteTab(groupId) {
     const select = document.getElementById('subAbsenceTeacher');
     if (!select) return;
+    
+    const prevVal = select.value;
     select.innerHTML = '<option value="">-- Chọn giáo viên vắng --</option>';
     
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
-    const otherTeachers = state.teachers.filter(t => t && t.group !== groupId);
+    const effectiveGroupId = groupId || state.currentUser;
+    let groupTeachers = [];
     
-    const addOption = (t, prefix = "") => {
+    if (effectiveGroupId && effectiveGroupId !== 'admin') {
+        // Chỉ lấy giáo viên thuộc tổ chuyên môn này
+        groupTeachers = (state.teachers || []).filter(t => t && t.group === effectiveGroupId);
+    } else {
+        // Admin thì hiển thị tất cả
+        groupTeachers = state.teachers || [];
+    }
+    
+    // Sắp xếp tên giáo viên theo tiếng Việt
+    groupTeachers.sort((a, b) => (a.fullName || a.shortName || '').localeCompare(b.fullName || b.shortName || '', 'vi'));
+    
+    groupTeachers.forEach(t => {
         const opt = document.createElement('option');
         opt.value = t.shortName;
-        opt.innerText = `${prefix}${t.fullName} (${t.shortName})`;
+        opt.innerText = `${t.fullName} (${t.shortName})`;
         select.appendChild(opt);
-    };
+    });
+
+    if (prevVal && groupTeachers.some(t => t.shortName === prevVal)) {
+        select.value = prevVal;
+    }
     
-    groupTeachers.forEach(t => addOption(t, "★ "));
-    otherTeachers.forEach(t => addOption(t, ""));
-    
-    const startDateInput = document.getElementById('subAbsenceStartDate');
-    const endDateInput = document.getElementById('subAbsenceEndDate');
+    const startDateInput = document.getElementById('subAbsenceStartDate') || document.getElementById('subAbsenceDate');
+    const endDateInput = document.getElementById('subAbsenceEndDate') || startDateInput;
     const legacyDateInput = document.getElementById('subAbsenceDate');
     
     const today = new Date();
@@ -8492,18 +8507,23 @@ function initGroupSubstituteTab(groupId) {
     if (endDateInput && !endDateInput.value) {
         endDateInput.value = todayStr;
     }
-    if (legacyDateInput && !legacyDateInput.value) {
-        legacyDateInput.value = todayStr;
+    if (legacyDateInput) {
+        legacyDateInput.value = startDateInput ? startDateInput.value : todayStr;
     }
     
     renderGroupSubstitutions();
 }
 
 function syncEndDateAndAnalyze() {
-    const startDateInput = document.getElementById('subAbsenceStartDate');
-    const endDateInput = document.getElementById('subAbsenceEndDate');
-    if (startDateInput && endDateInput) {
-        if (!endDateInput.value || endDateInput.value < startDateInput.value) {
+    const startDateInput = document.getElementById('subAbsenceStartDate') || document.getElementById('subAbsenceDate');
+    const endDateInput = document.getElementById('subAbsenceEndDate') || startDateInput;
+    const legacyDateInput = document.getElementById('subAbsenceDate');
+    
+    if (startDateInput) {
+        if (legacyDateInput) {
+            legacyDateInput.value = startDateInput.value;
+        }
+        if (endDateInput && (!endDateInput.value || endDateInput.value < startDateInput.value)) {
             endDateInput.value = startDateInput.value;
         }
     }
@@ -8813,14 +8833,18 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
 let lastAnalyzedSubstituteData = null;
 
 function analyzeSubstituteSlots() {
-    const startDateInput = document.getElementById('subAbsenceStartDate');
-    const endDateInput = document.getElementById('subAbsenceEndDate');
+    const startDateInput = document.getElementById('subAbsenceStartDate') || document.getElementById('subAbsenceDate');
+    const endDateInput = document.getElementById('subAbsenceEndDate') || startDateInput;
     const legacyDateInput = document.getElementById('subAbsenceDate');
     const teacherSelect = document.getElementById('subAbsenceTeacher');
 
-    const startDateVal = startDateInput ? startDateInput.value : (legacyDateInput ? legacyDateInput.value : '');
-    const endDateVal = endDateInput ? endDateInput.value : startDateVal;
-    const teacherShort = teacherSelect ? teacherSelect.value : '';
+    const startDateVal = startDateInput ? (startDateInput.value || '').trim() : (legacyDateInput ? (legacyDateInput.value || '').trim() : '');
+    const endDateVal = endDateInput ? (endDateInput.value || '').trim() : startDateVal;
+    const teacherShort = teacherSelect ? (teacherSelect.value || '').trim() : '';
+
+    if (legacyDateInput && startDateVal) {
+        legacyDateInput.value = startDateVal;
+    }
 
     const container = document.getElementById('subAffectedSlotsContainer');
     const header = document.getElementById('subAffectedSlotsHeader');
@@ -8832,6 +8856,7 @@ function analyzeSubstituteSlots() {
     if (!startDateVal || !teacherShort) {
         container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 30px;">Vui lòng chọn khoảng thời gian vắng mặt và giáo viên để bắt đầu phân tích gợi ý dạy thay.</p>';
         if (header) header.style.display = 'none';
+        if (summaryBadge) summaryBadge.innerHTML = '';
         if (autoAssignBtn) autoAssignBtn.style.display = 'none';
         return;
     }

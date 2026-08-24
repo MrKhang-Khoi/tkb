@@ -364,6 +364,7 @@
                         
                         <!-- Form selection -->
                         <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 24px; padding: 16px; border-radius: 8px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border);">
+                            <input type="hidden" id="subAbsenceDate">
                             <div class="form-group" style="flex: 1 1 140px; margin-bottom: 0;">
                                 <label for="subAbsenceStartDate" style="margin-bottom: 6px; font-weight: 600; font-size: 0.85rem;">Từ ngày</label>
                                 <input type="date" id="subAbsenceStartDate" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%; height: 38px;" onchange="syncEndDateAndAnalyze()">
@@ -1274,6 +1275,6 @@
     </div>
 
     <!-- Load Local Application Logic -->
-    <script src="app.js" defer></script>
+    <script src="app.js?v=2.6" defer></script>
 </body>
 </html>
