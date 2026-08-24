@@ -3594,9 +3594,9 @@ function syncGvcnAndHomeroom() {
         }
     });
 
-    // 3. Tính toán lại định mức thực tế cho tất cả giáo viên (mặc định 19, giảm 4 nếu chủ nhiệm)
+    // 3. Tính toán lại định mức thực tế cho tất cả giáo viên (bảo toàn định mức chuẩn riêng, giảm 4 nếu chủ nhiệm)
     state.teachers.forEach(t => {
-        const stdQuota = 19;
+        const stdQuota = t.standardQuota || t.quota || 19;
         t.standardQuota = stdQuota;
         let totalRed = 0;
         if (t.homeroomClass) {
@@ -3650,19 +3650,19 @@ function syncGvcnAndHomeroom() {
 // ================= TAB 2: STAFF & ACCOUNTS (TEACHERS & ACCOUNTS) =================
 
 function renderTeachers() {
-    const table = document.getElementById('teachersListTable');
+    const table = document.getElementById('teacherListTable') || document.getElementById('teachersListTable');
     if (!table) return;
     table.innerHTML = '';
 
     // Cập nhật thẻ Select trong form thêm giáo viên
-    const selectTeacherGroup = document.getElementById('newTeacherGroupSelect');
+    const selectTeacherGroup = document.getElementById('newTeacherGroup') || document.getElementById('newTeacherGroupSelect');
     if (selectTeacherGroup) {
         const savedVal = selectTeacherGroup.value;
-        selectTeacherGroup.innerHTML = '';
-        state.groups.forEach(g => {
+        selectTeacherGroup.innerHTML = '<option value="">-- Chọn tổ chuyên môn --</option>';
+        (state.groups || []).forEach(g => {
             selectTeacherGroup.innerHTML += `<option value="${g.id}">${g.name}</option>`;
         });
-        if (savedVal && state.groups.some(g => g.id === savedVal)) {
+        if (savedVal && (state.groups || []).some(g => g.id === savedVal)) {
             selectTeacherGroup.value = savedVal;
         }
     }
@@ -3671,39 +3671,39 @@ function renderTeachers() {
     const newClassGvcn = document.getElementById('newClassGvcn');
     if (newClassGvcn) {
         const curVal = newClassGvcn.value;
-        newClassGvcn.innerHTML = '';
-        newClassGvcn.appendChild(new Option('-- Chọn GVCN --', ''));
-        state.teachers.forEach(t => {
-            newClassGvcn.appendChild(new Option(`${t.fullName} (${t.shortName})`, t.shortName));
+        newClassGvcn.innerHTML = '<option value="">-- Chọn GVCN --</option>';
+        (state.teachers || []).forEach(t => {
+            newClassGvcn.innerHTML += `<option value="${t.shortName}">${t.fullName} (${t.shortName})</option>`;
         });
         newClassGvcn.value = curVal;
     }
 
     // Cập nhật thẻ Select lọc tổ cho danh sách giáo viên
-    const filterTeacherListGroup = document.getElementById('filterTeacherListGroup');
-    if (filterTeacherListGroup) {
-        const savedVal = filterTeacherListGroup.value;
-        filterTeacherListGroup.innerHTML = '<option value="all">Tất cả các tổ</option>';
-        state.groups.forEach(g => {
-            filterTeacherListGroup.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+    const filterTeacherGroup = document.getElementById('filterTeacherGroup') || document.getElementById('filterTeacherListGroup');
+    if (filterTeacherGroup) {
+        const savedVal = filterTeacherGroup.value;
+        filterTeacherGroup.innerHTML = '<option value="all">Tất cả tổ</option>';
+        (state.groups || []).forEach(g => {
+            filterTeacherGroup.innerHTML += `<option value="${g.id}">${g.name}</option>`;
         });
-        filterTeacherListGroup.innerHTML += '<option value="unassigned">Chưa gán tổ</option>';
+        filterTeacherGroup.innerHTML += '<option value="unassigned">Chưa gán tổ</option>';
         
-        const validValues = ['all', 'unassigned', ...state.groups.map(g => g.id)];
+        const validValues = ['all', 'unassigned', ...(state.groups || []).map(g => g.id)];
         if (savedVal && validValues.includes(savedVal)) {
-            filterTeacherListGroup.value = savedVal;
+            filterTeacherGroup.value = savedVal;
         } else {
-            filterTeacherListGroup.value = 'all';
+            filterTeacherGroup.value = 'all';
         }
     }
 
-    const selectedGroupFilter = filterTeacherListGroup ? filterTeacherListGroup.value : 'all';
-    const searchQuery = document.getElementById('searchTeacherListName') ? document.getElementById('searchTeacherListName').value.trim().toLowerCase() : '';
+    const selectedGroupFilter = filterTeacherGroup ? filterTeacherGroup.value : 'all';
+    const searchInput = document.getElementById('searchTeacherListName');
+    const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-    let displayedTeachers = [...state.teachers];
+    let displayedTeachers = [...(state.teachers || [])];
     if (selectedGroupFilter !== 'all') {
         if (selectedGroupFilter === 'unassigned') {
-            displayedTeachers = displayedTeachers.filter(t => !t.group || t.group === 'unassigned' || !state.groups.some(g => g.id === t.group));
+            displayedTeachers = displayedTeachers.filter(t => !t.group || t.group === 'unassigned' || !(state.groups || []).some(g => g.id === t.group));
         } else {
             displayedTeachers = displayedTeachers.filter(t => t.group === selectedGroupFilter);
         }
@@ -3716,14 +3716,21 @@ function renderTeachers() {
         );
     }
 
+    if (displayedTeachers.length === 0) {
+        table.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">Không tìm thấy giáo viên nào.</td></tr>`;
+        return;
+    }
+
     displayedTeachers.forEach((t, idx) => {
-        const groupObj = state.groups.find(g => g.id === t.group);
+        const groupObj = (state.groups || []).find(g => g.id === t.group);
+        const quota = t.quota || 19;
         table.innerHTML += `
             <tr>
-                <td>${idx + 1}</td>
+                <td style="text-align: center;">${idx + 1}</td>
                 <td><b>${t.fullName}</b></td>
-                <td>${t.shortName}</td>
-                <td>${groupObj ? groupObj.name : (t.group && t.group !== 'unassigned' ? t.group : 'Chưa gán')}</td>
+                <td><span style="font-family: monospace; font-weight: bold; color: var(--primary-light);">${t.shortName}</span></td>
+                <td>${groupObj ? groupObj.name : (t.group && t.group !== 'unassigned' ? t.group : '<span style="color: var(--warning);">Chưa gán</span>')}</td>
+                <td style="text-align: center;"><span class="badge" style="background: rgba(99, 102, 241, 0.15); color: var(--primary-light); font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(129, 140, 248, 0.3);">${quota}T</span></td>
                 <td>
                     <button class="btn btn-secondary" onclick="startTeacherEdit('${t.id}')" style="padding: 4px 8px; font-size: 0.8rem; margin-right: 4px;">Sửa</button>
                     <button class="btn btn-danger" onclick="deleteTeacher('${t.id}')" style="padding: 4px 8px; font-size: 0.8rem;">Xóa</button>
@@ -3738,7 +3745,7 @@ function updateTeacherSubjectsCheckboxes() {
     if (!container) return;
     container.innerHTML = '';
 
-    if (state.globalSubjects.length === 0) {
+    if (!state.globalSubjects || state.globalSubjects.length === 0) {
         container.innerHTML = `<span style="color: var(--text-muted); font-size: 0.85rem;">Chưa có môn học/nhiệm vụ nào được khai báo.</span>`;
         return;
     }
@@ -3775,37 +3782,57 @@ window.onEditTeacherGroupChange = function(teacherId) {
     // Không làm gì, giữ nguyên để không lỗi nếu có gọi
 };
 
-function addTeacherManual() {
-    const fullName = document.getElementById('newTeacherFullName').value.trim();
-    const shortName = document.getElementById('newTeacherShort').value.trim();
-    const group = document.getElementById('newTeacherGroupSelect').value;
+function addTeacher() {
+    const fullNameInput = document.getElementById('newTeacherFullName');
+    const shortNameInput = document.getElementById('newTeacherShortName') || document.getElementById('newTeacherShort');
+    const groupInput = document.getElementById('newTeacherGroup') || document.getElementById('newTeacherGroupSelect');
+    const quotaInput = document.getElementById('newTeacherQuota');
+
+    const fullName = fullNameInput ? fullNameInput.value.trim() : '';
+    const shortName = shortNameInput ? shortNameInput.value.trim() : '';
+    const group = groupInput ? groupInput.value : '';
+    const quota = quotaInput ? (parseInt(quotaInput.value, 10) || 19) : 19;
 
     if (!fullName || !shortName) {
-        alert("Vui lòng nhập họ tên và tên viết tắt!");
+        showToast("Vui lòng nhập họ tên và tên viết tắt giáo viên!", "warning");
+        return;
+    }
+
+    if (!group) {
+        showToast("Vui lòng chọn tổ chuyên môn cho giáo viên!", "warning");
         return;
     }
 
     // Đảm bảo tên viết tắt giáo viên là duy nhất
-    if (state.teachers.some(t => t.shortName.toLowerCase() === shortName.toLowerCase())) {
-        alert(`Tên viết tắt "${shortName}" đã tồn tại! Vui lòng chọn tên viết tắt khác để tránh trùng lặp.`);
+    if ((state.teachers || []).some(t => t.shortName.toLowerCase() === shortName.toLowerCase())) {
+        showToast(`Tên viết tắt "${shortName}" đã tồn tại! Vui lòng chọn tên viết tắt khác.`, "warning");
         return;
     }
 
+    state.teachers = state.teachers || [];
     state.teachers.push({
         id: 't_' + Date.now(),
         fullName: fullName,
         shortName: shortName,
         group: group,
-        quota: 19
+        quota: quota,
+        standardQuota: quota,
+        subjects: []
     });
 
     resolveAllTeacherShortNames();
 
-    document.getElementById('newTeacherFullName').value = '';
-    document.getElementById('newTeacherShort').value = '';
+    if (fullNameInput) fullNameInput.value = '';
+    if (shortNameInput) shortNameInput.value = '';
+    if (quotaInput) quotaInput.value = 19;
     
     persistData();
     refreshActiveViews();
+    showToast(`Đã thêm giáo viên "${fullName}" (${shortName}) thành công!`, "success");
+}
+
+function addTeacherManual() {
+    addTeacher();
 }
 
 function deleteTeacher(id) {
@@ -3877,16 +3904,12 @@ function startTeacherEdit(id) {
     if (!t) return;
     editingTeacherId = id;
 
-    let groupOptions = '';
-    state.groups.forEach(g => {
-        groupOptions += `<option value="${g.id}" ${g.id === t.group ? 'selected' : ''}>selectTeacherGroup ? g.name : g.name}</option>`;
-    });
-
-    // Fix select options markup replacement
-    groupOptions = '';
-    state.groups.forEach(g => {
+    let groupOptions = '<option value="">-- Chưa gán tổ --</option>';
+    (state.groups || []).forEach(g => {
         groupOptions += `<option value="${g.id}" ${g.id === t.group ? 'selected' : ''}>${g.name}</option>`;
     });
+
+    const currentQuota = t.standardQuota || t.quota || 19;
 
     const bodyHtml = `
         <div class="form-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
@@ -3897,11 +3920,15 @@ function startTeacherEdit(id) {
             <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Tên Viết Tắt</label>
             <input type="text" id="editTeacherShortName" class="form-control" value="${t.shortName}">
         </div>
-        <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="form-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
             <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Tổ Chuyên Môn</label>
             <select id="editTeacherGroup" class="form-control" style="height: 38px;">
                 ${groupOptions}
             </select>
+        </div>
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Định Mức Tiết Dạy</label>
+            <input type="number" id="editTeacherQuota" class="form-control" min="1" max="40" value="${currentQuota}">
         </div>
     `;
 
@@ -3919,22 +3946,26 @@ function saveTeacherEdit(id) {
         const fullName = document.getElementById('editTeacherFullName').value.trim();
         const shortName = document.getElementById('editTeacherShortName').value.trim();
         const group = document.getElementById('editTeacherGroup').value;
+        const quotaInput = document.getElementById('editTeacherQuota');
+        const quota = quotaInput ? (parseInt(quotaInput.value, 10) || 19) : (t.quota || 19);
 
         if (!fullName || !shortName) {
-            alert("Vui lòng điền đầy đủ họ tên và tên viết tắt!");
+            showToast("Vui lòng điền đầy đủ họ tên và tên viết tắt!", "warning");
             return;
         }
 
         // Đảm bảo tên viết tắt giáo viên là duy nhất
         const oldShort = t.shortName;
         if (oldShort !== shortName && state.teachers.some(teacher => teacher.id !== id && teacher.shortName.toLowerCase() === shortName.toLowerCase())) {
-            alert(`Tên viết tắt "${shortName}" đã tồn tại! Vui lòng chọn tên viết tắt khác.`);
+            showToast(`Tên viết tắt "${shortName}" đã tồn tại! Vui lòng chọn tên viết tắt khác.`, "warning");
             return;
         }
 
         t.fullName = fullName;
         t.shortName = shortName;
         t.group = group;
+        t.standardQuota = quota;
+        t.quota = quota;
 
         if (oldShort !== shortName) {
             renameTeacherShortNameInSystem(oldShort, shortName);
@@ -3945,6 +3976,7 @@ function saveTeacherEdit(id) {
         persistData();
         closeModal();
         refreshActiveViews();
+        showToast(`Đã cập nhật thông tin giáo viên "${fullName}"!`, "success");
     }
 }
 
@@ -6867,8 +6899,12 @@ function getAutoShortNameForEdit(fullName, currentTeacherId, extraShortNames = [
 
 
 function autoGenerateShortName(fullName) {
-    const shortNameInput = document.getElementById('newTeacherShort');
-    if (shortNameInput) {
+    if (!fullName) {
+        const nameInput = document.getElementById('newTeacherFullName');
+        fullName = nameInput ? nameInput.value : '';
+    }
+    const shortNameInput = document.getElementById('newTeacherShortName') || document.getElementById('newTeacherShort');
+    if (shortNameInput && fullName) {
         shortNameInput.value = getAutoShortName(fullName);
     }
 }
@@ -7397,17 +7433,17 @@ function updatePublicSearchDropdown() {
     });
 
     // Giữ lại lựa chọn hiện tại nếu hợp lệ, ngược lại chọn mục đầu tiên
-    const currentVal = searchInput.dataset.value;
+    const currentVal = (searchInput.dataset && searchInput.dataset.value) || searchInput.value || '';
     const matchItem = targetItems.find(item => item.value === currentVal);
     if (matchItem) {
         searchInput.value = matchItem.label;
-        searchInput.dataset.value = matchItem.value;
+        if (searchInput.dataset) searchInput.dataset.value = matchItem.value;
     } else if (targetItems.length > 0) {
         searchInput.value = targetItems[0].label;
-        searchInput.dataset.value = targetItems[0].value;
+        if (searchInput.dataset) searchInput.dataset.value = targetItems[0].value;
     } else {
         searchInput.value = '';
-        searchInput.dataset.value = '';
+        if (searchInput.dataset) searchInput.dataset.value = '';
     }
 
     renderPublicTimetableGrid();
@@ -7500,7 +7536,7 @@ function renderPublicTimetableGrid() {
 
     const type = document.getElementById('publicSearchType').value;
     const searchInput = document.getElementById('publicSearchTarget');
-    const target = searchInput ? (searchInput.dataset.value || searchInput.value) : '';
+    const target = searchInput ? ((searchInput.dataset && searchInput.dataset.value) || searchInput.value || '') : '';
 
     const activeData = getActivePublicTimetable();
     const activeTimetable = activeData.timetable;
@@ -8481,10 +8517,7 @@ function initGroupSubstituteTab(groupId) {
     groupTeachers.sort((a, b) => (a.fullName || a.shortName || '').localeCompare(b.fullName || b.shortName || '', 'vi'));
     
     groupTeachers.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.shortName;
-        opt.innerText = `${t.fullName} (${t.shortName})`;
-        select.appendChild(opt);
+        select.innerHTML += `<option value="${t.shortName}">${t.fullName} (${t.shortName})</option>`;
     });
 
     if (prevVal && groupTeachers.some(t => t.shortName === prevVal)) {
@@ -8638,7 +8671,11 @@ function showToast(message, type = 'info') {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-20px)';
         setTimeout(() => {
-            toast.remove();
+            if (typeof toast.remove === 'function') {
+                toast.remove();
+            } else if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
         }, 300);
     }, 3000);
 }
@@ -9449,7 +9486,7 @@ function downloadPublicExcel() {
     }
     const type = document.getElementById('publicSearchType').value;
     const searchInput = document.getElementById('publicSearchTarget');
-    const target = searchInput ? (searchInput.dataset.value || searchInput.value) : '';
+    const target = searchInput ? ((searchInput.dataset && searchInput.dataset.value) || searchInput.value || '') : '';
     const filename = `TKB_${type === 'class' ? 'Lop_' : 'GV_'}${target.replace(/\s+/g, '_')}.xls`;
     
     const activeData = getActivePublicTimetable();
@@ -9779,7 +9816,7 @@ function downloadPublicExcel() {
 function printPublicPDF() {
     const type = document.getElementById('publicSearchType').value;
     const searchInput = document.getElementById('publicSearchTarget');
-    const target = searchInput ? (searchInput.dataset.value || searchInput.value) : '';
+    const target = searchInput ? ((searchInput.dataset && searchInput.dataset.value) || searchInput.value || '') : '';
     const printTitle = document.getElementById('publicPrintTitle');
     const printSubtitle = document.getElementById('publicPrintSubtitle');
     
@@ -10094,7 +10131,14 @@ window.switchGroupTab = switchGroupTab;
 window.analyzeSubstituteSlots = analyzeSubstituteSlots;
 window.syncEndDateAndAnalyze = syncEndDateAndAnalyze;
 window.autoAssignAllSlots = autoAssignAllSlots;
-window.deleteSubstitution = deleteSubstitution;
+window.addTeacher = addTeacher;
+window.addTeacherManual = addTeacherManual;
+window.renderTeachers = renderTeachers;
+window.startTeacherEdit = startTeacherEdit;
+window.saveTeacherEdit = saveTeacherEdit;
+window.deleteTeacher = deleteTeacher;
+window.downloadTeachersExcelTemplate = downloadTeachersExcelTemplate;
+window.importTeachersExcel = importTeachersExcel;
 window.deleteAllTeachers = deleteAllTeachers;
 window.startAccountEdit = startAccountEdit;
 window.saveAccountEdit = saveAccountEdit;
