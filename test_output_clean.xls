@@ -1,0 +1,547 @@
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Author>FET Timetable Hub</Author>
+  <Created>2026-08-24T04:28:48.171Z</Created>
+ </DocumentProperties>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11"/>
+  </Style>
+  <Style ss:ID="Title">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="15" ss:Color="#1E3A8A"/>
+   <Borders/>
+  </Style>
+  <Style ss:ID="Header">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="11"/>
+   <Interior ss:Color="#E2EFDA" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataCell">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="PeriodRed">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Color="#C00000" ss:Size="11"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="SpecialAct">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Italic="1" ss:Color="#C00000" ss:Bold="1" ss:Size="11"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="TeacherHeader">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Left"/>
+   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="12" ss:Color="#1E3A8A"/>
+   <Borders/>
+  </Style>
+  <Style ss:ID="EmptyCell">
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+   </Borders>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Buổi sáng">
+  <Table ss:DefaultRowHeight="22">
+   <Column ss:Width="70"/>
+   <Column ss:Width="60"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="110"/>
+   <Row ss:Height="28">
+    <Cell ss:MergeAcross="3" ss:StyleID="Title"><Data ss:Type="String">THỜI KHÓA BIỂU BUỔI SÁNG</Data></Cell>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Thứ</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Tiết</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">6A1</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">7A1</Data></Cell>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 2</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="SpecialAct"><Data ss:Type="String">Chào Cờ-N.V.A</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="DataCell"><Data ss:Type="String">Toán-N.V.A</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 3</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 4</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 5</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 6</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 7</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Layout x:Orientation="Landscape"/>
+    <PageMargins x:Bottom="0.35" x:Left="0.35" x:Right="0.35" x:Top="0.35"/>
+   </PageSetup>
+   <FitToPage/>
+   <Print>
+    <FitWidth>1</FitWidth>
+    <FitHeight>0</FitHeight>
+    <ValidPrinterInfo/>
+    <PaperSizeIndex>9</PaperSizeIndex>
+   </Print>
+   <Selected/>
+   <DisplayGridlines/>
+  </WorksheetOptions>
+ </Worksheet>
+ <Worksheet ss:Name="Buổi chiều">
+  <Table ss:DefaultRowHeight="22">
+   <Column ss:Width="70"/>
+   <Column ss:Width="60"/>
+   <Column ss:Width="110"/>
+   <Row ss:Height="28">
+    <Cell ss:MergeAcross="2" ss:StyleID="Title"><Data ss:Type="String">THỜI KHÓA BIỂU BUỔI CHIỀU</Data></Cell>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Thứ</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Tiết</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">6A2</Data></Cell>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 2</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 3</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 4</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 5</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 6</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">Thứ 7</Data></Cell>
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="23">
+    <Cell ss:Index="2" ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Layout x:Orientation="Landscape"/>
+    <PageMargins x:Bottom="0.35" x:Left="0.35" x:Right="0.35" x:Top="0.35"/>
+   </PageSetup>
+   <FitToPage/>
+   <Print>
+    <FitWidth>1</FitWidth>
+    <FitHeight>0</FitHeight>
+    <ValidPrinterInfo/>
+    <PaperSizeIndex>9</PaperSizeIndex>
+   </Print>
+   <Selected/>
+   <DisplayGridlines/>
+  </WorksheetOptions>
+ </Worksheet>
+ <Worksheet ss:Name="tkb giáo viên riêng">
+  <Table ss:DefaultRowHeight="22">
+   <Column ss:Width="80"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="105"/>
+   <Row ss:Height="24">
+    <Cell ss:MergeAcross="12" ss:StyleID="TeacherHeader"><Data ss:Type="String">Thời khóa biểu của giáo viên: Nguyễn Văn A</Data></Cell>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Tiết</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">S.T2</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">C.T2</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">S.T3</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">C.T3</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">S.T4</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">C.T4</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">S.T5</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">C.T5</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">S.T6</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">C.T6</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">S.T7</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">C.T7</Data></Cell>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 1</Data></Cell>
+    <Cell ss:StyleID="SpecialAct"><Data ss:Type="String">6A1-Chào Cờ</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 2</Data></Cell>
+    <Cell ss:StyleID="DataCell"><Data ss:Type="String">6A1-Toán</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 3</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 4</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="22">
+    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết 5</Data></Cell>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+    <Cell ss:StyleID="EmptyCell"/>
+   </Row>
+   <Row ss:Height="14"/>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Layout x:Orientation="Landscape"/>
+    <PageMargins x:Bottom="0.35" x:Left="0.35" x:Right="0.35" x:Top="0.35"/>
+   </PageSetup>
+   <FitToPage/>
+   <Print>
+    <FitWidth>1</FitWidth>
+    <FitHeight>0</FitHeight>
+    <ValidPrinterInfo/>
+    <PaperSizeIndex>9</PaperSizeIndex>
+   </Print>
+   <Selected/>
+   <DisplayGridlines/>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>

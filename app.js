@@ -5767,16 +5767,10 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
   <Style ss:ID="Default" ss:Name="Normal">
    <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
    <Font ss:FontName="Times New Roman" ss:Size="11"/>
-   <Borders>
-    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
-    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
-    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
-    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
-   </Borders>
   </Style>
   <Style ss:ID="Title">
    <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
-   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="16"/>
+   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="15" ss:Color="#1E3A8A"/>
    <Borders/>
   </Style>
   <Style ss:ID="Header">
@@ -5790,9 +5784,19 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
    </Borders>
   </Style>
+  <Style ss:ID="DataCell">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
+   </Borders>
+  </Style>
   <Style ss:ID="PeriodRed">
    <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
-   <Font ss:FontName="Times New Roman" ss:Color="#C00000" ss:Size="11"/>
+   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Color="#C00000" ss:Size="11"/>
    <Borders>
     <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
     <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>
@@ -5812,7 +5816,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
   </Style>
   <Style ss:ID="TeacherHeader">
    <Alignment ss:Vertical="Center" ss:Horizontal="Left"/>
-   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="12"/>
+   <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="12" ss:Color="#1E3A8A"/>
    <Borders/>
   </Style>
   <Style ss:ID="EmptyCell">
@@ -5849,17 +5853,16 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
         .sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true}));
 
     xml += `\n <Worksheet ss:Name="Buổi sáng">`;
-    xml += `\n  <Table x:FullColumns="1" x:FullRows="1" ss:DefaultRowHeight="20">`;
+    xml += `\n  <Table ss:DefaultRowHeight="22">`;
     xml += `\n   <Column ss:Width="70"/>`; // Thứ
     xml += `\n   <Column ss:Width="60"/>`; // Tiết
     morningClasses.forEach(() => {
         xml += `\n   <Column ss:Width="110"/>`;
     });
 
-    xml += `\n   <Row ss:Height="30">`;
+    xml += `\n   <Row ss:Height="28">`;
     xml += `\n    <Cell ss:MergeAcross="${morningClasses.length + 1}" ss:StyleID="Title"><Data ss:Type="String">THỜI KHÓA BIỂU BUỔI SÁNG</Data></Cell>`;
     xml += `\n   </Row>`;
-    xml += `\n   <Row ss:Height="20"><Cell ss:MergeAcross="${morningClasses.length + 1}" ss:StyleID="Title"/></Row>`;
     xml += `\n   <Row ss:Height="22">`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Thứ</Data></Cell>`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Tiết</Data></Cell>`;
@@ -5870,7 +5873,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
 
     weekdays.forEach(day => {
         periods.forEach((p, idx) => {
-            xml += `\n   <Row ss:Height="24">`;
+            xml += `\n   <Row ss:Height="23">`;
             if (idx === 0) {
                 xml += `\n    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">${escapeXml(weekdayLabels[day] || day)}</Data></Cell>`;
                 xml += `\n    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết ${p}</Data></Cell>`;
@@ -5889,7 +5892,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
                     }
                 }
                 if (cellVal) {
-                    xml += `\n    <Cell ss:StyleID="${isSpecial ? 'SpecialAct' : 'Default'}"><Data ss:Type="String">${escapeXml(cellVal)}</Data></Cell>`;
+                    xml += `\n    <Cell ss:StyleID="${isSpecial ? 'SpecialAct' : 'DataCell'}"><Data ss:Type="String">${escapeXml(cellVal)}</Data></Cell>`;
                 } else {
                     xml += `\n    <Cell ss:StyleID="EmptyCell"/>`;
                 }
@@ -5898,6 +5901,21 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
         });
     });
     xml += `\n  </Table>`;
+    xml += `\n  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">`;
+    xml += `\n   <PageSetup>`;
+    xml += `\n    <Layout x:Orientation="Landscape"/>`;
+    xml += `\n    <PageMargins x:Bottom="0.35" x:Left="0.35" x:Right="0.35" x:Top="0.35"/>`;
+    xml += `\n   </PageSetup>`;
+    xml += `\n   <FitToPage/>`;
+    xml += `\n   <Print>`;
+    xml += `\n    <FitWidth>1</FitWidth>`;
+    xml += `\n    <FitHeight>0</FitHeight>`;
+    xml += `\n    <ValidPrinterInfo/>`;
+    xml += `\n    <PaperSizeIndex>9</PaperSizeIndex>`;
+    xml += `\n   </Print>`;
+    xml += `\n   <Selected/>`;
+    xml += `\n   <DisplayGridlines/>`;
+    xml += `\n  </WorksheetOptions>`;
     xml += `\n </Worksheet>`;
 
     // --- SHEET 2: BUỔI CHIỀU ---
@@ -5905,17 +5923,16 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
         .sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true}));
 
     xml += `\n <Worksheet ss:Name="Buổi chiều">`;
-    xml += `\n  <Table x:FullColumns="1" x:FullRows="1" ss:DefaultRowHeight="20">`;
+    xml += `\n  <Table ss:DefaultRowHeight="22">`;
     xml += `\n   <Column ss:Width="70"/>`; // Thứ
     xml += `\n   <Column ss:Width="60"/>`; // Tiết
     afternoonClasses.forEach(() => {
         xml += `\n   <Column ss:Width="110"/>`;
     });
 
-    xml += `\n   <Row ss:Height="30">`;
+    xml += `\n   <Row ss:Height="28">`;
     xml += `\n    <Cell ss:MergeAcross="${afternoonClasses.length + 1}" ss:StyleID="Title"><Data ss:Type="String">THỜI KHÓA BIỂU BUỔI CHIỀU</Data></Cell>`;
     xml += `\n   </Row>`;
-    xml += `\n   <Row ss:Height="20"><Cell ss:MergeAcross="${afternoonClasses.length + 1}" ss:StyleID="Title"/></Row>`;
     xml += `\n   <Row ss:Height="22">`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Thứ</Data></Cell>`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Tiết</Data></Cell>`;
@@ -5926,7 +5943,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
 
     weekdays.forEach(day => {
         periods.forEach((p, idx) => {
-            xml += `\n   <Row ss:Height="24">`;
+            xml += `\n   <Row ss:Height="23">`;
             if (idx === 0) {
                 xml += `\n    <Cell ss:MergeDown="4" ss:StyleID="Header"><Data ss:Type="String">${escapeXml(weekdayLabels[day] || day)}</Data></Cell>`;
                 xml += `\n    <Cell ss:StyleID="PeriodRed"><Data ss:Type="String">Tiết ${p}</Data></Cell>`;
@@ -5945,7 +5962,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
                     }
                 }
                 if (cellVal) {
-                    xml += `\n    <Cell ss:StyleID="${isSpecial ? 'SpecialAct' : 'Default'}"><Data ss:Type="String">${escapeXml(cellVal)}</Data></Cell>`;
+                    xml += `\n    <Cell ss:StyleID="${isSpecial ? 'SpecialAct' : 'DataCell'}"><Data ss:Type="String">${escapeXml(cellVal)}</Data></Cell>`;
                 } else {
                     xml += `\n    <Cell ss:StyleID="EmptyCell"/>`;
                 }
@@ -5954,6 +5971,21 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
         });
     });
     xml += `\n  </Table>`;
+    xml += `\n  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">`;
+    xml += `\n   <PageSetup>`;
+    xml += `\n    <Layout x:Orientation="Landscape"/>`;
+    xml += `\n    <PageMargins x:Bottom="0.35" x:Left="0.35" x:Right="0.35" x:Top="0.35"/>`;
+    xml += `\n   </PageSetup>`;
+    xml += `\n   <FitToPage/>`;
+    xml += `\n   <Print>`;
+    xml += `\n    <FitWidth>1</FitWidth>`;
+    xml += `\n    <FitHeight>0</FitHeight>`;
+    xml += `\n    <ValidPrinterInfo/>`;
+    xml += `\n    <PaperSizeIndex>9</PaperSizeIndex>`;
+    xml += `\n   </Print>`;
+    xml += `\n   <Selected/>`;
+    xml += `\n   <DisplayGridlines/>`;
+    xml += `\n  </WorksheetOptions>`;
     xml += `\n </Worksheet>`;
 
     // --- SHEET 3: TKB GIÁO VIÊN RIÊNG ---
@@ -5971,10 +6003,9 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
         }
         return a.shortName.localeCompare(b.shortName, 'vi', { sensitivity: 'base' });
     });
-    const totalTeacherRows = sortedTeachers.length * 8;
 
     xml += `\n <Worksheet ss:Name="tkb giáo viên riêng">`;
-    xml += `\n  <Table x:FullColumns="1" x:FullRows="1" ss:DefaultRowHeight="20">`;
+    xml += `\n  <Table ss:DefaultRowHeight="22">`;
     xml += `\n   <Column ss:Width="80"/>`; // Tiết
     for (let col = 0; col < 12; col++) {
         xml += `\n   <Column ss:Width="105"/>`;
@@ -5997,8 +6028,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
 
     sortedTeachers.forEach((t) => {
         xml += `\n   <Row ss:Height="24">`;
-        xml += `\n    <Cell ss:StyleID="EmptyCell" />`;
-        xml += `\n    <Cell ss:MergeAcross="11" ss:StyleID="TeacherHeader"><Data ss:Type="String">Thời khóa biểu của giáo viên: ${escapeXml(t.fullName)}</Data></Cell>`;
+        xml += `\n    <Cell ss:MergeAcross="12" ss:StyleID="TeacherHeader"><Data ss:Type="String">Thời khóa biểu của giáo viên: ${escapeXml(t.fullName)}</Data></Cell>`;
         xml += `\n   </Row>`;
 
         xml += `\n   <Row ss:Height="22">`;
@@ -6036,7 +6066,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
                 }
 
                 if (cellVal) {
-                    xml += `\n    <Cell ss:StyleID="${isSpecial ? 'SpecialAct' : 'Default'}"><Data ss:Type="String">${escapeXml(cellVal)}</Data></Cell>`;
+                    xml += `\n    <Cell ss:StyleID="${isSpecial ? 'SpecialAct' : 'DataCell'}"><Data ss:Type="String">${escapeXml(cellVal)}</Data></Cell>`;
                 } else {
                     xml += `\n    <Cell ss:StyleID="EmptyCell"/>`;
                 }
@@ -6044,14 +6074,26 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
             xml += `\n   </Row>`;
         });
 
-        xml += `\n   <Row ss:Height="20">`;
-        for (let c = 0; c < 13; c++) {
-            xml += `\n    <Cell ss:StyleID="EmptyCell"/>`;
-        }
-        xml += `\n   </Row>`;
+        // Khoảng cách giữa các giáo viên
+        xml += `\n   <Row ss:Height="14"/>`;
     });
 
     xml += `\n  </Table>`;
+    xml += `\n  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">`;
+    xml += `\n   <PageSetup>`;
+    xml += `\n    <Layout x:Orientation="Landscape"/>`;
+    xml += `\n    <PageMargins x:Bottom="0.35" x:Left="0.35" x:Right="0.35" x:Top="0.35"/>`;
+    xml += `\n   </PageSetup>`;
+    xml += `\n   <FitToPage/>`;
+    xml += `\n   <Print>`;
+    xml += `\n    <FitWidth>1</FitWidth>`;
+    xml += `\n    <FitHeight>0</FitHeight>`;
+    xml += `\n    <ValidPrinterInfo/>`;
+    xml += `\n    <PaperSizeIndex>9</PaperSizeIndex>`;
+    xml += `\n   </Print>`;
+    xml += `\n   <Selected/>`;
+    xml += `\n   <DisplayGridlines/>`;
+    xml += `\n  </WorksheetOptions>`;
     xml += `\n </Worksheet>`;
 
     xml += `\n</Workbook>`;
