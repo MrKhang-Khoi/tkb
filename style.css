@@ -769,10 +769,11 @@ table.timetable-table th {
     }
     
     /* Khi in ở màn hình tra cứu công khai */
-    body:not(.printing-group-timetable) #groupDashboard {
+    body:not(.printing-group-timetable):not(.printing-substitutions) #groupDashboard,
+    body:not(.printing-group-timetable):not(.printing-substitutions) #substitutionPrintContainer {
         display: none !important;
     }
-    body:not(.printing-group-timetable) #publicTimetableSection {
+    body:not(.printing-group-timetable):not(.printing-substitutions) #publicTimetableSection {
         display: block !important;
         position: absolute;
         left: 0;
@@ -784,13 +785,14 @@ table.timetable-table th {
         border: none !important;
         box-shadow: none !important;
     }
-    body:not(.printing-group-timetable) #publicTimetableSection h2,
-    body:not(.printing-group-timetable) #publicTimetableSection p {
+    body:not(.printing-group-timetable):not(.printing-substitutions) #publicTimetableSection h2,
+    body:not(.printing-group-timetable):not(.printing-substitutions) #publicTimetableSection p {
         display: none !important;
     }
 
     /* Khi in ở màn hình Tổ trưởng (Thời khóa biểu Tổ) */
-    body.printing-group-timetable #publicTimetableSection {
+    body.printing-group-timetable #publicTimetableSection,
+    body.printing-group-timetable #substitutionPrintContainer {
         display: none !important;
     }
     body.printing-group-timetable #groupDashboard {
