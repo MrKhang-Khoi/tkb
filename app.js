@@ -5289,6 +5289,12 @@ function handleFetConverterUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        handleExcelTimetableUpload(file);
+        event.target.value = '';
+        return;
+    }
+
     const reader = new FileReader();
     if (file.name.endsWith('.xml') || file.name.endsWith('.fet')) {
         reader.readAsText(file);
@@ -5383,9 +5389,201 @@ function handleFetConverterUpload(event) {
             }
         };
     } else {
-        alert("Chỉ chấp nhận tệp tin .fet hoặc .xml!");
+        alert("Chỉ chấp nhận tệp tin .fet, .xml hoặc .xlsx!");
     }
     event.target.value = '';
+}
+
+function handleExcelTimetableUpload(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            if (typeof XLSX === 'undefined') {
+                alert("Thư viện đọc Excel chưa sẵn sàng. Vui lòng thử lại!");
+                return;
+            }
+
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            const parsedSlots = [];
+            const classSet = new Set();
+            const teacherSet = new Set();
+            const subjectSet = new Set();
+            const classesMetadata = [];
+
+            const dayMap = {
+                'thứ 2': 'T2', 'thu 2': 'T2', 't2': 'T2',
+                'thứ 3': 'T3', 'thu 3': 'T3', 't3': 'T3',
+                'thứ 4': 'T4', 'thu 4': 'T4', 't4': 'T4',
+                'thứ 5': 'T5', 'thu 5': 'T5', 't5': 'T5',
+                'thứ 6': 'T6', 'thu 6': 'T6', 't6': 'T6',
+                'thứ 7': 'T7', 'thu 7': 'T7', 't7': 'T7'
+            };
+
+            // Duyệt qua tất cả các Sheet trong Workbook
+            workbook.SheetNames.forEach(sheetName => {
+                const sheetLower = sheetName.toLowerCase();
+                // Bỏ qua sheet giáo viên riêng nếu có các sheet buổi sáng/chiều
+                if (sheetLower.includes('giáo viên') || sheetLower.includes('giao vien') || sheetLower.includes('gv')) {
+                    return;
+                }
+
+                const sheet = workbook.Sheets[sheetName];
+                if (!sheet) return;
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                if (rows.length < 4) return;
+
+                // Xác định session mặc định theo tên sheet
+                let defaultSession = 'sáng';
+                if (sheetLower.includes('chiều') || sheetLower.includes('chieu')) {
+                    defaultSession = 'chiều';
+                }
+
+                // Tìm hàng tiêu đề chứa danh sách lớp (hàng có chứa chữ "thứ" hoặc "tiết")
+                let headerRowIdx = -1;
+                for (let r = 0; r < Math.min(10, rows.length); r++) {
+                    const row = rows[r];
+                    if (row && row.some(cell => {
+                        const str = String(cell).toLowerCase();
+                        return str.includes('thứ') || str.includes('thu') || str.includes('tiết') || str.includes('tiet');
+                    })) {
+                        headerRowIdx = r;
+                        break;
+                    }
+                }
+                if (headerRowIdx === -1) headerRowIdx = 2;
+
+                const headerRow = rows[headerRowIdx];
+                const classCols = [];
+                for (let c = 2; c < headerRow.length; c++) {
+                    const clsName = String(headerRow[c] || '').trim();
+                    if (clsName && clsName.length >= 2 && !clsName.toLowerCase().includes('thứ') && !clsName.toLowerCase().includes('tiết')) {
+                        classCols.push({ col: c, name: clsName });
+                        classSet.add(clsName);
+                        if (!classesMetadata.some(item => item.name.toLowerCase() === clsName.toLowerCase())) {
+                            classesMetadata.push({
+                                name: clsName,
+                                session: defaultSession
+                            });
+                        }
+                    }
+                }
+
+                let currentDay = 'T2';
+                for (let r = headerRowIdx + 1; r < rows.length; r++) {
+                    const row = rows[r];
+                    if (!row || row.length === 0) continue;
+
+                    const dayCell = String(row[0] || '').trim().toLowerCase();
+                    if (dayMap[dayCell]) {
+                        currentDay = dayMap[dayCell];
+                    }
+
+                    const periodCell = String(row[1] || '').trim();
+                    const pMatch = periodCell.match(/\d+/);
+                    if (!pMatch) continue;
+                    const period = parseInt(pMatch[0]);
+                    if (period < 1 || period > 5) continue;
+
+                    classCols.forEach(({ col, name: clsName }) => {
+                        const cellVal = String(row[col] || '').trim();
+                        if (cellVal) {
+                            let subject = cellVal;
+                            let teacher = '';
+
+                            if (cellVal.includes('-')) {
+                                const lastDashIdx = cellVal.lastIndexOf('-');
+                                subject = cellVal.substring(0, lastDashIdx).trim();
+                                teacher = cellVal.substring(lastDashIdx + 1).trim();
+                            } else if (cellVal.includes('\n')) {
+                                const lines = cellVal.split('\n').map(l => l.trim()).filter(Boolean);
+                                subject = lines[0] || '';
+                                teacher = lines[1] ? lines[1].replace(/[()]/g, '').trim() : '';
+                            }
+
+                            if (subject) {
+                                subjectSet.add(subject);
+                                if (teacher) teacherSet.add(teacher);
+
+                                parsedSlots.push({
+                                    className: clsName,
+                                    dayKey: currentDay,
+                                    hourKey: period,
+                                    subject: subject,
+                                    teacher: teacher,
+                                    session: defaultSession
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+
+            if (parsedSlots.length === 0) {
+                alert("Không thể đọc được dữ liệu thời khóa biểu từ file Excel này. Vui lòng kiểm tra lại cấu trúc các Sheet (Buổi sáng / Buổi chiều)!");
+                return;
+            }
+
+            // Sắp xếp các lớp học để hiển thị preview
+            classesMetadata.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+            // Lưu dữ liệu vào biến global để tải xuống hoặc công bố
+            window.lastParsedFetData = {
+                slots: parsedSlots,
+                classes: classesMetadata,
+                teachers: Array.from(teacherSet),
+                sourceType: 'excel'
+            };
+
+            // Cập nhật giao diện Preview
+            const instEl = document.getElementById('fetInstName');
+            if (instEl) instEl.innerText = `Excel: ${file.name}`;
+            
+            const classEl = document.getElementById('fetClassCount');
+            if (classEl) classEl.innerText = classSet.size;
+            
+            const teacherEl = document.getElementById('fetTeacherCount');
+            if (teacherEl) teacherEl.innerText = teacherSet.size;
+            
+            const subEl = document.getElementById('fetSubjectCount');
+            if (subEl) subEl.innerText = subjectSet.size;
+            
+            const slotEl = document.getElementById('fetSlotCount');
+            if (slotEl) slotEl.innerText = parsedSlots.length;
+
+            // Render badges các lớp học
+            const badgeContainer = document.getElementById('fetClassListPreview');
+            if (badgeContainer) {
+                badgeContainer.innerHTML = '';
+                classesMetadata.forEach(cls => {
+                    const badge = document.createElement('span');
+                    badge.style.padding = '6px 12px';
+                    badge.style.background = cls.session === 'sáng' ? 'rgba(79, 70, 229, 0.15)' : 'rgba(244, 63, 94, 0.15)';
+                    badge.style.border = cls.session === 'sáng' ? '1px solid rgba(129, 140, 248, 0.4)' : '1px solid rgba(244, 63, 94, 0.4)';
+                    badge.style.color = cls.session === 'sáng' ? 'var(--primary-light)' : '#f43f5e';
+                    badge.style.borderRadius = '20px';
+                    badge.style.fontSize = '0.85rem';
+                    badge.style.fontWeight = '500';
+                    badge.innerText = `${cls.name} (${cls.session})`;
+                    badgeContainer.appendChild(badge);
+                });
+            }
+
+            // Hiển thị phần preview
+            const previewEl = document.getElementById('fetConverterPreview');
+            if (previewEl) previewEl.style.display = 'block';
+
+            if (typeof showToast === 'function') {
+                showToast(`Đã nạp file Excel thành công: ${classSet.size} lớp, ${teacherSet.size} giáo viên, ${parsedSlots.length} tiết! Bấm [Công bố TKB] để lưu vào hệ thống.`, 'success');
+            }
+
+        } catch(err) {
+            console.error('Lỗi phân tích file Excel TKB:', err);
+            alert("Lỗi khi đọc file Excel: " + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
 }
 
 function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
@@ -8800,6 +8998,7 @@ window.refreshGroupMatrix = refreshGroupMatrix;
 window.clearAllGroupAssignments = clearAllGroupAssignments;
 window.clearTeacherAssignments = clearTeacherAssignments;
 window.syncTimetableToGoogleSheets = syncTimetableToGoogleSheets;
+window.handleExcelTimetableUpload = handleExcelTimetableUpload;
 
 // Khởi chạy ứng dụng khi tải trang xong
 window.onload = function() {

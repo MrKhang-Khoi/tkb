@@ -528,7 +528,7 @@
                 <button class="tab-btn" onclick="switchAdminTab('staffSetupTab')">2. Nhân Sự & Tài Khoản</button>
                 <button class="tab-btn" onclick="switchAdminTab('curriculumTab')">3. Chương Trình Học & Số Tiết</button>
                 <button class="tab-btn" onclick="switchAdminTab('mergeTab')">4. Gộp Phân Công & FET CSV</button>
-                <button class="tab-btn" onclick="switchAdminTab('fetConverterTab')">5. Chuyển Đổi FET Sang Excel</button>
+                <button class="tab-btn" onclick="switchAdminTab('fetConverterTab')">5. Cập Nhật TKB Từ FET / Excel</button>
             </div>
 
             <!-- Tab 1: School Setup -->
@@ -1051,10 +1051,10 @@
                 <div class="tab-header" style="margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 16px;">
                     <h2 style="display: flex; align-items: center; gap: 10px; color: var(--text-main);">
                         <span class="material-icons-round" style="color: var(--primary-light); font-size: 2rem;">transform</span>
-                        5. Chuyển Đổi File Thời Khóa Biểu FET Sang Excel
+                        5. Nhập / Chuyển Đổi Thời Khóa Biểu (FET & Excel)
                     </h2>
                     <p class="tab-desc" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 6px;">
-                        Tải lên tệp kết quả thời khóa biểu từ phần mềm FET (.fet hoặc .xml) để phân tích chi tiết dữ liệu và xuất bản thành file Excel tổng hợp 3 Sheets đẹp mắt.
+                        Tải lên tệp kết quả từ phần mềm FET (<code>.fet</code>, <code>.xml</code>) hoặc tệp bảng tính Excel (<code>.xlsx</code>, <code>.xls</code>) đã được điều chỉnh để nạp vào hệ thống, xuất bản cho toàn trường và đồng bộ tức thì cho Zalo Bot.
                     </p>
                 </div>
 
@@ -1062,21 +1062,21 @@
                 <div class="dropzone" id="fetConverterDropzone" onclick="document.getElementById('fetConverterInput').click();" style="margin-bottom: 24px; padding: 48px 24px; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: var(--transition); background: rgba(30, 41, 59, 0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
                     <span class="material-icons-round icon" style="font-size: 3.5rem; color: var(--primary-light); transition: var(--transition);">cloud_upload</span>
                     <div>
-                        <p style="font-weight: 600; font-size: 1.15rem; color: var(--text-main); margin-bottom: 6px;">Kéo thả hoặc Click để chọn tệp kết quả từ FET</p>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Chấp nhận tệp dữ liệu thời khóa biểu dạng .fet hoặc tệp XML kết quả từ FET (_subgroups.xml, _teachers.xml)</p>
+                        <p style="font-weight: 600; font-size: 1.15rem; color: var(--text-main); margin-bottom: 6px;">Kéo thả hoặc Click để chọn tệp TKB từ FET (.fet, .xml) hoặc Excel (.xlsx, .xls)</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Hệ thống tự động nhận diện định dạng tệp FET hoặc bảng tính Excel tổng hợp (Buổi sáng / Buổi chiều) để phân tích</p>
                     </div>
-                    <input type="file" id="fetConverterInput" accept=".fet,.xml" style="display: none;" onchange="handleFetConverterUpload(event)">
+                    <input type="file" id="fetConverterInput" accept=".fet,.xml,.xlsx,.xls" style="display: none;" onchange="handleFetConverterUpload(event)">
                 </div>
 
                 <!-- Instructions Alert Box -->
                 <div class="instruction-box" style="background: rgba(79, 70, 229, 0.1); border-left: 4px solid var(--primary-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
                     <h4 style="color: var(--primary-light); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.95rem; font-weight: 600;">
-                        <span class="material-icons-round" style="font-size: 1.2rem;">info</span> Hướng dẫn lấy file kết quả từ FET
+                        <span class="material-icons-round" style="font-size: 1.2rem;">info</span> Hướng dẫn nạp thời khóa biểu từ FET hoặc Excel
                     </h4>
                     <ul style="list-style-type: none; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; padding-left: 4px; line-height: 1.4;">
-                        <li>📅 <strong>Bước 1:</strong> Sau khi xếp thời khóa biểu thành công trong phần mềm FET, hãy mở thư mục lưu kết quả (thường là thư mục <code>fet-results/timetables/</code>).</li>
-                        <li>📂 <strong>Bước 2:</strong> Chọn tệp có đuôi <code>_data_and_timetable.fet</code> (Tệp đã được xếp lịch đầy đủ cho tất cả các tiết).</li>
-                        <li>💡 <strong>Mẹo:</strong> Bạn cũng có thể kéo thả tệp XML phân rã thời khóa biểu học sinh (<code>*_subgroups.xml</code>) hoặc giáo viên (<code>*_teachers.xml</code>) vào đây để chuyển đổi trực tiếp.</li>
+                        <li>📂 <strong>Cách 1 (Từ Excel):</strong> Chọn tệp <code>.xlsx</code> (chứa các sheet <em>Buổi sáng</em>, <em>Buổi chiều</em>) mà bạn đã xuất từ FET và chỉnh sửa thủ công.</li>
+                        <li>📅 <strong>Cách 2 (Từ FET):</strong> Chọn tệp kết quả <code>_data_and_timetable.fet</code> hoặc <code>*_subgroups.xml</code> trong thư mục <code>fet-results/timetables/</code>.</li>
+                        <li>🚀 <strong>Công bố:</strong> Sau khi kiểm tra báo cáo phân tích, bấm <strong>[Công bố TKB lên Hệ thống]</strong> để cập nhật dữ liệu trực tiếp cho toàn trường và Zalo Bot.</li>
                     </ul>
                 </div>
 
