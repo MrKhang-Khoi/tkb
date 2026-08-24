@@ -8850,13 +8850,21 @@ function publishUploadedTimetable() {
         } else {
             alert(`Đã công bố và lưu trữ đợt TKB "${finalWeekName}" thành công lên hệ thống!`);
         }
+
+        // Tự động kích hoạt đồng bộ lên Google Sheets nếu đã có Webhook URL
+        const savedWebhook = localStorage.getItem('fet_google_sheets_webhook_url') || (state && state.googleSheetsWebhookUrl);
+        if (savedWebhook) {
+            setTimeout(() => {
+                syncTimetableToGoogleSheets(true);
+            }, 800);
+        }
     } catch (e) {
         console.error(e);
         alert("Có lỗi xảy ra khi công bố thời khóa biểu!");
     }
 }
 
-async function syncTimetableToGoogleSheets() {
+async function syncTimetableToGoogleSheets(isSilent = false) {
     const input = document.getElementById('googleSheetsWebhookInput');
     const resultBox = document.getElementById('googleSheetsSyncResult');
     let webhookUrl = input ? input.value.trim() : '';
