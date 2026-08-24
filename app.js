@@ -1280,17 +1280,54 @@ function renderBatchAssignPanel(groupId) {
         onBatchTeacherChange();
     });
 
-    // Nạp toàn bộ môn học trong trường vào datalist tùy biến (loại bỏ các nhiệm vụ kiêm nhiệm để tránh chọn nhầm)
+    // Nạp môn học vào dropdown: Ưu tiên môn thuộc tổ chuyên môn này lên đầu
     const dutyNames = new Set(state.subjects.filter(s => s && s.grade === 'Kiêm nhiệm').map(s => s.name.toLowerCase()));
+    
+    // Môn trực thuộc tổ này
+    const groupSubjectNames = new Set();
+    if (groupObj.subjects && Array.isArray(groupObj.subjects)) {
+        groupObj.subjects.forEach(sub => sub && groupSubjectNames.add(sub));
+    }
+    state.globalSubjects.forEach(gs => {
+        if (gs && (gs.groupId === groupId || gs.group === groupId || gs.group === groupObj.name)) {
+            groupSubjectNames.add(gs.name);
+        }
+    });
+    groupTeachers.forEach(t => {
+        if (t && t.subjects) {
+            t.subjects.forEach(sub => sub && groupSubjectNames.add(sub));
+        }
+    });
+
     const subjectNamesFromGlobal = state.globalSubjects.filter(gs => gs).map(gs => gs.name);
     const subjectNamesFromSubjects = state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm').map(s => s.name);
-    const uniqueSubjectNames = [...new Set([...subjectNamesFromGlobal, ...subjectNamesFromSubjects])]
-        .filter(name => name && !dutyNames.has(name.toLowerCase()))
-        .sort((a, b) => a.localeCompare(b, 'vi'));
-    const subjectItems = uniqueSubjectNames.map(name => ({
-        value: name,
-        label: name
-    }));
+    const allUniqueSubjectNames = [...new Set([...subjectNamesFromGlobal, ...subjectNamesFromSubjects])]
+        .filter(name => name && !dutyNames.has(name.toLowerCase()));
+
+    // Sắp xếp: Môn của tổ lên trước, các môn khác xuống sau
+    const groupList = [];
+    const otherList = [];
+    allUniqueSubjectNames.forEach(name => {
+        if (groupSubjectNames.has(name)) {
+            groupList.push(name);
+        } else {
+            otherList.push(name);
+        }
+    });
+    groupList.sort((a, b) => a.localeCompare(b, 'vi'));
+    otherList.sort((a, b) => a.localeCompare(b, 'vi'));
+
+    const subjectItems = [
+        ...groupList.map(name => ({
+            value: name,
+            label: `⭐ ${name} (Môn của tổ)`
+        })),
+        ...otherList.map(name => ({
+            value: name,
+            label: name
+        }))
+    ];
+
     initSearchableDropdown('batchSubjectSelect', 'batchSubjectMenu', subjectItems, (val) => {
         onBatchSubjectChange();
     });
