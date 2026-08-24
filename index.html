@@ -395,8 +395,16 @@
                                 <h3 style="font-size: 1rem; color: var(--primary-light); margin: 0; display: flex; align-items: center; gap: 6px;">
                                     <span class="material-icons-round" style="font-size: 1.2rem;">event_busy</span> Lịch Dạy Bị Ảnh Hưởng & Gợi Ý Giáo Viên Dạy Thay
                                 </h3>
-                                <div id="subAffectedSummaryBadge" style="font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; background: rgba(99, 102, 241, 0.15); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(129, 140, 248, 0.3);">
-                                    <!-- Dynamic count -->
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <div id="subAffectedSummaryBadge" style="font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; background: rgba(99, 102, 241, 0.15); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(129, 140, 248, 0.3);">
+                                        <!-- Dynamic count -->
+                                    </div>
+                                    <button class="btn btn-success" onclick="exportCurrentAnalyzedSubstitutionsExcel()" style="padding: 4px 10px; font-size: 0.78rem; height: 30px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;" title="Xuất danh sách phân công của đợt phân tích này ra file Excel">
+                                        <span class="material-icons-round" style="font-size: 0.95rem;">description</span> Xuất Excel đợt này
+                                    </button>
+                                    <button class="btn btn-primary" onclick="printCurrentAnalyzedSubstitutionsPDF()" style="padding: 4px 10px; font-size: 0.78rem; height: 30px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;" title="In phiếu báo phân công dạy thay cho đợt này">
+                                        <span class="material-icons-round" style="font-size: 0.95rem;">print</span> In Phiếu Báo
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -409,11 +417,24 @@
 
                     <!-- Right Panel: Substitution Log -->
                     <div class="glass-card">
-                        <div style="margin-bottom: 20px;">
-                            <h2>Lịch Sử Dạy Thay Đã Xếp</h2>
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">
-                                Danh sách các lượt dạy thay đã được phân công trong tổ chuyên môn.
-                            </p>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; margin: 0;">
+                                    <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.25rem;">history_edu</span>
+                                    Lịch Sử Dạy Thay Đã Xếp
+                                </h2>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 2px; margin-bottom: 0;">
+                                    Danh sách các lượt dạy thay đã được phân công trong tổ chuyên môn.
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button class="btn btn-success" onclick="exportSubstitutionsExcel()" style="padding: 6px 12px; font-size: 0.8rem; height: 32px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;" title="Xuất toàn bộ lịch sử phân công dạy thay của tổ ra file Excel">
+                                    <span class="material-icons-round" style="font-size: 1rem;">description</span> Xuất Excel
+                                </button>
+                                <button class="btn btn-primary" onclick="printSubstitutionsPDF()" style="padding: 6px 12px; font-size: 0.8rem; height: 32px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;" title="In / Xuất PDF toàn bộ bảng tổng hợp phân công dạy thay">
+                                    <span class="material-icons-round" style="font-size: 1rem;">print</span> In / PDF
+                                </button>
+                            </div>
                         </div>
                         <div class="table-container" style="max-height: 500px; overflow-y: auto;">
                             <table class="table" style="font-size: 0.82rem;">
@@ -434,6 +455,9 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Hidden Printable Substitution Document for PDF & High-Quality Print -->
+                <div id="substitutionPrintContainer" style="display: none;"></div>
             </div>
 
             <!-- Tab 3: Thời Khóa Biểu Tổ -->
@@ -1275,6 +1299,6 @@
     </div>
 
     <!-- Load Local Application Logic -->
-    <script src="app.js?v=3.0" defer></script>
+    <script src="app.js?v=3.1" defer></script>
 </body>
 </html>

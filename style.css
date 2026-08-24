@@ -813,6 +813,24 @@ table.timetable-table th {
     body.printing-group-timetable #groupTimetableTab > .glass-card > div:first-child h2 {
         display: none !important;
     }
+
+    /* Khi in Phiếu / Báo Cáo Phân Công Dạy Thay */
+    body.printing-substitutions #publicTimetableSection,
+    body.printing-substitutions #groupDashboard {
+        display: none !important;
+    }
+    body.printing-substitutions #substitutionPrintContainer {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 15px 25px !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Times New Roman', Times, serif, Arial, sans-serif !important;
+    }
     
     .glass-card {
         background: none !important;

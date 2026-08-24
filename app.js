@@ -9647,6 +9647,522 @@ function renderGroupSubstitutions() {
     });
 }
 
+function getSubDayLabel(dateStr) {
+    if (!dateStr) return '';
+    try {
+        const parts = dateStr.split('-');
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        return dayNames[d.getDay()] || '';
+    } catch(e) {
+        return '';
+    }
+}
+
+function getSortedSubsList(subsList) {
+    if (!subsList || !Array.isArray(subsList)) return [];
+    return [...subsList].sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        if (a.session !== b.session) return a.session === 'sáng' ? -1 : 1;
+        return (parseInt(a.period, 10) || 0) - (parseInt(b.period, 10) || 0);
+    });
+}
+
+function generateSubstitutionsSpreadsheetML(subsList, title, groupName, dateRangeText) {
+    let xml = `<?xml version="1.0" encoding="utf-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Color="#000000"/>
+  </Style>
+  <Style ss:ID="sHeaderLeft">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Bold="1"/>
+  </Style>
+  <Style ss:ID="sHeaderRight">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Bold="1"/>
+  </Style>
+  <Style ss:ID="sTitle">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="15" ss:Bold="1" ss:Color="#1E3A8A"/>
+  </Style>
+  <Style ss:ID="sSubtitle">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Italic="1" ss:Color="#334155"/>
+  </Style>
+  <Style ss:ID="sColHeader">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
+   </Borders>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#1E40AF" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sCellCenter">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
+   </Borders>
+   <Font ss:FontName="Times New Roman" ss:Size="11"/>
+  </Style>
+  <Style ss:ID="sCellLeft">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
+   </Borders>
+   <Font ss:FontName="Times New Roman" ss:Size="11"/>
+  </Style>
+  <Style ss:ID="sCellHighlight">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
+   </Borders>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Bold="1" ss:Color="#065F46"/>
+   <Interior ss:Color="#ECFDF5" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sCellAbsent">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
+   </Borders>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Bold="1" ss:Color="#991B1B"/>
+   <Interior ss:Color="#FEF2F2" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sSign">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11"/>
+  </Style>
+  <Style ss:ID="sSignBold">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Size="11" ss:Bold="1"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="PhanCongDayThay">
+  <Table ss:ExpandedColumnCount="11">
+   <Column ss:Width="35"/> <!-- STT -->
+   <Column ss:Width="75"/> <!-- Ngay -->
+   <Column ss:Width="65"/> <!-- Thu -->
+   <Column ss:Width="50"/> <!-- Buoi -->
+   <Column ss:Width="40"/> <!-- Tiet -->
+   <Column ss:Width="50"/> <!-- Lop -->
+   <Column ss:Width="75"/> <!-- Mon -->
+   <Column ss:Width="140"/> <!-- GV Vang -->
+   <Column ss:Width="140"/> <!-- GV Thay -->
+   <Column ss:Width="120"/> <!-- Ghi chu -->
+   <Column ss:Width="80"/> <!-- Ky nhan -->
+`;
+
+    // Row 1: Header Cơ quan
+    xml += `\n   <Row ss:Height="20">`;
+    xml += `\n    <Cell ss:MergeAcross="4" ss:StyleID="sHeaderLeft"><Data ss:Type="String">TRƯỜNG THCS &amp; THPT</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="5" ss:StyleID="sHeaderRight"><Data ss:Type="String">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</Data></Cell>`;
+    xml += `\n   </Row>`;
+
+    // Row 2: Tổ chuyên môn & Độc lập tự do
+    xml += `\n   <Row ss:Height="20">`;
+    xml += `\n    <Cell ss:MergeAcross="4" ss:StyleID="sHeaderLeft"><Data ss:Type="String">TỔ: ${groupName.toUpperCase()}</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="5" ss:StyleID="sHeaderRight"><Data ss:Type="String">Độc lập - Tự do - Hạnh phúc</Data></Cell>`;
+    xml += `\n   </Row>`;
+
+    // Row 3: Blank
+    xml += `\n   <Row ss:Height="12"><Cell ss:MergeAcross="10"><Data ss:Type="String"></Data></Cell></Row>`;
+
+    // Row 4: Title
+    xml += `\n   <Row ss:Height="26">`;
+    xml += `\n    <Cell ss:MergeAcross="10" ss:StyleID="sTitle"><Data ss:Type="String">${title.toUpperCase()}</Data></Cell>`;
+    xml += `\n   </Row>`;
+
+    // Row 5: Subtitle
+    xml += `\n   <Row ss:Height="20">`;
+    xml += `\n    <Cell ss:MergeAcross="10" ss:StyleID="sSubtitle"><Data ss:Type="String">${dateRangeText} | Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}</Data></Cell>`;
+    xml += `\n   </Row>`;
+
+    // Row 6: Blank
+    xml += `\n   <Row ss:Height="10"><Cell ss:MergeAcross="10"><Data ss:Type="String"></Data></Cell></Row>`;
+
+    // Row 7: Table Columns Header
+    xml += `\n   <Row ss:Height="26">`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">STT</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Ngày dạy</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Thứ</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Buổi</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Tiết</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Lớp</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Môn học</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Giáo viên vắng</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Giáo viên dạy thay</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Ghi chú</Data></Cell>`;
+    xml += `\n    <Cell ss:StyleID="sColHeader"><Data ss:Type="String">Ký nhận</Data></Cell>`;
+    xml += `\n   </Row>`;
+
+    // Data Rows
+    const sortedSubs = getSortedSubsList(subsList);
+    sortedSubs.forEach((s, idx) => {
+        const [y, m, d] = (s.date || '').split('-');
+        const formattedDate = d ? `${d}/${m}/${y}` : s.date;
+        const dayLabel = getSubDayLabel(s.date);
+        const sessionLabel = s.session === 'chiều' ? 'Chiều' : 'Sáng';
+
+        const absentTeacherObj = state.teachers.find(t => t.shortName === s.absentTeacher);
+        const absentTeacherFullName = absentTeacherObj ? `${absentTeacherObj.fullName} (${s.absentTeacher})` : s.absentTeacher;
+
+        const subTeacherObj = state.teachers.find(t => t.shortName === s.substituteTeacher);
+        const subTeacherFullName = subTeacherObj ? `${subTeacherObj.fullName} (${s.substituteTeacher})` : s.substituteTeacher;
+
+        xml += `\n   <Row ss:Height="22">`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="Number">${idx + 1}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="String">${formattedDate}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="String">${dayLabel}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="String">${sessionLabel}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="Number">${s.period}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="String">${s.className}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="String">${s.subject}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellAbsent"><Data ss:Type="String">${absentTeacherFullName}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellHighlight"><Data ss:Type="String">${subTeacherFullName}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellLeft"><Data ss:Type="String">${s.note || ''}</Data></Cell>`;
+        xml += `\n    <Cell ss:StyleID="sCellCenter"><Data ss:Type="String"></Data></Cell>`;
+        xml += `\n   </Row>`;
+    });
+
+    // Signature Rows
+    xml += `\n   <Row ss:Height="15"><Cell ss:MergeAcross="10"><Data ss:Type="String"></Data></Cell></Row>`;
+    xml += `\n   <Row ss:Height="20">`;
+    xml += `\n    <Cell ss:MergeAcross="4" ss:StyleID="sSign"><Data ss:Type="String"></Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="5" ss:StyleID="sSign"><Data ss:Type="String">Ngày ..... tháng ..... năm 202...</Data></Cell>`;
+    xml += `\n   </Row>`;
+    xml += `\n   <Row ss:Height="22">`;
+    xml += `\n    <Cell ss:MergeAcross="3" ss:StyleID="sSignBold"><Data ss:Type="String">GIÁO VIÊN DẠY THAY</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="3" ss:StyleID="sSignBold"><Data ss:Type="String">TỔ TRƯỞNG CHUYÊN MÔN</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="3" ss:StyleID="sSignBold"><Data ss:Type="String">BAN GIÁM HIỆU DUYỆT</Data></Cell>`;
+    xml += `\n   </Row>`;
+    xml += `\n   <Row ss:Height="18">`;
+    xml += `\n    <Cell ss:MergeAcross="3" ss:StyleID="sSubtitle"><Data ss:Type="String">(Ký nhận)</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="3" ss:StyleID="sSubtitle"><Data ss:Type="String">(Ký và ghi rõ họ tên)</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="3" ss:StyleID="sSubtitle"><Data ss:Type="String">(Ký và đóng dấu)</Data></Cell>`;
+    xml += `\n   </Row>`;
+    xml += `\n   <Row ss:Height="50"><Cell ss:MergeAcross="10"><Data ss:Type="String"></Data></Cell></Row>`;
+
+    xml += `\n  </Table>`;
+    xml += `\n  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">`;
+    xml += `\n   <PageSetup>`;
+    xml += `\n    <Layout x:Orientation="Landscape"/>`;
+    xml += `\n   </PageSetup>`;
+    xml += `\n   <FitToPage/>`;
+    xml += `\n   <Print>`;
+    xml += `\n    <FitWidth>1</FitWidth>`;
+    xml += `\n    <FitHeight>0</FitHeight>`;
+    xml += `\n    <ValidPrinterInfo/>`;
+    xml += `\n    <PaperSizeIndex>9</PaperSizeIndex>`;
+    xml += `\n   </Print>`;
+    xml += `\n  </WorksheetOptions>`;
+    xml += `\n </Worksheet>`;
+    xml += `\n</Workbook>`;
+
+    return xml;
+}
+
+function generateSubstitutionsPrintHTML(subsList, title, groupName, dateRangeText) {
+    const sortedSubs = getSortedSubsList(subsList);
+    
+    let tableRowsHtml = '';
+    sortedSubs.forEach((s, idx) => {
+        const [y, m, d] = (s.date || '').split('-');
+        const formattedDate = d ? `${d}/${m}/${y}` : s.date;
+        const dayLabel = getSubDayLabel(s.date);
+        const sessionLabel = s.session === 'chiều' ? 'Chiều' : 'Sáng';
+
+        const absentTeacherObj = state.teachers.find(t => t.shortName === s.absentTeacher);
+        const absentTeacherFullName = absentTeacherObj ? `${absentTeacherObj.fullName} (${s.absentTeacher})` : s.absentTeacher;
+
+        const subTeacherObj = state.teachers.find(t => t.shortName === s.substituteTeacher);
+        const subTeacherFullName = subTeacherObj ? `${subTeacherObj.fullName} (${s.substituteTeacher})` : s.substituteTeacher;
+
+        tableRowsHtml += `
+            <tr style="border-bottom: 1px solid #000;">
+                <td style="border: 1px solid #000; padding: 6px 4px; text-align: center;">${idx + 1}</td>
+                <td style="border: 1px solid #000; padding: 6px 4px; text-align: center; font-weight: 600;">${formattedDate}</td>
+                <td style="border: 1px solid #000; padding: 6px 4px; text-align: center;">${dayLabel}</td>
+                <td style="border: 1px solid #000; padding: 6px 4px; text-align: center;">${sessionLabel}</td>
+                <td style="border: 1px solid #000; padding: 6px 4px; text-align: center; font-weight: 600;">Tiết ${s.period}</td>
+                <td style="border: 1px solid #000; padding: 6px 4px; text-align: center; font-weight: 600;">${s.className}</td>
+                <td style="border: 1px solid #000; padding: 6px 6px; text-align: center; font-weight: 600;">${s.subject}</td>
+                <td style="border: 1px solid #000; padding: 6px 8px; text-align: left;">${absentTeacherFullName}</td>
+                <td style="border: 1px solid #000; padding: 6px 8px; text-align: left; font-weight: bold; color: #065f46;">${subTeacherFullName}</td>
+                <td style="border: 1px solid #000; padding: 6px 6px; text-align: left;">${s.note || ''}</td>
+                <td style="border: 1px solid #000; padding: 6px 4px; text-align: center;"></td>
+            </tr>
+        `;
+    });
+
+    return `
+        <div style="font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; width: 100%; box-sizing: border-box;">
+            <!-- Header Trường & Quốc Hiệu -->
+            <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 45%; text-align: center; vertical-align: top;">
+                        <div style="font-size: 11pt; font-weight: bold; text-transform: uppercase;">TRƯỜNG THCS &amp; THPT</div>
+                        <div style="font-size: 11pt; font-weight: bold; text-transform: uppercase; color: #1e3a8a;">TỔ: ${groupName.toUpperCase()}</div>
+                        <div style="width: 60px; height: 1px; background: #000; margin: 4px auto;"></div>
+                    </td>
+                    <td style="width: 55%; text-align: center; vertical-align: top;">
+                        <div style="font-size: 11pt; font-weight: bold;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                        <div style="font-size: 11pt; font-weight: bold;">Độc lập - Tự do - Hạnh phúc</div>
+                        <div style="width: 120px; height: 1px; background: #000; margin: 4px auto;"></div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Title -->
+            <div style="text-align: center; margin-bottom: 16px;">
+                <h2 style="font-size: 15pt; font-weight: bold; margin: 0 0 6px 0; text-transform: uppercase; color: #1e3a8a;">${title.toUpperCase()}</h2>
+                <p style="font-size: 10.5pt; font-style: italic; margin: 0;">${dateRangeText} • Tổng số: ${sortedSubs.length} tiết dạy thay</p>
+            </div>
+
+            <!-- Table -->
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; margin-bottom: 24px;">
+                <thead>
+                    <tr style="background: #f1f5f9; border-bottom: 1px solid #000;">
+                        <th style="border: 1px solid #000; padding: 8px 4px; text-align: center; width: 35px;">STT</th>
+                        <th style="border: 1px solid #000; padding: 8px 4px; text-align: center; width: 80px;">Ngày dạy</th>
+                        <th style="border: 1px solid #000; padding: 8px 4px; text-align: center; width: 65px;">Thứ</th>
+                        <th style="border: 1px solid #000; padding: 8px 4px; text-align: center; width: 45px;">Buổi</th>
+                        <th style="border: 1px solid #000; padding: 8px 4px; text-align: center; width: 45px;">Tiết</th>
+                        <th style="border: 1px solid #000; padding: 8px 4px; text-align: center; width: 50px;">Lớp</th>
+                        <th style="border: 1px solid #000; padding: 8px 6px; text-align: center; width: 70px;">Môn</th>
+                        <th style="border: 1px solid #000; padding: 8px 8px; text-align: center;">Giáo viên vắng</th>
+                        <th style="border: 1px solid #000; padding: 8px 8px; text-align: center;">Giáo viên dạy thay</th>
+                        <th style="border: 1px solid #000; padding: 8px 6px; text-align: center; width: 100px;">Ghi chú</th>
+                        <th style="border: 1px solid #000; padding: 8px 4px; text-align: center; width: 65px;">Ký nhận</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRowsHtml}
+                </tbody>
+            </table>
+
+            <!-- Signatures -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: avoid;">
+                <tr>
+                    <td style="width: 33%; text-align: center; vertical-align: top;"></td>
+                    <td style="width: 33%; text-align: center; vertical-align: top;"></td>
+                    <td style="width: 34%; text-align: center; vertical-align: top; font-size: 10.5pt; font-style: italic;">
+                        Ngày ..... tháng ..... năm 202...
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; vertical-align: top; padding-top: 6px;">
+                        <div style="font-size: 10.5pt; font-weight: bold;">GIÁO VIÊN DẠY THAY</div>
+                        <div style="font-size: 9.5pt; font-style: italic; color: #475569;">(Ký nhận)</div>
+                    </td>
+                    <td style="text-align: center; vertical-align: top; padding-top: 6px;">
+                        <div style="font-size: 10.5pt; font-weight: bold;">TỔ TRƯỞNG CHUYÊN MÔN</div>
+                        <div style="font-size: 9.5pt; font-style: italic; color: #475569;">(Ký và ghi rõ họ tên)</div>
+                    </td>
+                    <td style="text-align: center; vertical-align: top; padding-top: 6px;">
+                        <div style="font-size: 10.5pt; font-weight: bold;">BAN GIÁM HIỆU DUYỆT</div>
+                        <div style="font-size: 9.5pt; font-style: italic; color: #475569;">(Ký và đóng dấu)</div>
+                    </td>
+                </tr>
+                <tr style="height: 65px;">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+    `;
+}
+
+function exportSubstitutionsExcel() {
+    const groupId = state.currentUser;
+    const groupObj = state.groups.find(g => g && g.id === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
+
+    let subsList = state.substitutions || [];
+    if (groupId && groupId !== 'admin') {
+        subsList = subsList.filter(s => s.createdByGroup === groupId);
+    }
+
+    if (!subsList || subsList.length === 0) {
+        showToast("Chưa có lịch phân công dạy thay nào để xuất file Excel!", "warning");
+        return;
+    }
+
+    try {
+        const xmlContent = generateSubstitutionsSpreadsheetML(subsList, "BẢNG TỔNG HỢP PHÂN CÔNG GIÁO VIÊN DẠY THAY", groupName, `Tổ chuyên môn: ${groupName}`);
+        const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        const safeGroupName = groupName.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
+        const todayStr = new Date().toISOString().split('T')[0];
+        link.setAttribute("download", `PhanCongDayThay_${safeGroupName}_${todayStr}.xls`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Đã tải xuống file Excel Báo cáo dạy thay của ${groupName}!`, "success");
+    } catch(e) {
+        console.error(e);
+        showToast("Lỗi khi xuất file Excel báo cáo dạy thay!", "danger");
+    }
+}
+
+function exportCurrentAnalyzedSubstitutionsExcel() {
+    if (!lastAnalyzedSubstituteData || !lastAnalyzedSubstituteData.allAffectedSlots) {
+        showToast("Vui lòng nhấn Phân tích và phân công trước khi xuất Excel!", "warning");
+        return;
+    }
+
+    const { absentTeacherFullName, teacherShort, allAffectedSlots, startDateVal, endDateVal } = lastAnalyzedSubstituteData;
+    const groupId = state.currentUser;
+    const groupObj = state.groups.find(g => g && g.id === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
+
+    const assignedSubs = [];
+    allAffectedSlots.forEach(dayGroup => {
+        dayGroup.slots.forEach(slot => {
+            const sub = (state.substitutions || []).find(s => 
+                s.date === slot.dateStr && 
+                parseInt(s.period, 10) === parseInt(slot.period, 10) && 
+                s.session === slot.session && 
+                s.className === slot.className && 
+                s.absentTeacher === teacherShort
+            );
+            if (sub) {
+                assignedSubs.push(sub);
+            }
+        });
+    });
+
+    if (assignedSubs.length === 0) {
+        showToast("Chưa có tiết nào trong đợt này được phân công dạy thay để xuất!", "warning");
+        return;
+    }
+
+    try {
+        const title = `BẢNG PHÂN CÔNG DẠY THAY GIÁO VIÊN ${absentTeacherFullName.toUpperCase()}`;
+        const dateRangeText = `Thời gian vắng: ${startDateVal} đến ${endDateVal}`;
+        const xmlContent = generateSubstitutionsSpreadsheetML(assignedSubs, title, groupName, dateRangeText);
+        const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        const safeTeacher = teacherShort.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
+        link.setAttribute("download", `PhanCongDayThay_${safeTeacher}_${startDateVal}.xls`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Đã xuất file Excel phân công dạy thay cho giáo viên ${absentTeacherFullName}!`, "success");
+    } catch(e) {
+        console.error(e);
+        showToast("Lỗi khi xuất file Excel!", "danger");
+    }
+}
+
+function printSubstitutionsPDF() {
+    const groupId = state.currentUser;
+    const groupObj = state.groups.find(g => g && g.id === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
+
+    let subsList = state.substitutions || [];
+    if (groupId && groupId !== 'admin') {
+        subsList = subsList.filter(s => s.createdByGroup === groupId);
+    }
+
+    if (!subsList || subsList.length === 0) {
+        showToast("Chưa có lịch phân công dạy thay nào để in phiếu!", "warning");
+        return;
+    }
+
+    const printContainer = document.getElementById('substitutionPrintContainer');
+    if (!printContainer) return;
+
+    printContainer.innerHTML = generateSubstitutionsPrintHTML(
+        subsList,
+        "BẢNG TỔNG HỢP PHÂN CÔNG GIÁO VIÊN DẠY THAY",
+        groupName,
+        `Tổ chuyên môn: ${groupName}`
+    );
+
+    document.body.classList.add('printing-substitutions');
+    window.print();
+    document.body.classList.remove('printing-substitutions');
+}
+
+function printCurrentAnalyzedSubstitutionsPDF() {
+    if (!lastAnalyzedSubstituteData || !lastAnalyzedSubstituteData.allAffectedSlots) {
+        showToast("Vui lòng nhấn Phân tích và phân công trước khi in phiếu!", "warning");
+        return;
+    }
+
+    const { absentTeacherFullName, teacherShort, allAffectedSlots, startDateVal, endDateVal } = lastAnalyzedSubstituteData;
+    const groupId = state.currentUser;
+    const groupObj = state.groups.find(g => g && g.id === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
+
+    const assignedSubs = [];
+    allAffectedSlots.forEach(dayGroup => {
+        dayGroup.slots.forEach(slot => {
+            const sub = (state.substitutions || []).find(s => 
+                s.date === slot.dateStr && 
+                parseInt(s.period, 10) === parseInt(slot.period, 10) && 
+                s.session === slot.session && 
+                s.className === slot.className && 
+                s.absentTeacher === teacherShort
+            );
+            if (sub) {
+                assignedSubs.push(sub);
+            }
+        });
+    });
+
+    if (assignedSubs.length === 0) {
+        showToast("Chưa có tiết nào trong đợt này được phân công dạy thay để in phiếu!", "warning");
+        return;
+    }
+
+    const printContainer = document.getElementById('substitutionPrintContainer');
+    if (!printContainer) return;
+
+    const title = `PHIẾU PHÂN CÔNG DẠY THAY (GV: ${absentTeacherFullName.toUpperCase()})`;
+    const dateRangeText = `Thời gian vắng: ${startDateVal} đến ${endDateVal}`;
+
+    printContainer.innerHTML = generateSubstitutionsPrintHTML(
+        assignedSubs,
+        title,
+        groupName,
+        dateRangeText
+    );
+
+    document.body.classList.add('printing-substitutions');
+    window.print();
+    document.body.classList.remove('printing-substitutions');
+}
+
 function saveTimetableApplyDateOnly() {
     const input = document.getElementById('timetableApplyDateInput');
     if (!input) return;
@@ -10312,6 +10828,10 @@ window.syncEndDateAndAnalyze = syncEndDateAndAnalyze;
 window.selectSubstituteCandidate = selectSubstituteCandidate;
 window.expandOutsideGroupCandidates = expandOutsideGroupCandidates;
 window.autoAssignAllSlots = autoAssignAllSlots;
+window.exportSubstitutionsExcel = exportSubstitutionsExcel;
+window.exportCurrentAnalyzedSubstitutionsExcel = exportCurrentAnalyzedSubstitutionsExcel;
+window.printSubstitutionsPDF = printSubstitutionsPDF;
+window.printCurrentAnalyzedSubstitutionsPDF = printCurrentAnalyzedSubstitutionsPDF;
 window.addTeacher = addTeacher;
 window.addTeacherManual = addTeacherManual;
 window.renderTeachers = renderTeachers;
