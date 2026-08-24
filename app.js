@@ -8684,10 +8684,17 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
     const currentUserGroup = state.currentUser;
     const suggestions = [];
     
-    // Nếu là Tổ trưởng (không phải Admin) và không bật cờ mở rộng ngoài tổ: CHỈ LỌC GIÁO VIÊN TRONG TỔ
+    // Xác định tổ cần lọc:
+    // Nếu currentUser là tổ trưởng (khác 'admin') -> lọc theo currentUserGroup
+    // Nếu currentUser là admin -> lọc theo tổ của giáo viên vắng (absentTeacherShort)
+    const absentTeacherObj = (state.teachers || []).find(t => t && t.shortName === absentTeacherShort);
+    const targetGroupId = (currentUserGroup && currentUserGroup !== 'admin') 
+        ? currentUserGroup 
+        : (absentTeacherObj ? absentTeacherObj.group : null);
+    
     let allTeachers = (state.teachers || []).filter(t => t && t.shortName !== absentTeacherShort);
-    if (currentUserGroup && currentUserGroup !== 'admin' && !includeOutsideGroup) {
-        allTeachers = allTeachers.filter(t => t.group === currentUserGroup);
+    if (targetGroupId && !includeOutsideGroup) {
+        allTeachers = allTeachers.filter(t => t.group === targetGroupId);
     }
     
     allTeachers.forEach(teacher => {
@@ -8755,7 +8762,7 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
             });
         }
         
-        const isSameGroup = (teacher.group === currentUserGroup);
+        const isSameGroup = targetGroupId ? (teacher.group === targetGroupId) : true;
 
         // 5. Kiểm tra chi tiết lịch dạy trong ngày (Buổi sáng vs Buổi chiều)
         const sameSessionPeriods = []; // Các tiết có dạy trong cùng buổi
@@ -8929,7 +8936,7 @@ function selectSubstituteCandidate(slotIdx, teacherShort) {
     if (subSelect) {
         subSelect.value = teacherShort;
         // Cập nhật viền active cho các chip
-        const container = document.getElementById(`subCandidates_${slotIdx}`);
+        const container = document.getElementById(`subCandidatesBox_${slotIdx}`) || document.getElementById(`subCandidates_${slotIdx}`);
         if (container) {
             const chips = container.querySelectorAll('.sub-candidate-chip');
             chips.forEach(c => {
@@ -8950,17 +8957,13 @@ function selectSubstituteCandidate(slotIdx, teacherShort) {
 // Hàm hỗ trợ mở rộng tìm kiếm ngoài tổ khi tổ bận hết
 function expandOutsideGroupCandidates(slotIdx, dateStr, dayKey, period, session, className, subject, absentTeacherShort) {
     const suggestions = getSubstituteSuggestions(dateStr, dayKey, period, session, className, subject, absentTeacherShort, true);
-    const container = document.getElementById(`subCandidatesBox_${slotIdx}`);
-    const selectDiv = document.getElementById(`subSelectDiv_${slotIdx}`);
-    if (!container || !selectDiv) return;
-
     renderSlotCandidatesUI(slotIdx, suggestions, dateStr, dayKey, period, session, className, subject, absentTeacherShort, true);
 }
 
 // Hàm render danh sách ứng viên và dropdown cho 1 slot
-function renderSlotCandidatesUI(slotIdx, suggestions, dateStr, dayKey, period, session, className, subject, teacherShort, isExpanded = false) {
-    const candidatesBox = document.getElementById(`subCandidatesBox_${slotIdx}`);
-    const subSelect = document.getElementById(`subSelect_${slotIdx}`);
+function renderSlotCandidatesUI(slotIdx, suggestions, dateStr, dayKey, period, session, className, subject, teacherShort, isExpanded = false, customCandidatesBox = null, customSubSelect = null) {
+    const candidatesBox = customCandidatesBox || document.getElementById(`subCandidatesBox_${slotIdx}`);
+    const subSelect = customSubSelect || document.getElementById(`subSelect_${slotIdx}`);
     if (!candidatesBox || !subSelect) return;
 
     candidatesBox.innerHTML = '';
@@ -9139,7 +9142,7 @@ function analyzeSubstituteSlots() {
     
     const absentTeacherObj = state.teachers.find(t => t.shortName === teacherShort);
     const absentTeacherFullName = absentTeacherObj ? absentTeacherObj.fullName : teacherShort;
-    const currentGroupName = (state.groups.find(g => g.id === state.currentUser)?.name) || 'Tổ chuyên môn';
+    const currentGroupName = (state.groups.find(g => g.id === (state.currentUser !== 'admin' ? state.currentUser : absentTeacherObj?.group))?.name) || 'Tổ chuyên môn';
 
     const allAffectedSlots = [];
     
@@ -9374,8 +9377,8 @@ function analyzeSubstituteSlots() {
 
                 slotItem.appendChild(formDiv);
 
-                // Render danh sách ứng viên và dropdown cho slot này
-                renderSlotCandidatesUI(slotIdx, suggestions, slot.dateStr, slot.dayKey, slot.period, slot.session, slot.className, slot.subject, teacherShort, false);
+                // Render danh sách ứng viên và dropdown cho slot này (truyền trực tiếp candidatesBox và subSelect)
+                renderSlotCandidatesUI(slotIdx, suggestions, slot.dateStr, slot.dayKey, slot.period, slot.session, slot.className, slot.subject, teacherShort, false, candidatesBox, subSelect);
 
                 subSelect.onchange = () => {
                     selectSubstituteCandidate(slotIdx, subSelect.value);
