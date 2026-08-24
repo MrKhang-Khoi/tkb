@@ -8752,74 +8752,123 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
         }
         
         const isSameGroup = (teacher.group === currentUserGroup);
-        
-        // 5. Phân hạng & Điểm ưu tiên:
-        // Tier 1 (Score 100+): Cùng tổ & Cùng môn chuyên môn
-        // Tier 2 (Score 70+): Cùng tổ & Khác môn
-        // Tier 3 (Score 40+): Ngoài tổ & Cùng môn
-        // Tier 4 (Score 10+): Ngoài tổ & Khác môn
-        let score = 0;
-        let tier = 'tier4';
-        let tierLabel = '🏢 Ngoài tổ';
-        let reason = 'Giáo viên ngoài tổ';
-        
-        if (isSameGroup) {
-            if (teachesInThisClass && teachesThisSubject) {
-                score = 120;
-                tier = 'tier1';
-                tierLabel = '⭐ Cùng môn trong tổ';
-                reason = `Dạy cùng lớp ${targetClass} & Cùng môn ${subject}`;
-            } else if (teachesThisSubject) {
-                score = 100;
-                tier = 'tier1';
-                tierLabel = '⭐ Cùng môn trong tổ';
-                reason = `Cùng chuyên môn ${subject}`;
-            } else if (teachesInThisClass) {
-                score = 80;
-                tier = 'tier2';
-                tierLabel = '👥 Cùng tổ chuyên môn';
-                reason = `Cùng tổ (Có dạy lớp ${targetClass})`;
-            } else {
-                score = 70;
-                tier = 'tier2';
-                tierLabel = '👥 Cùng tổ chuyên môn';
-                reason = `Cùng tổ chuyên môn`;
-            }
-        } else {
-            if (teachesThisSubject) {
-                score = 40;
-                tier = 'tier3';
-                tierLabel = '📘 Cùng môn (Ngoài tổ)';
-                reason = `Ngoài tổ - Cùng môn ${subject}`;
-            } else {
-                score = 10;
-                tier = 'tier4';
-                tierLabel = '🏢 Ngoài tổ';
-                reason = `Giáo viên ngoài tổ`;
-            }
-        }
-        
-        // 6. Tính số tiết dạy trong ngày đó
+
+        // 5. Kiểm tra chi tiết lịch dạy trong ngày (Buổi sáng vs Buổi chiều)
+        const sameSessionPeriods = []; // Các tiết có dạy trong cùng buổi
+        const otherSessionPeriods = []; // Các tiết có dạy trong buổi khác
         let periodsOnThisDay = 0;
+
         if (state.timetable) {
             Object.keys(state.timetable).forEach(cName => {
+                const cSession = getClassSession(cName);
                 if (state.timetable[cName] && state.timetable[cName][dayKey]) {
                     [1, 2, 3, 4, 5].forEach(p => {
                         const s = state.timetable[cName][dayKey][p];
                         if (s && s.teacher === teacher.shortName && s.subject && s.subject.trim() !== '') {
                             periodsOnThisDay++;
+                            if (cSession === session) {
+                                sameSessionPeriods.push(p);
+                            } else {
+                                otherSessionPeriods.push(p);
+                            }
                         }
                     });
                 }
             });
         }
-        // Cộng thêm các tiết dạy thay đã nhận trong ngày hôm đó
         if (state.substitutions) {
             state.substitutions.forEach(s => {
                 if (s.date === dateStr && s.substituteTeacher === teacher.shortName) {
                     periodsOnThisDay++;
+                    if (s.session === session) {
+                        sameSessionPeriods.push(parseInt(s.period, 10));
+                    } else {
+                        otherSessionPeriods.push(parseInt(s.period, 10));
+                    }
                 }
             });
+        }
+
+        const uniqSameSession = [...new Set(sameSessionPeriods)].sort((a, b) => a - b);
+        const uniqOtherSession = [...new Set(otherSessionPeriods)].sort((a, b) => a - b);
+        const isAtSchoolSameSession = uniqSameSession.length > 0;
+        const hasOtherSessionOnly = !isAtSchoolSameSession && uniqOtherSession.length > 0;
+        const isFreeAllDay = (periodsOnThisDay === 0);
+
+        let presenceLabel = '';
+        let presenceShort = '';
+        let presenceBadgeColor = '';
+        if (isAtSchoolSameSession) {
+            presenceLabel = `🚗 Có mặt ở trường (dạy T${uniqSameSession.join(', T')})`;
+            presenceShort = `🚗 Đang ở trường (T${uniqSameSession.join(',')})`;
+            presenceBadgeColor = '#34d399';
+        } else if (hasOtherSessionOnly) {
+            const otherName = session === 'sáng' ? 'chiều' : 'sáng';
+            presenceLabel = `🌤️ Dạy buổi ${otherName} (T${uniqOtherSession.join(', T')})`;
+            presenceShort = `🌤️ Dạy buổi ${otherName}`;
+            presenceBadgeColor = '#60a5fa';
+        } else {
+            presenceLabel = `🏡 Không có tiết hôm nay (ở nhà)`;
+            presenceShort = `🏡 Ở nhà hôm nay`;
+            presenceBadgeColor = '#94a3b8';
+        }
+
+        // 6. Phân hạng & Điểm ưu tiên:
+        // Điểm cơ bản theo chuyên môn và tổ:
+        // - Cùng tổ & Cùng môn: 100
+        // - Cùng tổ & Khác môn: 70
+        // - Ngoài tổ & Cùng môn: 40
+        // - Ngoài tổ & Khác môn: 10
+        // +15 nếu dạy cùng lớp
+        // +50 NẾU ĐANG CÓ MẶT Ở TRƯỜNG TRONG BUỔI ĐÓ (Ưu tiên số 1 trong thực tế vì không phải di chuyển)
+        // +15 nếu có tiết buổi khác
+        // +0 nếu ở nhà hoàn toàn
+        let baseScore = 0;
+        let tier = 'tier4';
+        let tierLabel = '🏢 Ngoài tổ';
+        let reason = 'Giáo viên ngoài tổ';
+
+        if (isSameGroup) {
+            if (teachesInThisClass && teachesThisSubject) {
+                baseScore = 120;
+                tier = isAtSchoolSameSession ? 'tier1_school' : 'tier1_home';
+                tierLabel = isAtSchoolSameSession ? '⭐ Cùng môn & Đang ở trường' : '⭐ Cùng môn trong tổ';
+                reason = `Dạy cùng lớp ${targetClass} & Cùng môn ${subject}`;
+            } else if (teachesThisSubject) {
+                baseScore = 100;
+                tier = isAtSchoolSameSession ? 'tier1_school' : 'tier1_home';
+                tierLabel = isAtSchoolSameSession ? '⭐ Cùng môn & Đang ở trường' : '⭐ Cùng môn trong tổ';
+                reason = `Cùng chuyên môn ${subject}`;
+            } else if (teachesInThisClass) {
+                baseScore = 80;
+                tier = isAtSchoolSameSession ? 'tier2_school' : 'tier2_home';
+                tierLabel = isAtSchoolSameSession ? '👥 Cùng tổ & Đang ở trường' : '👥 Cùng tổ chuyên môn';
+                reason = `Cùng tổ (Có dạy lớp ${targetClass})`;
+            } else {
+                baseScore = 70;
+                tier = isAtSchoolSameSession ? 'tier2_school' : 'tier2_home';
+                tierLabel = isAtSchoolSameSession ? '👥 Cùng tổ & Đang ở trường' : '👥 Cùng tổ chuyên môn';
+                reason = `Cùng tổ chuyên môn`;
+            }
+        } else {
+            if (teachesThisSubject) {
+                baseScore = 40;
+                tier = isAtSchoolSameSession ? 'tier3_school' : 'tier3_home';
+                tierLabel = isAtSchoolSameSession ? '📘 Ngoài tổ cùng môn (Đang ở trường)' : '📘 Cùng môn (Ngoài tổ)';
+                reason = `Ngoài tổ - Cùng môn ${subject}`;
+            } else {
+                baseScore = 10;
+                tier = 'tier4';
+                tierLabel = '🏢 Ngoài tổ';
+                reason = `Giáo viên ngoài tổ`;
+            }
+        }
+
+        let score = baseScore;
+        if (isAtSchoolSameSession) {
+            score += 50; // Ưu tiên cực lớn cho người đang ở trường
+        } else if (hasOtherSessionOnly) {
+            score += 15;
         }
 
         // 7. Tổng số tiết dạy trong tuần
@@ -8834,7 +8883,7 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
         }
         
         const quota = teacher.quota || 19;
-        const loadText = `Hôm nay: ${periodsOnThisDay}T | Tuần: ${totalWeekPeriods}/${quota}T`;
+        const loadText = `${presenceShort} | Hôm nay: ${periodsOnThisDay}T | Tuần: ${totalWeekPeriods}/${quota}T`;
         
         suggestions.push({
             fullName: teacher.fullName,
@@ -8842,6 +8891,13 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
             group: teacher.group,
             isSameGroup: isSameGroup,
             teachesThisSubject: teachesThisSubject,
+            isAtSchoolSameSession: isAtSchoolSameSession,
+            hasOtherSessionOnly: hasOtherSessionOnly,
+            isFreeAllDay: isFreeAllDay,
+            presenceStatus: isAtSchoolSameSession ? 'at_school' : (hasOtherSessionOnly ? 'other_session' : 'at_home'),
+            presenceLabel: presenceLabel,
+            presenceShort: presenceShort,
+            presenceBadgeColor: presenceBadgeColor,
             score: score,
             tier: tier,
             tierLabel: tierLabel,
@@ -8852,10 +8908,17 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
         });
     });
     
-    // Sắp xếp ưu tiên: Điểm cao nhất -> Số tiết trong ngày ít hơn -> Tổng tiết trong tuần ít hơn
+    // Sắp xếp ưu tiên:
+    // 1. Điểm tổng cao nhất (Cùng môn/tổ + Đang ở trường)
+    // 2. Giáo viên đang ở trường trước giáo viên ở nhà
+    // 3. Tải tiết trong ngày ít hơn
+    // 4. Tổng tiết tuần ít hơn
     suggestions.sort((a, b) => {
         if (a.score !== b.score) {
             return b.score - a.score;
+        }
+        if (a.isAtSchoolSameSession !== b.isAtSchoolSameSession) {
+            return a.isAtSchoolSameSession ? -1 : 1;
         }
         if (a.periodsOnThisDay !== b.periodsOnThisDay) {
             return a.periodsOnThisDay - b.periodsOnThisDay;
@@ -8868,6 +8931,30 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
 
 // Biến lưu kết quả phân tích hiện tại để phục vụ tính năng "Tự động xếp tất cả"
 let lastAnalyzedSubstituteData = null;
+
+// Hàm hỗ trợ chọn nhanh ứng viên từ chip bấm
+function selectSubstituteCandidate(slotIdx, teacherShort) {
+    const subSelect = document.getElementById(`subSelect_${slotIdx}`);
+    if (subSelect) {
+        subSelect.value = teacherShort;
+        // Cập nhật viền active cho các chip
+        const container = document.getElementById(`subCandidates_${slotIdx}`);
+        if (container) {
+            const chips = container.querySelectorAll('.sub-candidate-chip');
+            chips.forEach(c => {
+                if (c.dataset.shortName === teacherShort) {
+                    c.style.borderColor = 'var(--primary-light)';
+                    c.style.background = 'rgba(99, 102, 241, 0.25)';
+                    c.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.3)';
+                } else {
+                    c.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    c.style.background = 'rgba(30, 41, 59, 0.6)';
+                    c.style.boxShadow = 'none';
+                }
+            });
+        }
+    }
+}
 
 function analyzeSubstituteSlots() {
     const startDateInput = document.getElementById('subAbsenceStartDate') || document.getElementById('subAbsenceDate');
@@ -9030,7 +9117,7 @@ function analyzeSubstituteSlots() {
         dayCard.appendChild(dayHeader);
 
         const slotsListDiv = document.createElement('div');
-        slotsListDiv.style.cssText = 'display: flex; flex-direction: column; gap: 10px;';
+        slotsListDiv.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
 
         dayGroup.slots.forEach(slot => {
             globalSlotIdx++;
@@ -9038,15 +9125,15 @@ function analyzeSubstituteSlots() {
 
             const slotItem = document.createElement('div');
             slotItem.className = 'sub-slot-item';
-            slotItem.style.cssText = 'padding: 12px 14px; border-radius: 8px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 10px; transition: var(--transition);';
+            slotItem.style.cssText = 'padding: 14px; border-radius: 8px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 10px; transition: var(--transition);';
 
             const slotTop = document.createElement('div');
             slotTop.style.cssText = 'display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
 
             const slotInfo = `
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <span style="font-weight: 700; font-size: 0.88rem; color: #f8fafc;">
-                        Tiết ${slot.period} • Lớp <b style="color: var(--primary-light);">${slot.className}</b> (${slot.session === 'chiều' ? 'Chiều' : 'Sáng'})
+                    <span style="font-weight: 700; font-size: 0.9rem; color: #f8fafc;">
+                        Tiết ${slot.period} • Lớp <b style="color: var(--primary-light); font-size: 0.95rem;">${slot.className}</b> (${slot.session === 'chiều' ? 'Chiều' : 'Sáng'})
                     </span>
                     <span style="font-size: 0.78rem; padding: 2px 8px; border-radius: 4px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">
                         Môn ${slot.subject}
@@ -9105,12 +9192,91 @@ function analyzeSubstituteSlots() {
                     slotItem.appendChild(infoDiv);
                 }
 
-                // Khung chọn giáo viên dạy thay
+                // KHUNG DANH SÁCH CÁC GIÁO VIÊN RẢNH ĐỂ BẤM CHỌN NHANH TRỰC QUAN
+                if (suggestions.length > 0) {
+                    const candidatesBox = document.createElement('div');
+                    candidatesBox.id = `subCandidates_${slotIdx}`;
+                    candidatesBox.style.cssText = 'background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;';
+                    
+                    const candidatesTitle = document.createElement('div');
+                    candidatesTitle.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;';
+                    candidatesTitle.innerHTML = `
+                        <span style="display: flex; align-items: center; gap: 4px;">
+                            <span class="material-icons-round" style="font-size: 0.95rem; color: var(--primary-light);">people</span>
+                            Danh sách giáo viên trống tiết này (${suggestions.length} GV - Bấm để chọn):
+                        </span>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">Ưu tiên: 🚗 Đang ở trường > ⭐ Cùng môn > 👥 Cùng tổ</span>
+                    `;
+                    candidatesBox.appendChild(candidatesTitle);
+
+                    const chipsWrapper = document.createElement('div');
+                    chipsWrapper.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;';
+
+                    const topCandidate = suggestions[0];
+
+                    suggestions.forEach((cand, cIdx) => {
+                        const isDefaultSelected = (cIdx === 0);
+                        const chip = document.createElement('div');
+                        chip.className = 'sub-candidate-chip';
+                        chip.dataset.shortName = cand.shortName;
+                        chip.style.cssText = `
+                            cursor: pointer;
+                            padding: 5px 10px;
+                            border-radius: 6px;
+                            font-size: 0.78rem;
+                            border: 1px solid ${isDefaultSelected ? 'var(--primary-light)' : 'rgba(255, 255, 255, 0.1)'};
+                            background: ${isDefaultSelected ? 'rgba(99, 102, 241, 0.25)' : 'rgba(30, 41, 59, 0.6)'};
+                            box-shadow: ${isDefaultSelected ? '0 0 0 2px rgba(99, 102, 241, 0.3)' : 'none'};
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                            transition: all 0.2s ease;
+                            color: #f8fafc;
+                        `;
+                        
+                        let presenceBadge = '';
+                        if (cand.isAtSchoolSameSession) {
+                            presenceBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.4);">${cand.presenceShort}</span>`;
+                        } else if (cand.hasOtherSessionOnly) {
+                            presenceBadge = `<span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.3);">${cand.presenceShort}</span>`;
+                        } else {
+                            presenceBadge = `<span style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(148, 163, 184, 0.25);" title="Không có tiết hôm nay (ở nhà - lưu ý nếu nhà xa)">🏡 Ở nhà (${cand.periodsOnThisDay}T)</span>`;
+                        }
+
+                        let tagBadge = '';
+                        if (cand.isSameGroup && cand.teachesThisSubject) {
+                            tagBadge = `<span style="color: #fbbf24; font-weight: 600;">⭐ Cùng môn</span>`;
+                        } else if (cand.isSameGroup) {
+                            tagBadge = `<span style="color: #a78bfa;">👥 Cùng tổ</span>`;
+                        } else if (cand.teachesThisSubject) {
+                            tagBadge = `<span style="color: #38bdf8;">📘 Ngoài tổ cùng môn</span>`;
+                        } else {
+                            tagBadge = `<span style="color: var(--text-muted);">🏢 Ngoài tổ</span>`;
+                        }
+
+                        chip.innerHTML = `
+                            <b>${cand.fullName}</b> (${cand.shortName})
+                            ${presenceBadge}
+                            ${tagBadge}
+                        `;
+
+                        chip.onclick = () => {
+                            selectSubstituteCandidate(slotIdx, cand.shortName);
+                        };
+
+                        chipsWrapper.appendChild(chip);
+                    });
+
+                    candidatesBox.appendChild(chipsWrapper);
+                    slotItem.appendChild(candidatesBox);
+                }
+
+                // Khung chọn giáo viên dạy thay & Ghi chú & Nút Phân công
                 const formDiv = document.createElement('div');
-                formDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; align-items: center;';
+                formDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 4px;';
 
                 const selectDiv = document.createElement('div');
-                selectDiv.style.cssText = 'flex: 2 1 240px;';
+                selectDiv.style.cssText = 'flex: 2 1 260px;';
 
                 const subSelect = document.createElement('select');
                 subSelect.id = `subSelect_${slotIdx}`;
@@ -9123,39 +9289,39 @@ function analyzeSubstituteSlots() {
                 } else {
                     let selectHtml = '<option value="">-- Chọn giáo viên dạy thay --</option>';
 
-                    // Phân nhóm optgroup trực quan
-                    const tier1 = suggestions.filter(s => s.tier === 'tier1');
-                    const tier2 = suggestions.filter(s => s.tier === 'tier2');
-                    const tier3 = suggestions.filter(s => s.tier === 'tier3');
-                    const tier4 = suggestions.filter(s => s.tier === 'tier4');
+                    // Phân nhóm optgroup theo sự thuận tiện thực tế
+                    const atSchoolGroup = suggestions.filter(s => s.isAtSchoolSameSession);
+                    const atHomeSameSubGroup = suggestions.filter(s => !s.isAtSchoolSameSession && s.teachesThisSubject);
+                    const atHomeOtherSubGroup = suggestions.filter(s => !s.isAtSchoolSameSession && !s.teachesThisSubject && s.isSameGroup);
+                    const outsideGroup = suggestions.filter(s => !s.isAtSchoolSameSession && !s.isSameGroup);
 
-                    if (tier1.length > 0) {
-                        selectHtml += `<optgroup label="⭐ Cùng bộ môn trong tổ (Ưu tiên số 1)">`;
-                        tier1.forEach(s => {
+                    if (atSchoolGroup.length > 0) {
+                        selectHtml += `<optgroup label="🚗 ĐANG CÓ MẶT TẠI TRƯỜNG (Ưu tiên nhất - Không phải di chuyển)">`;
+                        atSchoolGroup.forEach(s => {
                             selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
                         });
                         selectHtml += `</optgroup>`;
                     }
 
-                    if (tier2.length > 0) {
-                        selectHtml += `<optgroup label="👥 Cùng tổ chuyên môn (Ưu tiên số 2)">`;
-                        tier2.forEach(s => {
+                    if (atHomeSameSubGroup.length > 0) {
+                        selectHtml += `<optgroup label="⭐ CÙNG CHUYÊN MÔN (${atSchoolGroup.length > 0 ? 'Ở nhà / Buổi khác' : 'Gợi ý chuyên môn'})">`;
+                        atHomeSameSubGroup.forEach(s => {
                             selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
                         });
                         selectHtml += `</optgroup>`;
                     }
 
-                    if (tier3.length > 0) {
-                        selectHtml += `<optgroup label="📘 Cùng bộ môn ngoài tổ (Ưu tiên số 3)">`;
-                        tier3.forEach(s => {
+                    if (atHomeOtherSubGroup.length > 0) {
+                        selectHtml += `<optgroup label="👥 CÙNG TỔ CHUYÊN MÔN (Ở nhà / Buổi khác - Cân nhắc nếu nhà xa)">`;
+                        atHomeOtherSubGroup.forEach(s => {
                             selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
                         });
                         selectHtml += `</optgroup>`;
                     }
 
-                    if (tier4.length > 0) {
-                        selectHtml += `<optgroup label="🏢 Giáo viên ngoài tổ khác">`;
-                        tier4.forEach(s => {
+                    if (outsideGroup.length > 0) {
+                        selectHtml += `<optgroup label="🏢 GIÁO VIÊN NGOÀI TỔ">`;
+                        outsideGroup.forEach(s => {
                             selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
                         });
                         selectHtml += `</optgroup>`;
@@ -9167,6 +9333,10 @@ function analyzeSubstituteSlots() {
                     if (suggestions.length > 0) {
                         subSelect.value = suggestions[0].shortName;
                     }
+
+                    subSelect.onchange = () => {
+                        selectSubstituteCandidate(slotIdx, subSelect.value);
+                    };
                 }
 
                 selectDiv.appendChild(subSelect);
@@ -10130,6 +10300,7 @@ window.printPublicPDF = printPublicPDF;
 window.switchGroupTab = switchGroupTab;
 window.analyzeSubstituteSlots = analyzeSubstituteSlots;
 window.syncEndDateAndAnalyze = syncEndDateAndAnalyze;
+window.selectSubstituteCandidate = selectSubstituteCandidate;
 window.autoAssignAllSlots = autoAssignAllSlots;
 window.addTeacher = addTeacher;
 window.addTeacherManual = addTeacherManual;
