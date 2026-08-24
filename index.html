@@ -363,33 +363,45 @@
                         </div>
                         
                         <!-- Form selection -->
-                        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 24px; padding: 16px; border-radius: 8px; background: rgba(15, 23, 42, 0.3); border: 1px solid var(--border);">
-                            <div class="form-group" style="flex: 1 1 180px; margin-bottom: 0;">
-                                <label for="subAbsenceDate" style="margin-bottom: 6px;">1. Ngày vắng mặt</label>
-                                <input type="date" id="subAbsenceDate" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%;" onchange="analyzeSubstituteSlots()">
+                        <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 24px; padding: 16px; border-radius: 8px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border);">
+                            <div class="form-group" style="flex: 1 1 140px; margin-bottom: 0;">
+                                <label for="subAbsenceStartDate" style="margin-bottom: 6px; font-weight: 600; font-size: 0.85rem;">Từ ngày</label>
+                                <input type="date" id="subAbsenceStartDate" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%; height: 38px;" onchange="syncEndDateAndAnalyze()">
                             </div>
-                            <div class="form-group" style="flex: 1 1 220px; margin-bottom: 0;">
-                                <label for="subAbsenceTeacher" style="margin-bottom: 6px;">2. Giáo viên vắng mặt</label>
+                            <div class="form-group" style="flex: 1 1 140px; margin-bottom: 0;">
+                                <label for="subAbsenceEndDate" style="margin-bottom: 6px; font-weight: 600; font-size: 0.85rem;">Đến ngày</label>
+                                <input type="date" id="subAbsenceEndDate" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%; height: 38px;" onchange="analyzeSubstituteSlots()">
+                            </div>
+                            <div class="form-group" style="flex: 1.5 1 200px; margin-bottom: 0;">
+                                <label for="subAbsenceTeacher" style="margin-bottom: 6px; font-weight: 600; font-size: 0.85rem;">Giáo viên vắng mặt</label>
                                 <select id="subAbsenceTeacher" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%; height: 38px;" onchange="analyzeSubstituteSlots()">
                                     <!-- Dynamic list of teachers -->
                                 </select>
                             </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-primary" onclick="analyzeSubstituteSlots()" style="padding: 10px 16px; font-size: 0.85rem; height: 38px;">
-                                    <span class="material-icons-round" style="font-size: 1.1rem; vertical-align: middle;">analytics</span> Phân tích
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="analyzeSubstituteSlots()" style="padding: 0 16px; font-size: 0.85rem; height: 38px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="material-icons-round" style="font-size: 1.15rem;">analytics</span> Phân tích
+                                </button>
+                                <button class="btn btn-success" id="btnAutoAssignAll" onclick="autoAssignAllSlots()" style="display: none; padding: 0 14px; font-size: 0.85rem; height: 38px; display: none; align-items: center; gap: 6px;">
+                                    <span class="material-icons-round" style="font-size: 1.15rem;">auto_fix_high</span> Tự động xếp tất cả
                                 </button>
                             </div>
                         </div>
                         
                         <!-- Analysis Results Container -->
                         <div id="subAffectedSlotsHeader" style="margin-bottom: 12px; display: none;">
-                            <h3 style="font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: var(--primary-light);">
-                                Lịch Dạy Bị Ảnh Hưởng & Gợi Ý Giáo Viên Thay Thế
-                            </h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <h3 style="font-size: 1rem; color: var(--primary-light); margin: 0; display: flex; align-items: center; gap: 6px;">
+                                    <span class="material-icons-round" style="font-size: 1.2rem;">event_busy</span> Lịch Dạy Bị Ảnh Hưởng & Gợi Ý Giáo Viên Dạy Thay
+                                </h3>
+                                <div id="subAffectedSummaryBadge" style="font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; background: rgba(99, 102, 241, 0.15); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(129, 140, 248, 0.3);">
+                                    <!-- Dynamic count -->
+                                </div>
+                            </div>
                         </div>
                         <div id="subAffectedSlotsContainer" style="display: flex; flex-direction: column; gap: 16px;">
                             <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 30px;">
-                                Vui lòng chọn ngày vắng mặt và giáo viên để bắt đầu phân tích gợi ý dạy thay.
+                                Vui lòng chọn khoảng thời gian vắng mặt và giáo viên để bắt đầu phân tích gợi ý dạy thay.
                             </p>
                         </div>
                     </div>

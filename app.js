@@ -8476,16 +8476,106 @@ function initGroupSubstituteTab(groupId) {
     groupTeachers.forEach(t => addOption(t, "★ "));
     otherTeachers.forEach(t => addOption(t, ""));
     
-    const dateInput = document.getElementById('subAbsenceDate');
-    if (dateInput && !dateInput.value) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        dateInput.value = `${year}-${month}-${day}`;
+    const startDateInput = document.getElementById('subAbsenceStartDate');
+    const endDateInput = document.getElementById('subAbsenceEndDate');
+    const legacyDateInput = document.getElementById('subAbsenceDate');
+    
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (startDateInput && !startDateInput.value) {
+        startDateInput.value = todayStr;
+    }
+    if (endDateInput && !endDateInput.value) {
+        endDateInput.value = todayStr;
+    }
+    if (legacyDateInput && !legacyDateInput.value) {
+        legacyDateInput.value = todayStr;
     }
     
     renderGroupSubstitutions();
+}
+
+function syncEndDateAndAnalyze() {
+    const startDateInput = document.getElementById('subAbsenceStartDate');
+    const endDateInput = document.getElementById('subAbsenceEndDate');
+    if (startDateInput && endDateInput) {
+        if (!endDateInput.value || endDateInput.value < startDateInput.value) {
+            endDateInput.value = startDateInput.value;
+        }
+    }
+    analyzeSubstituteSlots();
+}
+
+function getDatesListInRange(startDateStr, endDateStr) {
+    if (!startDateStr) return [];
+    if (!endDateStr) endDateStr = startDateStr;
+
+    function parseDate(dStr) {
+        if (!dStr) return null;
+        if (dStr.includes('-')) {
+            const parts = dStr.split('-');
+            return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        } else if (dStr.includes('/')) {
+            const parts = dStr.split('/');
+            if (parts[0].length === 4) {
+                return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            } else {
+                return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+            }
+        }
+        return new Date(dStr);
+    }
+
+    const startObj = parseDate(startDateStr);
+    let endObj = parseDate(endDateStr);
+
+    if (!startObj || isNaN(startObj.getTime())) return [];
+    if (!endObj || isNaN(endObj.getTime()) || endObj < startObj) {
+        endObj = new Date(startObj.getTime());
+    }
+
+    const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const dayLabels = {
+        'T2': 'Thứ Hai',
+        'T3': 'Thứ Ba',
+        'T4': 'Thứ Tư',
+        'T5': 'Thứ Năm',
+        'T6': 'Thứ Sáu',
+        'T7': 'Thứ Bảy',
+        'CN': 'Chủ Nhật'
+    };
+
+    const datesList = [];
+    const curr = new Date(startObj.getTime());
+
+    while (curr <= endObj) {
+        const y = curr.getFullYear();
+        const m = String(curr.getMonth() + 1).padStart(2, '0');
+        const d = String(curr.getDate()).padStart(2, '0');
+        const isoDate = `${y}-${m}-${d}`;
+        const formattedDate = `${d}/${m}/${y}`;
+        const dayNum = curr.getDay();
+        const dayKey = daysOfWeek[dayNum];
+
+        // Bỏ qua Chủ Nhật
+        if (dayKey !== 'CN') {
+            datesList.push({
+                isoDate: isoDate,
+                formattedDate: formattedDate,
+                dayKey: dayKey,
+                dayLabel: dayLabels[dayKey] || dayKey,
+                dayNum: dayNum
+            });
+        }
+
+        curr.setDate(curr.getDate() + 1);
+    }
+
+    return datesList;
 }
 
 function showToast(message, type = 'info') {
@@ -8533,219 +8623,69 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-function analyzeSubstituteSlots() {
-    const dateVal = document.getElementById('subAbsenceDate').value;
-    const teacherShort = document.getElementById('subAbsenceTeacher').value;
-    const container = document.getElementById('subAffectedSlotsContainer');
-    const header = document.getElementById('subAffectedSlotsHeader');
-    
-    if (!container) return;
-    
-    if (!dateVal || !teacherShort) {
-        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 30px;">Vui lòng chọn ngày vắng mặt và giáo viên để bắt đầu phân tích gợi ý dạy thay.</p>';
-        if (header) header.style.display = 'none';
-        return;
-    }
-    
-    // Parse date an toàn với nhiều định dạng khác nhau
-    let parsedDate = null;
-    if (dateVal.includes('-')) {
-        const parts = dateVal.split('-');
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        parsedDate = new Date(year, month, day);
-    } else if (dateVal.includes('/')) {
-        const parts = dateVal.split('/');
-        let year, month, day;
-        if (parts[0].length === 4) {
-            year = parseInt(parts[0], 10);
-            month = parseInt(parts[1], 10) - 1;
-            day = parseInt(parts[2], 10);
-        } else {
-            day = parseInt(parts[0], 10);
-            month = parseInt(parts[1], 10) - 1;
-            year = parseInt(parts[2], 10);
-        }
-        parsedDate = new Date(year, month, day);
-    } else {
-        parsedDate = new Date(dateVal);
-    }
-    
-    const dayNum = parsedDate.getDay();
-    
-    if (isNaN(dayNum)) {
-        showToast("Ngày vắng mặt không hợp lệ!", "danger");
-        container.innerHTML = '<p style="color: var(--danger); font-size: 0.9rem; text-align: center; padding: 30px;">Ngày được chọn không hợp lệ. Vui lòng chọn lại ngày khác.</p>';
-        if (header) header.style.display = 'none';
-        return;
-    }
-    
-    const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    const dayKey = daysOfWeek[dayNum];
-    
-    if (dayKey === 'CN') {
-        showToast("Vui lòng chọn một ngày từ Thứ 2 đến Thứ 7!", "warning");
-        container.innerHTML = '<p style="color: var(--warning); font-size: 0.9rem; text-align: center; padding: 30px;">Ngày được chọn là Chủ Nhật (ngày nghỉ). Vui lòng chọn một ngày từ Thứ 2 đến Thứ 7.</p>';
-        if (header) header.style.display = 'none';
-        return;
-    }
-    
-    const dayText = "Thứ " + (dayNum === 1 ? "Hai" : dayNum === 2 ? "Ba" : dayNum === 3 ? "Tư" : dayNum === 4 ? "Năm" : dayNum === 5 ? "Sáu" : "Bảy");
-    const affectedSlots = [];
-    
-    if (state.timetable) {
-        Object.keys(state.timetable).forEach(className => {
-            const classTimetable = state.timetable[className];
-            if (classTimetable && classTimetable[dayKey]) {
-                Object.keys(classTimetable[dayKey]).forEach(period => {
-                    const slot = classTimetable[dayKey][period];
-                    if (slot && slot.teacher && slot.teacher.trim() === teacherShort.trim() && slot.subject && slot.subject.trim() !== '') {
-                        const session = getClassSession(className);
-                        affectedSlots.push({
-                            className: className,
-                            dayKey: dayKey,
-                            period: parseInt(period, 10),
-                            session: session,
-                            subject: slot.subject.trim()
-                        });
-                    }
-                });
-            }
-        });
-    }
-    
-    affectedSlots.sort((a, b) => {
-        if (a.session !== b.session) {
-            return a.session === 'sáng' ? -1 : 1;
-        }
-        return a.period - b.period;
-    });
-    
-    if (header) header.style.display = 'block';
-    
-    if (affectedSlots.length === 0) {
-        showToast(`Giáo viên trống lịch dạy vào ${dayText} (${dateVal})`, "info");
-        container.innerHTML = `<p style="color: var(--success); font-size: 0.95rem; text-align: center; padding: 30px; font-weight: 500;">Không có tiết dạy nào của giáo viên trong ngày này (${dayText}). Vui lòng kiểm tra lại.</p>`;
-        return;
-    }
-    
-    container.innerHTML = '';
-    
-    affectedSlots.forEach((slot, idx) => {
-        const suggestions = getSubstituteSuggestions(slot.dayKey, slot.period, slot.session, slot.className, slot.subject, teacherShort);
-        
-        const card = document.createElement('div');
-        card.className = 'sub-affected-card';
-        card.style.cssText = 'padding: 16px; border-radius: 8px; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 12px;';
-        
-        const headerDiv = document.createElement('div');
-        headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 8px;';
-        
-        const infoSpan = document.createElement('span');
-        infoSpan.style.cssText = 'font-weight: 600; font-size: 0.9rem; color: var(--text-main);';
-        infoSpan.innerHTML = `Tiết ${slot.period} - Lớp <b style="color: var(--primary-light);">${slot.className}</b> (${slot.session === 'chiều' ? 'Chiều' : 'Sáng'})`;
-        
-        const subjectSpan = document.createElement('span');
-        subjectSpan.style.cssText = 'font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; font-weight: bold;';
-        subjectSpan.innerText = slot.subject;
-        
-        headerDiv.appendChild(infoSpan);
-        headerDiv.appendChild(subjectSpan);
-        card.appendChild(headerDiv);
-        
-        const formDiv = document.createElement('div');
-        formDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 12px; align-items: center;';
-        
-        const selectDiv = document.createElement('div');
-        selectDiv.style.cssText = 'flex: 2 1 200px;';
-        const subSelect = document.createElement('select');
-        subSelect.id = `subSelect_${idx}`;
-        subSelect.className = 'form-control';
-        // Khắc phục hoàn toàn lỗi dẹt dropdown bằng style inline chi tiết, màu nền var(--bg-card) đồng bộ và box-sizing chuẩn
-        subSelect.style.cssText = 'width: 100%; font-size: 0.85rem; height: 38px; min-height: 38px; padding: 8px 12px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; display: block; line-height: 1.5;';
-        
-        subSelect.innerHTML = '<option value="">-- Chọn giáo viên dạy thay --</option>';
-        suggestions.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s.shortName;
-            opt.innerText = `${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}`;
-            subSelect.appendChild(opt);
-        });
-        selectDiv.appendChild(subSelect);
-        formDiv.appendChild(selectDiv);
-        
-        const noteDiv = document.createElement('div');
-        noteDiv.style.cssText = 'flex: 1 1 120px;';
-        const noteInput = document.createElement('input');
-        noteInput.id = `subNote_${idx}`;
-        noteInput.type = 'text';
-        noteInput.className = 'form-control';
-        noteInput.placeholder = 'Ghi chú...';
-        // Khắc phục hoàn toàn lỗi dẹt input bằng style inline chi tiết, màu nền var(--bg-card) đồng bộ và box-sizing chuẩn
-        noteInput.style.cssText = 'width: 100%; font-size: 0.85rem; height: 38px; min-height: 38px; padding: 8px 12px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; display: block; line-height: 1.5;';
-        noteDiv.appendChild(noteInput);
-        formDiv.appendChild(noteDiv);
-        
-        const btnDiv = document.createElement('div');
-        const assignBtn = document.createElement('button');
-        assignBtn.className = 'btn btn-success';
-        assignBtn.style.cssText = 'padding: 6px 16px; font-size: 0.85rem; height: 38px; font-weight: 500;';
-        assignBtn.innerText = 'Xác nhận';
-        assignBtn.onclick = () => {
-            const subTeacher = subSelect.value;
-            const note = noteInput.value.trim();
-            if (!subTeacher) {
-                showToast("Vui lòng chọn giáo viên dạy thay!", "warning");
-                return;
-            }
-            saveSubstitution(dateVal, teacherShort, subTeacher, slot.className, slot.period, slot.session, slot.subject, note);
-        };
-        btnDiv.appendChild(assignBtn);
-        formDiv.appendChild(btnDiv);
-        
-        card.appendChild(formDiv);
-        container.appendChild(card);
-    });
-    
-    // Phản hồi thị giác trực quan (hiệu ứng flash) cho thấy nút Phân tích hoạt động và giao diện đã được cập nhật thành công
-    showToast(`Đã phân tích xong gợi ý dạy thay (${affectedSlots.length} tiết bị ảnh hưởng)`, "success");
-    
-    if (header) {
-        header.style.animation = 'none';
-        setTimeout(() => { header.style.animation = 'fadeIn 0.4s ease-out'; }, 10);
-    }
-    container.style.animation = 'none';
-    setTimeout(() => { container.style.animation = 'fadeIn 0.5s ease-out'; }, 10);
-}
-
-function getSubstituteSuggestions(day, period, session, targetClass, subject, absentTeacherShort) {
+function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass, subject, absentTeacherShort) {
     const currentUserGroup = state.currentUser;
     const suggestions = [];
     
     const allTeachers = state.teachers.filter(t => t && t.shortName !== absentTeacherShort);
     
     allTeachers.forEach(teacher => {
-        let isFree = true;
+        // 1. Kiểm tra xem giáo viên có tiết dạy trên TKB chính khóa không
+        let isFreeInTimetable = true;
         if (state.timetable) {
             Object.keys(state.timetable).forEach(className => {
                 const classSession = getClassSession(className);
                 if (classSession === session) {
-                    const slot = state.timetable[className][day] ? state.timetable[className][day][period] : null;
-                    if (slot && slot.teacher === teacher.shortName && slot.subject !== '') {
-                        isFree = false;
+                    const slot = (state.timetable[className] && state.timetable[className][dayKey]) 
+                        ? state.timetable[className][dayKey][period] 
+                        : null;
+                    if (slot && slot.teacher === teacher.shortName && slot.subject && slot.subject.trim() !== '') {
+                        isFreeInTimetable = false;
                     }
                 }
             });
         }
+        if (!isFreeInTimetable) return;
+
+        // 2. Kiểm tra xem giáo viên đã bị phân công dạy thay vào đúng ngày & tiết này chưa
+        let isAlreadySubbing = false;
+        if (state.substitutions && Array.isArray(state.substitutions)) {
+            const hasSub = state.substitutions.some(s => 
+                s.date === dateStr && 
+                parseInt(s.period, 10) === parseInt(period, 10) && 
+                s.session === session && 
+                s.substituteTeacher === teacher.shortName
+            );
+            if (hasSub) isAlreadySubbing = true;
+        }
+        if (isAlreadySubbing) return;
         
-        if (!isFree) return;
-        
+        // 3. Kiểm tra chuyên môn dạy môn học này
+        let teachesThisSubject = false;
+        if (subject) {
+            const subLower = subject.toLowerCase().trim();
+            if (teacher.subjects && Array.isArray(teacher.subjects)) {
+                teachesThisSubject = teacher.subjects.some(s => s && s.toLowerCase().trim() === subLower);
+            }
+            if (!teachesThisSubject && state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    const assign = state.assignments[key];
+                    if (assign && assign.teacher === teacher.shortName && assign.periods > 0) {
+                        const parsed = parseAssignmentKey(key);
+                        if (parsed.subName && parsed.subName.toLowerCase().trim() === subLower) {
+                            teachesThisSubject = true;
+                        }
+                    }
+                });
+            }
+        }
+
+        // 4. Kiểm tra có dạy cùng lớp này không
         let teachesInThisClass = false;
         if (state.assignments) {
             Object.keys(state.assignments).forEach(key => {
                 const assign = state.assignments[key];
-                if (assign && assign.teacher === teacher.shortName) {
+                if (assign && assign.teacher === teacher.shortName && assign.periods > 0) {
                     const parts = key.split('_');
                     if (parts[0] === targetClass) {
                         teachesInThisClass = true;
@@ -8754,110 +8694,676 @@ function getSubstituteSuggestions(day, period, session, targetClass, subject, ab
             });
         }
         
-        // Kiểm tra an toàn cho subject và subjects của giáo viên để tránh lỗi toLowerCase()
-        let teachesThisSubject = false;
-        if (subject && teacher.subjects) {
-            teachesThisSubject = teacher.subjects.map(s => s.toLowerCase()).includes(subject.toLowerCase());
-        }
-        
-        let score = 0;
-        let reason = "Khác tổ";
-        
         const isSameGroup = (teacher.group === currentUserGroup);
+        
+        // 5. Phân hạng & Điểm ưu tiên:
+        // Tier 1 (Score 100+): Cùng tổ & Cùng môn chuyên môn
+        // Tier 2 (Score 70+): Cùng tổ & Khác môn
+        // Tier 3 (Score 40+): Ngoài tổ & Cùng môn
+        // Tier 4 (Score 10+): Ngoài tổ & Khác môn
+        let score = 0;
+        let tier = 'tier4';
+        let tierLabel = '🏢 Ngoài tổ';
+        let reason = 'Giáo viên ngoài tổ';
+        
         if (isSameGroup) {
             if (teachesInThisClass && teachesThisSubject) {
-                score = 5;
-                reason = "Cùng lớp & Cùng môn";
-            } else if (teachesInThisClass) {
-                score = 4;
-                reason = "Dạy cùng lớp";
+                score = 120;
+                tier = 'tier1';
+                tierLabel = '⭐ Cùng môn trong tổ';
+                reason = `Dạy cùng lớp ${targetClass} & Cùng môn ${subject}`;
             } else if (teachesThisSubject) {
-                score = 3;
-                reason = "Cùng bộ môn";
+                score = 100;
+                tier = 'tier1';
+                tierLabel = '⭐ Cùng môn trong tổ';
+                reason = `Cùng chuyên môn ${subject}`;
+            } else if (teachesInThisClass) {
+                score = 80;
+                tier = 'tier2';
+                tierLabel = '👥 Cùng tổ chuyên môn';
+                reason = `Cùng tổ (Có dạy lớp ${targetClass})`;
             } else {
-                score = 2;
-                reason = "Cùng tổ chuyên môn";
+                score = 70;
+                tier = 'tier2';
+                tierLabel = '👥 Cùng tổ chuyên môn';
+                reason = `Cùng tổ chuyên môn`;
             }
         } else {
             if (teachesThisSubject) {
-                score = 1;
-                reason = "Khác tổ (Cùng môn)";
+                score = 40;
+                tier = 'tier3';
+                tierLabel = '📘 Cùng môn (Ngoài tổ)';
+                reason = `Ngoài tổ - Cùng môn ${subject}`;
             } else {
-                score = 0;
-                reason = "Khác tổ";
+                score = 10;
+                tier = 'tier4';
+                tierLabel = '🏢 Ngoài tổ';
+                reason = `Giáo viên ngoài tổ`;
             }
         }
         
-        let totalPeriods = 0;
+        // 6. Tính số tiết dạy trong ngày đó
+        let periodsOnThisDay = 0;
+        if (state.timetable) {
+            Object.keys(state.timetable).forEach(cName => {
+                if (state.timetable[cName] && state.timetable[cName][dayKey]) {
+                    [1, 2, 3, 4, 5].forEach(p => {
+                        const s = state.timetable[cName][dayKey][p];
+                        if (s && s.teacher === teacher.shortName && s.subject && s.subject.trim() !== '') {
+                            periodsOnThisDay++;
+                        }
+                    });
+                }
+            });
+        }
+        // Cộng thêm các tiết dạy thay đã nhận trong ngày hôm đó
+        if (state.substitutions) {
+            state.substitutions.forEach(s => {
+                if (s.date === dateStr && s.substituteTeacher === teacher.shortName) {
+                    periodsOnThisDay++;
+                }
+            });
+        }
+
+        // 7. Tổng số tiết dạy trong tuần
+        let totalWeekPeriods = 0;
         if (state.assignments) {
             Object.keys(state.assignments).forEach(key => {
                 const assign = state.assignments[key];
                 if (assign && assign.teacher === teacher.shortName) {
-                    totalPeriods += assign.periods || 0;
+                    totalWeekPeriods += assign.periods || 0;
                 }
             });
         }
         
         const quota = teacher.quota || 19;
-        const loadText = `${totalPeriods}/${quota}T`;
+        const loadText = `Hôm nay: ${periodsOnThisDay}T | Tuần: ${totalWeekPeriods}/${quota}T`;
         
         suggestions.push({
             fullName: teacher.fullName,
             shortName: teacher.shortName,
+            group: teacher.group,
+            isSameGroup: isSameGroup,
+            teachesThisSubject: teachesThisSubject,
             score: score,
+            tier: tier,
+            tierLabel: tierLabel,
             reason: reason,
-            totalPeriods: totalPeriods,
+            periodsOnThisDay: periodsOnThisDay,
+            totalWeekPeriods: totalWeekPeriods,
             loadText: loadText
         });
     });
     
+    // Sắp xếp ưu tiên: Điểm cao nhất -> Số tiết trong ngày ít hơn -> Tổng tiết trong tuần ít hơn
     suggestions.sort((a, b) => {
         if (a.score !== b.score) {
             return b.score - a.score;
         }
-        return a.totalPeriods - b.totalPeriods;
+        if (a.periodsOnThisDay !== b.periodsOnThisDay) {
+            return a.periodsOnThisDay - b.periodsOnThisDay;
+        }
+        return a.totalWeekPeriods - b.totalWeekPeriods;
     });
     
     return suggestions;
 }
 
-function saveSubstitution(date, absentTeacher, substituteTeacher, className, period, session, subject, note) {
-    if (!confirm(`Xác nhận phân công ${substituteTeacher} dạy thay cho ${absentTeacher} tiết ${period} lớp ${className} ngày ${date}?`)) {
+// Biến lưu kết quả phân tích hiện tại để phục vụ tính năng "Tự động xếp tất cả"
+let lastAnalyzedSubstituteData = null;
+
+function analyzeSubstituteSlots() {
+    const startDateInput = document.getElementById('subAbsenceStartDate');
+    const endDateInput = document.getElementById('subAbsenceEndDate');
+    const legacyDateInput = document.getElementById('subAbsenceDate');
+    const teacherSelect = document.getElementById('subAbsenceTeacher');
+
+    const startDateVal = startDateInput ? startDateInput.value : (legacyDateInput ? legacyDateInput.value : '');
+    const endDateVal = endDateInput ? endDateInput.value : startDateVal;
+    const teacherShort = teacherSelect ? teacherSelect.value : '';
+
+    const container = document.getElementById('subAffectedSlotsContainer');
+    const header = document.getElementById('subAffectedSlotsHeader');
+    const summaryBadge = document.getElementById('subAffectedSummaryBadge');
+    const autoAssignBtn = document.getElementById('btnAutoAssignAll');
+    
+    if (!container) return;
+    
+    if (!startDateVal || !teacherShort) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 30px;">Vui lòng chọn khoảng thời gian vắng mặt và giáo viên để bắt đầu phân tích gợi ý dạy thay.</p>';
+        if (header) header.style.display = 'none';
+        if (autoAssignBtn) autoAssignBtn.style.display = 'none';
         return;
     }
     
-    const entry = {
-        id: "sub_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-        date: date,
-        absentTeacher: absentTeacher,
-        substituteTeacher: substituteTeacher,
-        className: className,
-        period: period,
-        session: session,
-        subject: subject,
-        note: note || '',
-        createdByGroup: state.currentUser
-    };
+    const datesList = getDatesListInRange(startDateVal, endDateVal);
     
-    if (!state.substitutions) {
-        state.substitutions = [];
+    if (datesList.length === 0) {
+        showToast("Không tìm thấy ngày dạy hợp lệ trong khoảng thời gian đã chọn!", "warning");
+        container.innerHTML = '<p style="color: var(--warning); font-size: 0.9rem; text-align: center; padding: 30px;">Khoảng thời gian được chọn chỉ gồm ngày nghỉ (Chủ Nhật) hoặc không hợp lệ. Vui lòng chọn lại.</p>';
+        if (header) header.style.display = 'none';
+        if (autoAssignBtn) autoAssignBtn.style.display = 'none';
+        return;
     }
-    state.substitutions.push(entry);
-    persistData();
-    showToast("Đã lưu phân công dạy thay thành công!", "success");
-    analyzeSubstituteSlots();
-    renderGroupSubstitutions();
+    
+    const absentTeacherObj = state.teachers.find(t => t.shortName === teacherShort);
+    const absentTeacherFullName = absentTeacherObj ? absentTeacherObj.fullName : teacherShort;
+    const currentGroupName = (state.groups.find(g => g.id === state.currentUser)?.name) || 'Tổ chuyên môn';
+
+    const allAffectedSlots = [];
+    
+    // Thu thập tất cả các tiết dạy bị ảnh hưởng trong từng ngày
+    datesList.forEach(dInfo => {
+        const dayKey = dInfo.dayKey;
+        const daySlots = [];
+        
+        if (state.timetable) {
+            Object.keys(state.timetable).forEach(className => {
+                const classTimetable = state.timetable[className];
+                if (classTimetable && classTimetable[dayKey]) {
+                    Object.keys(classTimetable[dayKey]).forEach(periodStr => {
+                        const slot = classTimetable[dayKey][periodStr];
+                        if (slot && slot.teacher && slot.teacher.trim() === teacherShort.trim() && slot.subject && slot.subject.trim() !== '') {
+                            const session = getClassSession(className);
+                            const periodNum = parseInt(periodStr, 10);
+                            
+                            // Kiểm tra xem tiết này trong ngày cụ thể đó đã được phân công dạy thay chưa
+                            const existingSub = (state.substitutions || []).find(s => 
+                                s.date === dInfo.isoDate && 
+                                parseInt(s.period, 10) === periodNum && 
+                                s.session === session && 
+                                s.className === className && 
+                                s.absentTeacher === teacherShort
+                            );
+
+                            daySlots.push({
+                                dateStr: dInfo.isoDate,
+                                formattedDate: dInfo.formattedDate,
+                                dayKey: dayKey,
+                                dayLabel: dInfo.dayLabel,
+                                className: className,
+                                period: periodNum,
+                                session: session,
+                                subject: slot.subject.trim(),
+                                existingSub: existingSub || null
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Sắp xếp các tiết trong ngày: Sáng trước -> Chiều sau -> Tiết 1-5
+        daySlots.sort((a, b) => {
+            if (a.session !== b.session) {
+                return a.session === 'sáng' ? -1 : 1;
+            }
+            return a.period - b.period;
+        });
+
+        if (daySlots.length > 0) {
+            allAffectedSlots.push({
+                dateInfo: dInfo,
+                slots: daySlots
+            });
+        }
+    });
+    
+    const totalSlotsCount = allAffectedSlots.reduce((acc, curr) => acc + curr.slots.length, 0);
+    const unassignedSlotsCount = allAffectedSlots.reduce((acc, curr) => acc + curr.slots.filter(s => !s.existingSub).length, 0);
+
+    lastAnalyzedSubstituteData = {
+        startDateVal: startDateVal,
+        endDateVal: endDateVal,
+        teacherShort: teacherShort,
+        absentTeacherFullName: absentTeacherFullName,
+        allAffectedSlots: allAffectedSlots
+    };
+
+    if (header) header.style.display = 'block';
+    if (summaryBadge) {
+        summaryBadge.innerHTML = `Tổng cộng: <b>${totalSlotsCount} tiết</b> (${datesList.length} ngày) • <b>${unassignedSlotsCount}</b> chưa xếp`;
+    }
+
+    if (totalSlotsCount === 0) {
+        showToast(`Giáo viên ${absentTeacherFullName} không có tiết dạy nào trong khoảng thời gian đã chọn!`, "info");
+        container.innerHTML = `
+            <div class="glass-card" style="text-align: center; padding: 32px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08);">
+                <span class="material-icons-round" style="color: var(--success); font-size: 2.5rem; margin-bottom: 8px;">event_available</span>
+                <h4 style="color: var(--success); margin: 0 0 6px 0; font-size: 1.05rem;">Giáo viên trống lịch dạy hoàn toàn</h4>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">
+                    Giáo viên <b>${absentTeacherFullName} (${teacherShort})</b> không có tiết dạy nào trên TKB trong khoảng thời gian từ ngày <b>${datesList[0]?.formattedDate}</b> đến <b>${datesList[datesList.length - 1]?.formattedDate}</b>.
+                </p>
+            </div>
+        `;
+        if (autoAssignBtn) autoAssignBtn.style.display = 'none';
+        return;
+    }
+    
+    if (autoAssignBtn) {
+        autoAssignBtn.style.display = unassignedSlotsCount > 0 ? 'inline-flex' : 'none';
+    }
+
+    container.innerHTML = '';
+    let globalSlotIdx = 0;
+
+    allAffectedSlots.forEach(dayGroup => {
+        const dInfo = dayGroup.dateInfo;
+        const dayCard = document.createElement('div');
+        dayCard.className = 'glass-card';
+        dayCard.style.cssText = 'padding: 16px; border-radius: 10px; background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px;';
+
+        // Tiêu đề ngày
+        const dayHeader = document.createElement('div');
+        dayHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; flex-wrap: wrap; gap: 6px;';
+        dayHeader.innerHTML = `
+            <div style="font-weight: 700; font-size: 0.95rem; color: #f8fafc; display: flex; align-items: center; gap: 6px;">
+                <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.15rem;">calendar_month</span>
+                ${dInfo.dayLabel}, ngày ${dInfo.formattedDate}
+            </div>
+            <span style="font-size: 0.8rem; padding: 2px 8px; border-radius: 12px; background: rgba(129, 140, 248, 0.15); color: var(--primary-light); font-weight: 600;">
+                ${dayGroup.slots.length} tiết dạy
+            </span>
+        `;
+        dayCard.appendChild(dayHeader);
+
+        const slotsListDiv = document.createElement('div');
+        slotsListDiv.style.cssText = 'display: flex; flex-direction: column; gap: 10px;';
+
+        dayGroup.slots.forEach(slot => {
+            globalSlotIdx++;
+            const slotIdx = globalSlotIdx;
+
+            const slotItem = document.createElement('div');
+            slotItem.className = 'sub-slot-item';
+            slotItem.style.cssText = 'padding: 12px 14px; border-radius: 8px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 10px; transition: var(--transition);';
+
+            const slotTop = document.createElement('div');
+            slotTop.style.cssText = 'display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
+
+            const slotInfo = `
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-weight: 700; font-size: 0.88rem; color: #f8fafc;">
+                        Tiết ${slot.period} • Lớp <b style="color: var(--primary-light);">${slot.className}</b> (${slot.session === 'chiều' ? 'Chiều' : 'Sáng'})
+                    </span>
+                    <span style="font-size: 0.78rem; padding: 2px 8px; border-radius: 4px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">
+                        Môn ${slot.subject}
+                    </span>
+                </div>
+            `;
+
+            slotTop.innerHTML = slotInfo;
+            slotItem.appendChild(slotTop);
+
+            // Kiểm tra trạng thái đã xếp / chưa xếp
+            if (slot.existingSub) {
+                // ĐÃ PHÂN CÔNG
+                const subTObj = state.teachers.find(t => t.shortName === slot.existingSub.substituteTeacher);
+                const subTFullName = subTObj ? subTObj.fullName : slot.existingSub.substituteTeacher;
+
+                const assignedDiv = document.createElement('div');
+                assignedDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 8px 12px; flex-wrap: wrap; gap: 8px;';
+                assignedDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="material-icons-round" style="color: var(--success); font-size: 1.2rem;">check_circle</span>
+                        <span style="font-size: 0.85rem; color: #f8fafc;">
+                            Đã xếp dạy thay: <b style="color: #34d399;">${subTFullName}</b> (${slot.existingSub.substituteTeacher})
+                            ${slot.existingSub.note ? `<span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 6px;">(Ghi chú: ${slot.existingSub.note})</span>` : ''}
+                        </span>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteSubstitution('${slot.existingSub.id}')" style="padding: 4px 10px; font-size: 0.75rem; height: 28px; display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-icons-round" style="font-size: 0.95rem;">delete</span> Hủy phân công
+                    </button>
+                `;
+                slotItem.appendChild(assignedDiv);
+            } else {
+                // CHƯA PHÂN CÔNG -> Lấy gợi ý
+                const suggestions = getSubstituteSuggestions(slot.dateStr, slot.dayKey, slot.period, slot.session, slot.className, slot.subject, teacherShort);
+                const groupSuggestions = suggestions.filter(s => s.isSameGroup);
+                const sameSubjectGroupSuggestions = suggestions.filter(s => s.isSameGroup && s.teachesThisSubject);
+
+                // Nếu TẤT CẢ giáo viên trong tổ đều bận
+                if (groupSuggestions.length === 0) {
+                    const warnDiv = document.createElement('div');
+                    warnDiv.style.cssText = 'background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-left: 4px solid #ef4444; border-radius: 6px; padding: 8px 12px; font-size: 0.82rem; color: #fca5a5; line-height: 1.4;';
+                    warnDiv.innerHTML = `
+                        <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                            <span class="material-icons-round" style="font-size: 1.1rem; color: #f87171;">warning</span>
+                            Tất cả giáo viên trong tổ "${currentGroupName}" đều bận tiết này!
+                        </div>
+                        <div>Hệ thống đã tự động lọc các giáo viên ngoài tổ còn trống tiết bên dưới để bạn tham khảo hoặc báo cáo BGH.</div>
+                    `;
+                    slotItem.appendChild(warnDiv);
+                } else if (sameSubjectGroupSuggestions.length === 0) {
+                    const infoDiv = document.createElement('div');
+                    infoDiv.style.cssText = 'background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 6px; padding: 6px 10px; font-size: 0.8rem; color: #fcd34d;';
+                    infoDiv.innerHTML = `
+                        💡 Giáo viên cùng chuyên môn <b>${slot.subject}</b> trong tổ đều bận. Hệ thống ưu tiên gợi ý các giáo viên khác cùng tổ đang trống lịch.
+                    `;
+                    slotItem.appendChild(infoDiv);
+                }
+
+                // Khung chọn giáo viên dạy thay
+                const formDiv = document.createElement('div');
+                formDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; align-items: center;';
+
+                const selectDiv = document.createElement('div');
+                selectDiv.style.cssText = 'flex: 2 1 240px;';
+
+                const subSelect = document.createElement('select');
+                subSelect.id = `subSelect_${slotIdx}`;
+                subSelect.className = 'form-control';
+                subSelect.style.cssText = 'width: 100%; font-size: 0.85rem; height: 38px; min-height: 38px; padding: 6px 12px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; display: block;';
+
+                if (suggestions.length === 0) {
+                    subSelect.innerHTML = '<option value="">-- Toàn trường không có giáo viên nào trống tiết này --</option>';
+                    subSelect.disabled = true;
+                } else {
+                    let selectHtml = '<option value="">-- Chọn giáo viên dạy thay --</option>';
+
+                    // Phân nhóm optgroup trực quan
+                    const tier1 = suggestions.filter(s => s.tier === 'tier1');
+                    const tier2 = suggestions.filter(s => s.tier === 'tier2');
+                    const tier3 = suggestions.filter(s => s.tier === 'tier3');
+                    const tier4 = suggestions.filter(s => s.tier === 'tier4');
+
+                    if (tier1.length > 0) {
+                        selectHtml += `<optgroup label="⭐ Cùng bộ môn trong tổ (Ưu tiên số 1)">`;
+                        tier1.forEach(s => {
+                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+                        });
+                        selectHtml += `</optgroup>`;
+                    }
+
+                    if (tier2.length > 0) {
+                        selectHtml += `<optgroup label="👥 Cùng tổ chuyên môn (Ưu tiên số 2)">`;
+                        tier2.forEach(s => {
+                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+                        });
+                        selectHtml += `</optgroup>`;
+                    }
+
+                    if (tier3.length > 0) {
+                        selectHtml += `<optgroup label="📘 Cùng bộ môn ngoài tổ (Ưu tiên số 3)">`;
+                        tier3.forEach(s => {
+                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+                        });
+                        selectHtml += `</optgroup>`;
+                    }
+
+                    if (tier4.length > 0) {
+                        selectHtml += `<optgroup label="🏢 Giáo viên ngoài tổ khác">`;
+                        tier4.forEach(s => {
+                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+                        });
+                        selectHtml += `</optgroup>`;
+                    }
+
+                    subSelect.innerHTML = selectHtml;
+
+                    // Mặc định tự động chọn gợi ý xếp hạng cao nhất
+                    if (suggestions.length > 0) {
+                        subSelect.value = suggestions[0].shortName;
+                    }
+                }
+
+                selectDiv.appendChild(subSelect);
+                formDiv.appendChild(selectDiv);
+
+                const noteDiv = document.createElement('div');
+                noteDiv.style.cssText = 'flex: 1 1 120px;';
+                const noteInput = document.createElement('input');
+                noteInput.id = `subNote_${slotIdx}`;
+                noteInput.type = 'text';
+                noteInput.className = 'form-control';
+                noteInput.placeholder = 'Ghi chú (tùy chọn)...';
+                noteInput.style.cssText = 'width: 100%; font-size: 0.85rem; height: 38px; min-height: 38px; padding: 6px 12px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; display: block;';
+                noteDiv.appendChild(noteInput);
+                formDiv.appendChild(noteDiv);
+
+                const btnDiv = document.createElement('div');
+                const assignBtn = document.createElement('button');
+                assignBtn.className = 'btn btn-success';
+                assignBtn.style.cssText = 'padding: 6px 16px; font-size: 0.85rem; height: 38px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
+                assignBtn.innerHTML = `<span class="material-icons-round" style="font-size: 1.05rem;">how_to_reg</span> Phân công`;
+                assignBtn.disabled = suggestions.length === 0;
+
+                assignBtn.onclick = () => {
+                    const subTeacher = subSelect.value;
+                    const note = noteInput.value.trim();
+                    if (!subTeacher) {
+                        showToast("Vui lòng chọn giáo viên dạy thay!", "warning");
+                        return;
+                    }
+                    saveSubstitution(slot.dateStr, teacherShort, subTeacher, slot.className, slot.period, slot.session, slot.subject, note);
+                };
+
+                btnDiv.appendChild(assignBtn);
+                formDiv.appendChild(btnDiv);
+
+                slotItem.appendChild(formDiv);
+            }
+
+            slotsListDiv.appendChild(slotItem);
+        });
+
+        dayCard.appendChild(slotsListDiv);
+        container.appendChild(dayCard);
+    });
+
+    showToast(`Đã phân tích xong: ${totalSlotsCount} tiết dạy (${unassignedSlotsCount} tiết cần xếp)`, "success");
+    
+    if (header) {
+        header.style.animation = 'none';
+        setTimeout(() => { header.style.animation = 'fadeIn 0.3s ease-out'; }, 10);
+    }
+    container.style.animation = 'none';
+    setTimeout(() => { container.style.animation = 'fadeIn 0.4s ease-out'; }, 10);
+}
+
+function autoAssignAllSlots() {
+    if (!lastAnalyzedSubstituteData || !lastAnalyzedSubstituteData.allAffectedSlots) {
+        showToast("Vui lòng nhấn Phân tích trước khi tự động xếp!", "warning");
+        return;
+    }
+
+    const { absentTeacherFullName, teacherShort, allAffectedSlots } = lastAnalyzedSubstituteData;
+    const plan = [];
+
+    // Bản sao mô phỏng số tiết dạy trong ngày để phân phối đều giữa các giáo viên
+    const simulatedDayLoads = {};
+
+    allAffectedSlots.forEach(dayGroup => {
+        dayGroup.slots.forEach(slot => {
+            if (!slot.existingSub) {
+                const suggestions = getSubstituteSuggestions(
+                    slot.dateStr,
+                    slot.dayKey,
+                    slot.period,
+                    slot.session,
+                    slot.className,
+                    slot.subject,
+                    teacherShort
+                );
+
+                // Điều chỉnh điểm dựa trên số tiết đã được xếp tạm trong phiên tự động này
+                if (suggestions.length > 0) {
+                    suggestions.sort((a, b) => {
+                        const simulatedA = (simulatedDayLoads[`${slot.dateStr}_${a.shortName}`] || 0);
+                        const simulatedB = (simulatedDayLoads[`${slot.dateStr}_${b.shortName}`] || 0);
+                        if (a.score !== b.score) {
+                            return b.score - a.score;
+                        }
+                        if ((a.periodsOnThisDay + simulatedA) !== (b.periodsOnThisDay + simulatedB)) {
+                            return (a.periodsOnThisDay + simulatedA) - (b.periodsOnThisDay + simulatedB);
+                        }
+                        return a.totalWeekPeriods - b.totalWeekPeriods;
+                    });
+
+                    const chosen = suggestions[0];
+                    simulatedDayLoads[`${slot.dateStr}_${chosen.shortName}`] = (simulatedDayLoads[`${slot.dateStr}_${chosen.shortName}`] || 0) + 1;
+
+                    plan.push({
+                        date: slot.dateStr,
+                        formattedDate: slot.formattedDate,
+                        dayLabel: slot.dayLabel,
+                        className: slot.className,
+                        period: slot.period,
+                        session: slot.session,
+                        subject: slot.subject,
+                        absentTeacher: teacherShort,
+                        substituteTeacher: chosen.shortName,
+                        substituteFullName: chosen.fullName,
+                        tierLabel: chosen.tierLabel,
+                        reason: chosen.reason
+                    });
+                }
+            }
+        });
+    });
+
+    if (plan.length === 0) {
+        showToast("Tất cả các tiết dạy đã được xếp dạy thay đầy đủ!", "info");
+        return;
+    }
+
+    let previewRows = plan.map((p, idx) => `
+        <tr>
+            <td style="text-align: center;">${idx + 1}</td>
+            <td><b>${p.dayLabel}</b> (${p.formattedDate})</td>
+            <td>Tiết ${p.period} - Lớp ${p.className}</td>
+            <td><b style="color: #f59e0b;">${p.subject}</b></td>
+            <td><b style="color: #34d399;">${p.substituteFullName}</b> (${p.substituteTeacher})</td>
+            <td><span style="font-size: 0.78rem; color: var(--text-muted);">${p.reason}</span></td>
+        </tr>
+    `).join('');
+
+    const modalBodyHtml = `
+        <div style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-main);">
+            <p style="color: var(--text-main); font-size: 0.9rem; margin: 0;">
+                Hệ thống đã tự động tính toán phương án dạy thay tối ưu cho <b>${plan.length} tiết</b> của giáo viên <b>${absentTeacherFullName}</b> theo thứ tự ưu tiên cùng chuyên môn và cân bằng tải tiết:
+            </p>
+            <div style="overflow-x: auto; max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                <table class="matrix-table" style="font-size: 0.82rem;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">STT</th>
+                            <th>Ngày</th>
+                            <th>Tiết & Lớp</th>
+                            <th>Môn</th>
+                            <th>GV Dạy Thay</th>
+                            <th>Lý do ưu tiên</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${previewRows}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    showConfirmModal(
+        `⚡ Xác Nhận Tự Động Phân Công (${plan.length} Tiết)`,
+        modalBodyHtml,
+        () => {
+            state.substitutions = state.substitutions || [];
+            plan.forEach(p => {
+                state.substitutions.push({
+                    id: "sub_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+                    date: p.date,
+                    absentTeacher: p.absentTeacher,
+                    substituteTeacher: p.substituteTeacher,
+                    className: p.className,
+                    period: p.period,
+                    session: p.session,
+                    subject: p.subject,
+                    note: 'Tự động phân công thông minh',
+                    createdByGroup: state.currentUser
+                });
+            });
+
+            persistData();
+            showToast(`Đã tự động phân công thành công ${plan.length} tiết dạy thay!`, "success");
+            analyzeSubstituteSlots();
+            renderGroupSubstitutions();
+        },
+        "Xác nhận lưu toàn bộ",
+        "btn-success",
+        "auto_fix_high"
+    );
+}
+
+function saveSubstitution(date, absentTeacher, substituteTeacher, className, period, session, subject, note) {
+    const absentTObj = state.teachers.find(t => t.shortName === absentTeacher);
+    const subTObj = state.teachers.find(t => t.shortName === substituteTeacher);
+    const absentName = absentTObj ? absentTObj.fullName : absentTeacher;
+    const subName = subTObj ? subTObj.fullName : substituteTeacher;
+
+    const [y, m, d] = date.split('-');
+    const formattedDate = `${d}/${m}/${y}`;
+
+    showConfirmModal(
+        "Xác Nhận Phân Công Dạy Thay",
+        `<div style="font-size: 0.92rem; line-height: 1.6;">
+            <p style="margin-bottom: 6px;">Xác nhận phân công giáo viên <b>${subName} (${substituteTeacher})</b> dạy thay cho <b>${absentName} (${absentTeacher})</b>?</p>
+            <div style="background: rgba(30, 41, 59, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem;">
+                • <b>Thời gian:</b> Ngày ${formattedDate}<br>
+                • <b>Lớp & Tiết:</b> Tiết ${period} - Lớp ${className} (${session === 'chiều' ? 'Buổi Chiều' : 'Buổi Sáng'})<br>
+                • <b>Môn học:</b> ${subject}
+                ${note ? `<br>• <b>Ghi chú:</b> ${note}` : ''}
+            </div>
+        </div>`,
+        () => {
+            const entry = {
+                id: "sub_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+                date: date,
+                absentTeacher: absentTeacher,
+                substituteTeacher: substituteTeacher,
+                className: className,
+                period: period,
+                session: session,
+                subject: subject,
+                note: note || '',
+                createdByGroup: state.currentUser
+            };
+            
+            if (!state.substitutions) {
+                state.substitutions = [];
+            }
+            state.substitutions.push(entry);
+            persistData();
+            showToast(`Đã phân công ${substituteTeacher} dạy thay thành công!`, "success");
+            analyzeSubstituteSlots();
+            renderGroupSubstitutions();
+        },
+        "Xác nhận phân công",
+        "btn-primary",
+        "how_to_reg"
+    );
 }
 
 function deleteSubstitution(subId) {
-    if (!confirm("Bạn có chắc chắn muốn hủy phân công dạy thay này?")) {
-        return;
-    }
-    state.substitutions = state.substitutions.filter(s => s.id !== subId);
-    persistData();
-    showToast("Đã hủy phân công dạy thay!", "info");
-    analyzeSubstituteSlots();
-    renderGroupSubstitutions();
+    const s = (state.substitutions || []).find(item => item.id === subId);
+    if (!s) return;
+
+    const [y, m, d] = s.date.split('-');
+    const formattedDate = `${d}/${m}/${y}`;
+
+    showConfirmModal(
+        "Xác Nhận Hủy Lượt Dạy Thay",
+        `<p>Bạn có chắc chắn muốn hủy phân công giáo viên <b>${s.substituteTeacher}</b> dạy thay cho <b>${s.absentTeacher}</b> (Tiết ${s.period} Lớp ${s.className} ngày ${formattedDate})?</p>`,
+        () => {
+            state.substitutions = state.substitutions.filter(item => item.id !== subId);
+            persistData();
+            showToast("Đã hủy lượt phân công dạy thay!", "info");
+            analyzeSubstituteSlots();
+            renderGroupSubstitutions();
+        },
+        "Hủy phân công",
+        "btn-danger",
+        "delete"
+    );
 }
 
 function renderGroupSubstitutions() {
@@ -8891,8 +9397,8 @@ function renderGroupSubstitutions() {
             <td><span style="color:#ef4444;">${s.absentTeacher}</span></td>
             <td><span style="color:#10b981; font-weight:600;">${s.substituteTeacher}</span></td>
             <td>
-                <button class="btn btn-danger" onclick="deleteSubstitution('${s.id}')" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px;">
-                    Hủy
+                <button class="btn btn-danger" onclick="deleteSubstitution('${s.id}')" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px;">
+                    <span class="material-icons-round" style="font-size: 0.9rem;">delete</span> Hủy
                 </button>
             </td>
         `;
@@ -9561,6 +10067,8 @@ window.downloadPublicExcel = downloadPublicExcel;
 window.printPublicPDF = printPublicPDF;
 window.switchGroupTab = switchGroupTab;
 window.analyzeSubstituteSlots = analyzeSubstituteSlots;
+window.syncEndDateAndAnalyze = syncEndDateAndAnalyze;
+window.autoAssignAllSlots = autoAssignAllSlots;
 window.deleteSubstitution = deleteSubstitution;
 window.deleteAllTeachers = deleteAllTeachers;
 window.startAccountEdit = startAccountEdit;
