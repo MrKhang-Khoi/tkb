@@ -254,6 +254,83 @@ function closeModal() {
     }
 }
 
+// Hộp thoại xác nhận tùy biến đẹp mắt thay thế hoàn toàn confirm() mặc định của trình duyệt
+function showConfirmModal(title, messageHtml, onConfirm, confirmText = 'Xác nhận xóa', confirmBtnClass = 'btn-danger', icon = 'warning') {
+    const isDanger = confirmBtnClass.includes('danger');
+    const iconColor = isDanger ? '#f87171' : 'var(--primary-light)';
+    const iconBg = isDanger ? 'rgba(239, 68, 68, 0.12)' : 'rgba(79, 70, 229, 0.12)';
+    const iconBorder = isDanger ? '1px solid rgba(239, 68, 68, 0.25)' : '1px solid rgba(129, 140, 248, 0.25)';
+
+    const bodyHtml = `
+        <div style="display: flex; gap: 16px; align-items: flex-start; padding: 6px 0;">
+            <div style="background: ${iconBg}; border: ${iconBorder}; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <span class="material-icons-round" style="color: ${iconColor}; font-size: 1.8rem;">${icon}</span>
+            </div>
+            <div style="flex: 1; font-size: 0.92rem; color: var(--text-main); line-height: 1.55;">
+                ${messageHtml}
+            </div>
+        </div>
+    `;
+    const footerHtml = `
+        <button class="btn ${confirmBtnClass}" id="confirmModalAcceptBtn" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-icons-round" style="font-size: 1.1rem;">check_circle</span> ${confirmText}
+        </button>
+        <button class="btn btn-secondary" onclick="closeModal()">Hủy bỏ</button>
+    `;
+    openModal(title, bodyHtml, footerHtml);
+    
+    setTimeout(() => {
+        const btn = document.getElementById('confirmModalAcceptBtn');
+        if (btn) {
+            btn.onclick = () => {
+                closeModal();
+                if (typeof onConfirm === 'function') onConfirm();
+            };
+        }
+    }, 50);
+}
+
+// Hiệu ứng Loading toàn màn hình khi nạp/đồng bộ dữ liệu
+function showLoadingOverlay(message = 'Đang xử lý dữ liệu...') {
+    let overlay = document.getElementById('globalLoadingOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'globalLoadingOverlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 16px;
+            color: #fff;
+            font-family: var(--font-main);
+            transition: opacity 0.2s ease;
+        `;
+        overlay.innerHTML = `
+            <div style="position: relative; width: 64px; height: 64px;">
+                <div style="position: absolute; border: 4px solid rgba(129, 140, 248, 0.2); border-top-color: var(--primary-light); border-radius: 50%; width: 100%; height: 100%; animation: spin 0.8s linear infinite;"></div>
+                <span class="material-icons-round" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--primary-light); font-size: 1.8rem;">schedule</span>
+            </div>
+            <div id="globalLoadingMessage" style="font-size: 1.05rem; font-weight: 500; letter-spacing: 0.3px; color: #f8fafc; text-align: center; max-width: 80%;">
+                ${message}
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        const msgEl = document.getElementById('globalLoadingMessage');
+        if (msgEl) msgEl.innerText = message;
+        overlay.style.display = 'flex';
+    }
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('globalLoadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
 let db = null;
 let isFirebaseConnected = false;
 let firebaseLoaded = false;
@@ -2535,40 +2612,49 @@ function clearAllGroupAssignments() {
     
     // Kiểm tra chốt/khóa của tổ
     if (state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
-        alert("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!");
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!", "warning");
         return;
     }
     
     const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
-    if (groupTeachers.length === 0) return;
-    
-    if (!confirm(`Bạn có chắc chắn muốn xóa TẤT CẢ phân công giảng dạy của ${groupTeachers.length} giáo viên trong tổ?\n\nHành động này không thể hoàn tác!`)) {
+    if (groupTeachers.length === 0) {
+        showToast("Tổ này chưa có giáo viên nào!", "warning");
         return;
     }
     
-    const teacherShortNames = groupTeachers.map(t => t.shortName);
-    
-    let hasChange = false;
-    Object.keys(state.assignments).forEach(key => {
-        const assign = state.assignments[key];
-        if (assign && teacherShortNames.includes(assign.teacher)) {
-            if (key.startsWith('Kiêm nhiệm_')) {
-                delete state.assignments[key];
+    showConfirmModal(
+        "Xác Nhận Xóa Phân Công Toàn Tổ",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ</b> phân công giảng dạy của <b>${groupTeachers.length}</b> giáo viên trong tổ?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Hành động này không thể hoàn tác!</p>`,
+        () => {
+            const teacherShortNames = groupTeachers.map(t => t.shortName);
+            
+            let hasChange = false;
+            Object.keys(state.assignments).forEach(key => {
+                const assign = state.assignments[key];
+                if (assign && teacherShortNames.includes(assign.teacher)) {
+                    if (key.startsWith('Kiêm nhiệm_')) {
+                        delete state.assignments[key];
+                    } else {
+                        state.assignments[key].teacher = '';
+                        state.assignments[key].periods = 0;
+                    }
+                    hasChange = true;
+                }
+            });
+            
+            if (hasChange) {
+                persistData();
+                refreshActiveViews();
+                showToast("Đã xóa tất cả phân công của tổ viên thành công!", "success");
             } else {
-                state.assignments[key].teacher = '';
-                state.assignments[key].periods = 0;
+                showToast("Không có phân công nào để xóa.", "warning");
             }
-            hasChange = true;
-        }
-    });
-    
-    if (hasChange) {
-        persistData();
-        refreshActiveViews();
-        showToast("Đã xóa tất cả phân công của tổ viên thành công!", "success");
-    } else {
-        showToast("Không có phân công nào để xóa.", "warning");
-    }
+        },
+        "Xác nhận xóa",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 function clearTeacherAssignments(teacherShortName) {
@@ -2577,38 +2663,44 @@ function clearTeacherAssignments(teacherShortName) {
     
     // Kiểm tra chốt/khóa của tổ
     if (state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
-        alert("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!");
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!", "warning");
         return;
     }
     
     const teacher = state.teachers.find(t => t.shortName === teacherShortName);
     const teacherName = teacher ? teacher.fullName : teacherShortName;
     
-    if (!confirm(`Bạn có chắc chắn muốn xóa TẤT CẢ phân công giảng dạy của giáo viên ${teacherName} (${teacherShortName}) không?\n\nHành động này không thể hoàn tác!`)) {
-        return;
-    }
-    
-    let hasChange = false;
-    Object.keys(state.assignments).forEach(key => {
-        const assign = state.assignments[key];
-        if (assign && assign.teacher === teacherShortName) {
-            if (key.startsWith('Kiêm nhiệm_')) {
-                delete state.assignments[key];
+    showConfirmModal(
+        "Xác Nhận Xóa Phân Công Giáo Viên",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ</b> phân công giảng dạy của giáo viên <b>${teacherName}</b> (${teacherShortName})?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Hành động này không thể hoàn tác!</p>`,
+        () => {
+            let hasChange = false;
+            Object.keys(state.assignments).forEach(key => {
+                const assign = state.assignments[key];
+                if (assign && assign.teacher === teacherShortName) {
+                    if (key.startsWith('Kiêm nhiệm_')) {
+                        delete state.assignments[key];
+                    } else {
+                        state.assignments[key].teacher = '';
+                        state.assignments[key].periods = 0;
+                    }
+                    hasChange = true;
+                }
+            });
+            
+            if (hasChange) {
+                persistData();
+                refreshActiveViews();
+                showToast(`Đã xóa tất cả phân công của giáo viên ${teacherName}!`, "success");
             } else {
-                state.assignments[key].teacher = '';
-                state.assignments[key].periods = 0;
+                showToast("Không có phân công nào để xóa.", "warning");
             }
-            hasChange = true;
-        }
-    });
-    
-    if (hasChange) {
-        persistData();
-        refreshActiveViews();
-        showToast(`Đã xóa tất cả phân công của giáo viên ${teacherShortName} thành công!`, "success");
-    } else {
-        showToast("Giáo viên chưa có phân công nào để xóa.", "warning");
-    }
+        },
+        "Xác nhận xóa",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 function unassignClass(clsName, subId, teacherShortName = '') {
@@ -2943,21 +3035,60 @@ function deleteClass(id) {
     const c = state.classes.find(item => item.id === id);
     if (!c) return;
 
-    if (confirm(`Bạn có chắc chắn muốn xóa lớp "${c.name}"? Tất cả dữ liệu phân công và TKB của lớp này sẽ bị xóa.`)) {
-        // Giải phóng GVCN cũ trong state.teachers
-        if (c.gvcn) {
-            const oldTObj = state.teachers.find(t => t.shortName === c.gvcn);
-            if (oldTObj && oldTObj.reduction) {
-                oldTObj.reduction.homeroom = false;
-                oldTObj.reduction.homeroomClass = '';
-                oldTObj.homeroomClass = '';
+    showConfirmModal(
+        "Xác Nhận Xóa Lớp Học",
+        `<p>Bạn có chắc chắn muốn xóa lớp <b>"${c.name}"</b>?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Tất cả dữ liệu phân công giảng dạy và thời khóa biểu của lớp này sẽ bị xóa bỏ.</p>`,
+        () => {
+            // Giải phóng GVCN cũ trong state.teachers
+            if (c.gvcn) {
+                const oldTObj = state.teachers.find(t => t.shortName === c.gvcn);
+                if (oldTObj && oldTObj.reduction) {
+                    oldTObj.reduction.homeroom = false;
+                    oldTObj.reduction.homeroomClass = '';
+                    oldTObj.homeroomClass = '';
+                }
             }
+            state.classes = state.classes.filter(item => item.id !== id);
+            deleteClassFromData(c.name);
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã xóa lớp "${c.name}" thành công!`, "success");
         }
-        state.classes = state.classes.filter(item => item.id !== id);
-        deleteClassFromData(c.name);
-        persistData();
-        refreshActiveViews();
+    );
+}
+
+function deleteAllClasses() {
+    if (!state.classes || state.classes.length === 0) {
+        showToast("Không có lớp học nào để xóa!", "warning");
+        return;
     }
+
+    showConfirmModal(
+        "Xác Nhận Xóa Tất Cả Lớp Học",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${state.classes.length}</b> lớp học trong hệ thống?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Thao tác này sẽ xóa toàn bộ danh sách lớp học, phân công giảng dạy và ma trận thời khóa biểu liên quan.</p>`,
+        () => {
+            state.classes.forEach(c => {
+                deleteClassFromData(c.name);
+            });
+            state.classes = [];
+            // Reset homeroom
+            state.teachers.forEach(t => {
+                if (t && t.reduction) {
+                    t.reduction.homeroom = false;
+                    t.reduction.homeroomClass = '';
+                    t.homeroomClass = '';
+                }
+            });
+            persistData();
+            refreshActiveViews();
+            showToast("Đã xóa tất cả lớp học thành công!", "success");
+        },
+        "Xác nhận xóa tất cả",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 function startClassEdit(id) {
@@ -3233,45 +3364,87 @@ function addSubjectGroup() {
 }
 
 function deleteSubjectGroup(id) {
-    if (confirm("Xóa tổ chuyên môn sẽ xóa các tài khoản tổ trưởng, giáo viên, môn học và phân công thuộc tổ này. Bạn có chắc chắn?")) {
-        const teachersToDelete = state.teachers.filter(t => t.group === id);
-        const teacherShortNames = teachersToDelete.map(t => t.shortName);
+    const g = state.groups.find(group => group.id === id);
+    const groupName = g ? g.name : 'tổ này';
 
-        state.groups = state.groups.filter(g => g.id !== id);
-        state.accounts = state.accounts.filter(acc => acc.group !== id);
-        state.teachers = state.teachers.filter(t => t.group !== id);
-        
-        // Dọn dẹp phân công của các giáo viên thuộc tổ bị xóa
-        if (state.assignments) {
-            Object.keys(state.assignments).forEach(key => {
-                const assign = state.assignments[key];
-                if (assign && teacherShortNames.includes(assign.teacher)) {
-                    if (key.startsWith('Kiêm nhiệm_')) {
-                        delete state.assignments[key];
-                    } else {
-                        state.assignments[key].teacher = '';
-                        state.assignments[key].periods = 0;
+    showConfirmModal(
+        "Xác Nhận Xóa Tổ Chuyên Môn",
+        `<p>Bạn có chắc chắn muốn xóa tổ chuyên môn <b>"${groupName}"</b>?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Xóa tổ sẽ xóa các tài khoản tổ trưởng, giáo viên và phân công thuộc tổ này.</p>`,
+        () => {
+            const teachersToDelete = state.teachers.filter(t => t.group === id);
+            const teacherShortNames = teachersToDelete.map(t => t.shortName);
+
+            state.groups = state.groups.filter(item => item.id !== id);
+            state.accounts = state.accounts.filter(acc => acc.group !== id);
+            state.teachers = state.teachers.filter(t => t.group !== id);
+            
+            // Dọn dẹp phân công của các giáo viên thuộc tổ bị xóa
+            if (state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    const assign = state.assignments[key];
+                    if (assign && teacherShortNames.includes(assign.teacher)) {
+                        if (key.startsWith('Kiêm nhiệm_')) {
+                            delete state.assignments[key];
+                        } else {
+                            state.assignments[key].teacher = '';
+                            state.assignments[key].periods = 0;
+                        }
                     }
+                });
+            }
+
+            // Reset groupId cho các môn thuộc tổ này
+            state.globalSubjects.forEach(gs => {
+                if (gs.groupId === id) {
+                    gs.groupId = '';
                 }
             });
-        }
-
-        // Reset groupId cho các môn thuộc tổ này
-        state.globalSubjects.forEach(gs => {
-            if (gs.groupId === id) {
-                gs.groupId = '';
+            
+            // Dọn dẹp trạng thái khóa của tổ
+            if (state.groupLocks && state.groupLocks[id]) {
+                delete state.groupLocks[id];
             }
-        });
-        
-        // Dọn dẹp trạng thái khóa của tổ
-        if (state.groupLocks && state.groupLocks[id]) {
-            delete state.groupLocks[id];
-        }
 
-        syncGroupsFromGlobalSubjects();
-        persistData();
-        refreshActiveViews();
+            syncGroupsFromGlobalSubjects();
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã xóa tổ "${groupName}" thành công!`, "success");
+        }
+    );
+}
+
+function deleteAllGroups() {
+    if (!state.groups || state.groups.length === 0) {
+        showToast("Không có tổ chuyên môn nào để xóa!", "warning");
+        return;
     }
+
+    showConfirmModal(
+        "Xác Nhận Xóa Tất Cả Tổ Chuyên Môn",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${state.groups.length}</b> tổ chuyên môn trong hệ thống?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Thao tác này sẽ xóa toàn bộ danh sách tổ, tài khoản tổ trưởng và reset phân tổ của giáo viên.</p>`,
+        () => {
+            state.groups = [];
+            state.accounts = state.accounts.filter(acc => acc.username === 'admin');
+            state.teachers.forEach(t => {
+                t.group = '';
+            });
+            state.globalSubjects.forEach(gs => {
+                gs.groupId = '';
+                gs.group = '';
+            });
+            state.groupLocks = {};
+
+            syncGroupsFromGlobalSubjects();
+            persistData();
+            refreshActiveViews();
+            showToast("Đã xóa tất cả tổ chuyên môn thành công!", "success");
+        },
+        "Xác nhận xóa tất cả",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 function startGroupEdit(id) {
@@ -3637,21 +3810,28 @@ function addTeacherManual() {
 function deleteTeacher(id) {
     const t = state.teachers.find(teacher => teacher.id === id);
     if (!t) return;
-    if (confirm(`Bạn có chắc chắn muốn xóa giáo viên "${t.fullName}"?`)) {
-        state.teachers = state.teachers.filter(teacher => teacher.id !== id);
-        // Xóa phân công giáo viên này
-        Object.keys(state.assignments).forEach(key => {
-            if (state.assignments[key].teacher === t.shortName) {
-                if (key.startsWith('Kiêm nhiệm_')) {
-                    delete state.assignments[key];
-                } else {
-                    state.assignments[key].teacher = '';
+    
+    showConfirmModal(
+        "Xác Nhận Xóa Giáo Viên",
+        `<p>Bạn có chắc chắn muốn xóa giáo viên <b>"${t.fullName}"</b> (${t.shortName})?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Toàn bộ phân công giảng dạy của giáo viên này sẽ bị xóa bỏ.</p>`,
+        () => {
+            state.teachers = state.teachers.filter(teacher => teacher.id !== id);
+            // Xóa phân công giáo viên này
+            Object.keys(state.assignments).forEach(key => {
+                if (state.assignments[key].teacher === t.shortName) {
+                    if (key.startsWith('Kiêm nhiệm_')) {
+                        delete state.assignments[key];
+                    } else {
+                        state.assignments[key].teacher = '';
+                    }
                 }
-            }
-        });
-        persistData();
-        refreshActiveViews();
-    }
+            });
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã xóa giáo viên "${t.fullName}"!`, "success");
+        }
+    );
 }
 
 function deleteAllTeachers() {
@@ -3659,25 +3839,31 @@ function deleteAllTeachers() {
         showToast("Danh sách giáo viên đang trống!", "warning");
         return;
     }
-    if (!confirm(`Bạn có chắc chắn muốn xóa TẤT CẢ ${state.teachers.length} giáo viên?\n\nThao tác này sẽ:\n• Xóa toàn bộ danh sách giáo viên\n• Xóa toàn bộ phân công giảng dạy liên quan\n\nHành động này KHÔNG THỂ hoàn tác!`)) {
-        return;
-    }
-    // Xóa toàn bộ phân công liên quan đến giáo viên
-    const teacherShortNames = state.teachers.map(t => t.shortName);
-    Object.keys(state.assignments).forEach(key => {
-        if (teacherShortNames.includes(state.assignments[key].teacher)) {
-            if (key.startsWith('Kiêm nhiệm_')) {
-                delete state.assignments[key];
-            } else {
-                state.assignments[key].teacher = '';
-            }
-        }
-    });
-    const count = state.teachers.length;
-    state.teachers = [];
-    persistData();
-    refreshActiveViews();
-    showToast(`Đã xóa tất cả ${count} giáo viên thành công!`, "success");
+    showConfirmModal(
+        "Xác Nhận Xóa Tất Cả Giáo Viên",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${state.teachers.length}</b> giáo viên trong hệ thống?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Thao tác này sẽ xóa toàn bộ danh sách giáo viên và phân công giảng dạy liên quan. Hành động này KHÔNG THỂ hoàn tác!</p>`,
+        () => {
+            const count = state.teachers.length;
+            const teacherShortNames = state.teachers.map(t => t.shortName);
+            Object.keys(state.assignments).forEach(key => {
+                if (teacherShortNames.includes(state.assignments[key].teacher)) {
+                    if (key.startsWith('Kiêm nhiệm_')) {
+                        delete state.assignments[key];
+                    } else {
+                        state.assignments[key].teacher = '';
+                    }
+                }
+            });
+            state.teachers = [];
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã xóa tất cả ${count} giáo viên thành công!`, "success");
+        },
+        "Xác nhận xóa tất cả",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 // Bộ tính định mức thực tế và giảm trừ của Modal chỉnh sửa giáo viên
@@ -3834,11 +4020,39 @@ async function addLeaderAccount() {
 }
 
 function deleteLeaderAccount(username) {
-    if (confirm(`Bạn có chắc chắn muốn xóa tài khoản "${username}"?`)) {
-        state.accounts = state.accounts.filter(acc => acc.username !== username);
-        persistData();
-        refreshActiveViews();
+    showConfirmModal(
+        "Xác Nhận Xóa Tài Khoản",
+        `<p>Bạn có chắc chắn muốn xóa tài khoản <b>"${username}"</b>?</p>`,
+        () => {
+            state.accounts = state.accounts.filter(acc => acc.username !== username);
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã xóa tài khoản "${username}"!`, "success");
+        }
+    );
+}
+
+function deleteAllAccounts() {
+    const leaderAccounts = state.accounts.filter(acc => acc.username !== 'admin');
+    if (leaderAccounts.length === 0) {
+        showToast("Không có tài khoản tổ trưởng nào để xóa!", "warning");
+        return;
     }
+
+    showConfirmModal(
+        "Xác Nhận Xóa Tất Cả Tài Khoản Tổ Trưởng",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${leaderAccounts.length}</b> tài khoản tổ trưởng?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Tài khoản quản trị Admin chính vẫn sẽ được giữ lại.</p>`,
+        () => {
+            state.accounts = state.accounts.filter(acc => acc.username === 'admin');
+            persistData();
+            refreshActiveViews();
+            showToast("Đã xóa tất cả tài khoản tổ trưởng!", "success");
+        },
+        "Xác nhận xóa tất cả",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 function startAccountEdit(username) {
@@ -3947,35 +4161,73 @@ function deleteGlobalSubject(id) {
     const gs = state.globalSubjects.find(item => item.id === id);
     if (!gs) return;
 
-    if (confirm(`Bạn có chắc muốn xóa môn/nhiệm vụ "${gs.name}"? Các cấu hình khối lớp liên quan sẽ bị xóa.`)) {
-        const deletedSubIds = state.subjects
-            .filter(s => s.name.toLowerCase() === gs.name.toLowerCase())
-            .map(s => s.id);
+    showConfirmModal(
+        "Xác Nhận Xóa Môn Học / Nhiệm Vụ",
+        `<p>Bạn có chắc muốn xóa môn/nhiệm vụ <b>"${gs.name}"</b>?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Các cấu hình số tiết khối lớp và phân công liên quan đến môn này sẽ bị xóa bỏ.</p>`,
+        () => {
+            const deletedSubIds = state.subjects
+                .filter(s => s.name.toLowerCase() === gs.name.toLowerCase())
+                .map(s => s.id);
 
-        state.subjects = state.subjects.filter(s => !(s.name.toLowerCase() === gs.name.toLowerCase()));
-        state.globalSubjects = state.globalSubjects.filter(item => item.id !== id);
+            state.subjects = state.subjects.filter(s => !(s.name.toLowerCase() === gs.name.toLowerCase()));
+            state.globalSubjects = state.globalSubjects.filter(item => item.id !== id);
 
-        // Dọn dẹp phân công liên quan đến môn học này
-        if (state.assignments) {
-            Object.keys(state.assignments).forEach(key => {
-                const parsed = parseAssignmentKey(key);
-                if (deletedSubIds.includes(parsed.subId)) {
-                    delete state.assignments[key];
+            // Dọn dẹp phân công liên quan đến môn học này
+            if (state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    const parsed = parseAssignmentKey(key);
+                    if (deletedSubIds.includes(parsed.subId)) {
+                        delete state.assignments[key];
+                    }
+                });
+            }
+
+            // Xóa khỏi môn dạy của giáo viên
+            state.teachers.forEach(t => {
+                if (t.subjects) {
+                    t.subjects = t.subjects.filter(sub => sub.toLowerCase() !== gs.name.toLowerCase());
                 }
             });
+
+            syncGroupsFromGlobalSubjects();
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã xóa môn "${gs.name}" thành công!`, "success");
         }
+    );
+}
 
-        // Xóa khỏi môn dạy của giáo viên
-        state.teachers.forEach(t => {
-            if (t.subjects) {
-                t.subjects = t.subjects.filter(sub => sub.toLowerCase() !== gs.name.toLowerCase());
-            }
-        });
-
-        syncGroupsFromGlobalSubjects();
-        persistData();
-        refreshActiveViews();
+function deleteAllGlobalSubjects() {
+    if (!state.globalSubjects || state.globalSubjects.length === 0) {
+        showToast("Không có môn học nào để xóa!", "warning");
+        return;
     }
+
+    showConfirmModal(
+        "Xác Nhận Xóa Tất Cả Môn Học / Nhiệm Vụ",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${state.globalSubjects.length}</b> môn học và nhiệm vụ gốc trong hệ thống?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Thao tác này sẽ xóa toàn bộ danh mục môn, cấu hình số tiết và phân công giảng dạy.</p>`,
+        () => {
+            state.globalSubjects = [];
+            state.subjects = [];
+            state.assignments = {};
+            state.teachers.forEach(t => {
+                t.subjects = [];
+            });
+            state.groups.forEach(g => {
+                g.subjects = [];
+            });
+
+            syncGroupsFromGlobalSubjects();
+            persistData();
+            refreshActiveViews();
+            showToast("Đã xóa tất cả môn học thành công!", "success");
+        },
+        "Xác nhận xóa tất cả",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 function startGlobalSubEdit(id) {
@@ -4258,18 +4510,91 @@ function addSubjectConfig() {
 }
 
 function deleteSubjectConfig(id) {
-    state.subjects = state.subjects.filter(s => s.id !== id);
-    // Dọn dẹp các phân công liên quan đến cấu hình môn học này
-    if (state.assignments) {
-        Object.keys(state.assignments).forEach(key => {
-            const parsed = parseAssignmentKey(key);
-            if (parsed.subId === id) {
-                delete state.assignments[key];
+    const s = state.subjects.find(item => item.id === id);
+    const subName = s ? `${s.name} (Khối ${s.grade})` : 'cấu hình này';
+
+    showConfirmModal(
+        "Xác Nhận Xóa Số Tiết Môn Học",
+        `<p>Bạn có chắc muốn xóa phân phối số tiết của <b>"${subName}"</b>?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Phân công giảng dạy của môn này sẽ bị hủy bỏ.</p>`,
+        () => {
+            state.subjects = state.subjects.filter(item => item.id !== id);
+            // Dọn dẹp các phân công liên quan đến cấu hình môn học này
+            if (state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    const parsed = parseAssignmentKey(key);
+                    if (parsed.subId === id) {
+                        delete state.assignments[key];
+                    }
+                });
             }
-        });
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã xóa số tiết ${subName}!`, "success");
+        }
+    );
+}
+
+function deleteAllSubjectPeriods() {
+    const regularSubs = state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm');
+    if (regularSubs.length === 0) {
+        showToast("Không có cấu hình phân phối số tiết nào để xóa!", "warning");
+        return;
     }
-    persistData();
-    refreshActiveViews();
+
+    showConfirmModal(
+        "Xác Nhận Xóa Tất Cả Phân Phối Số Tiết",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${regularSubs.length}</b> cấu hình phân phối số tiết theo khối?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Toàn bộ phân công giảng dạy chuyên môn liên quan sẽ bị hủy bỏ. Hành động này không thể hoàn tác.</p>`,
+        () => {
+            const regularIds = new Set(regularSubs.map(s => s.id));
+            state.subjects = state.subjects.filter(s => s && s.grade === 'Kiêm nhiệm');
+            if (state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    const parsed = parseAssignmentKey(key);
+                    if (regularIds.has(parsed.subId)) {
+                        delete state.assignments[key];
+                    }
+                });
+            }
+            persistData();
+            refreshActiveViews();
+            showToast("Đã xóa tất cả phân phối số tiết môn học!", "success");
+        },
+        "Xác nhận xóa tất cả",
+        "btn-danger",
+        "delete_sweep"
+    );
+}
+
+function deleteAllDutySubjects() {
+    const dutySubs = state.subjects.filter(s => s && s.grade === 'Kiêm nhiệm');
+    if (dutySubs.length === 0) {
+        showToast("Không có hoạt động kiêm nhiệm nào để xóa!", "warning");
+        return;
+    }
+
+    showConfirmModal(
+        "Xác Nhận Xóa Tất Cả Hoạt Động Kiêm Nhiệm",
+        `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${dutySubs.length}</b> hoạt động kiêm nhiệm?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Toàn bộ phân công kiêm nhiệm của các giáo viên sẽ bị hủy bỏ.</p>`,
+        () => {
+            state.subjects = state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm');
+            if (state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    if (key.startsWith('Kiêm nhiệm_')) {
+                        delete state.assignments[key];
+                    }
+                });
+            }
+            persistData();
+            refreshActiveViews();
+            showToast("Đã xóa tất cả hoạt động kiêm nhiệm!", "success");
+        },
+        "Xác nhận xóa tất cả",
+        "btn-danger",
+        "delete_sweep"
+    );
 }
 
 function startSubjectConfigEdit(id) {
@@ -5747,7 +6072,7 @@ function handleExcelTimetableUpload(file) {
     reader.readAsArrayBuffer(file);
 }
 
-function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
+function generateSpreadsheetML(localClasses, localTeachers, localTimetable, weekName = '', applyDate = '') {
     const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
     const weekdayLabels = { 'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7' };
     const periods = [1, 2, 3, 4, 5];
@@ -5771,6 +6096,11 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
   <Style ss:ID="Title">
    <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
    <Font ss:FontName="Times New Roman" ss:Bold="1" ss:Size="15" ss:Color="#1E3A8A"/>
+   <Borders/>
+  </Style>
+  <Style ss:ID="Subtitle">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Times New Roman" ss:Italic="1" ss:Size="11" ss:Color="#4B5563"/>
    <Borders/>
   </Style>
   <Style ss:ID="Header">
@@ -5848,6 +6178,10 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
         return name.includes('chào cờ') || name.includes('chao co') || name.includes('shl') || name.includes('sinh hoạt') || name.includes('hdtn') || name.includes('hđtn');
     }
 
+    const morningTitle = `THỜI KHÓA BIỂU BUỔI SÁNG${weekName ? ' - ' + weekName.toUpperCase() : ''}`;
+    const afternoonTitle = `THỜI KHÓA BIỂU BUỔI CHIỀU${weekName ? ' - ' + weekName.toUpperCase() : ''}`;
+    const subtitleText = applyDate ? `Thời gian áp dụng: ${applyDate}` : (weekName ? `Thời khóa biểu ${weekName}` : '');
+
     // --- SHEET 1: BUỔI SÁNG ---
     const morningClasses = localClasses.filter(c => c.session === 'sáng')
         .sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true}));
@@ -5861,8 +6195,13 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
     });
 
     xml += `\n   <Row ss:Height="28">`;
-    xml += `\n    <Cell ss:MergeAcross="${morningClasses.length + 1}" ss:StyleID="Title"><Data ss:Type="String">THỜI KHÓA BIỂU BUỔI SÁNG</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="${morningClasses.length + 1}" ss:StyleID="Title"><Data ss:Type="String">${escapeXml(morningTitle)}</Data></Cell>`;
     xml += `\n   </Row>`;
+    if (subtitleText) {
+        xml += `\n   <Row ss:Height="20">`;
+        xml += `\n    <Cell ss:MergeAcross="${morningClasses.length + 1}" ss:StyleID="Subtitle"><Data ss:Type="String">${escapeXml(subtitleText)}</Data></Cell>`;
+        xml += `\n   </Row>`;
+    }
     xml += `\n   <Row ss:Height="22">`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Thứ</Data></Cell>`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Tiết</Data></Cell>`;
@@ -5931,8 +6270,13 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
     });
 
     xml += `\n   <Row ss:Height="28">`;
-    xml += `\n    <Cell ss:MergeAcross="${afternoonClasses.length + 1}" ss:StyleID="Title"><Data ss:Type="String">THỜI KHÓA BIỂU BUỔI CHIỀU</Data></Cell>`;
+    xml += `\n    <Cell ss:MergeAcross="${afternoonClasses.length + 1}" ss:StyleID="Title"><Data ss:Type="String">${escapeXml(afternoonTitle)}</Data></Cell>`;
     xml += `\n   </Row>`;
+    if (subtitleText) {
+        xml += `\n   <Row ss:Height="20">`;
+        xml += `\n    <Cell ss:MergeAcross="${afternoonClasses.length + 1}" ss:StyleID="Subtitle"><Data ss:Type="String">${escapeXml(subtitleText)}</Data></Cell>`;
+        xml += `\n   </Row>`;
+    }
     xml += `\n   <Row ss:Height="22">`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Thứ</Data></Cell>`;
     xml += `\n    <Cell ss:StyleID="Header"><Data ss:Type="String">Tiết</Data></Cell>`;
@@ -6028,7 +6372,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable) {
 
     sortedTeachers.forEach((t) => {
         xml += `\n   <Row ss:Height="24">`;
-        xml += `\n    <Cell ss:MergeAcross="12" ss:StyleID="TeacherHeader"><Data ss:Type="String">Thời khóa biểu của giáo viên: ${escapeXml(t.fullName)}</Data></Cell>`;
+        xml += `\n    <Cell ss:MergeAcross="12" ss:StyleID="TeacherHeader"><Data ss:Type="String">Thời khóa biểu của giáo viên: ${escapeXml(t.fullName)}${weekName ? ' (' + escapeXml(weekName) + ')' : ''}</Data></Cell>`;
         xml += `\n   </Row>`;
 
         xml += `\n   <Row ss:Height="22">`;
@@ -7457,7 +7801,7 @@ function downloadWeeklyExcel(id) {
         return;
     }
     try {
-        const xmlContent = generateSpreadsheetML(state.classes, state.teachers, wt.timetable);
+        const xmlContent = generateSpreadsheetML(state.classes, state.teachers, wt.timetable, wt.weekName, wt.applyDate);
         const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
@@ -8927,144 +9271,155 @@ function printPublicPDF() {
 
 function publishUploadedTimetable() {
     if (!window.lastParsedFetData) {
-        alert("Không tìm thấy dữ liệu thời khóa biểu để công bố!");
+        showToast("Không tìm thấy dữ liệu thời khóa biểu để công bố!", "warning");
         return;
     }
-    if (!confirm("Bạn có chắc chắn muốn công bố thời khóa biểu này làm thời khóa biểu chính thức của nhà trường không? Dữ liệu cũ sẽ được lưu trữ an toàn trong danh sách theo tuần.")) {
-        return;
-    }
-    try {
-        const { slots } = window.lastParsedFetData;
-        
-        // Reset danh sách tự động tạo
-        newlyCreatedTeachersThisImport = [];
-        newlyCreatedSubjectsThisImport = [];
-        
-        // 1. Đảm bảo toàn bộ môn học, giáo viên, lớp học trong file TKB đều được tạo trong cơ sở dữ liệu nếu chưa có
-        slots.forEach(slot => {
-            ensureSubjectExists(slot.subject);
-            ensureTeacherExists(slot.teacher, slot.subject);
-            ensureClassExists(slot.className, slot.session);
-        });
-        
-        // 2. Khởi tạo cấu trúc timetable trống cho tất cả các lớp hiện tại trong hệ thống (bao gồm cả các lớp vừa được tạo)
-        const timetable = {};
-        state.classes.forEach(c => {
-            timetable[c.name] = {};
-            ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'].forEach(day => {
-                timetable[c.name][day] = {};
-                [1, 2, 3, 4, 5].forEach(p => {
-                    timetable[c.name][day][p] = { subject: '', teacher: '' };
+
+    showConfirmModal(
+        "Xác Nhận Công Bố Thời Khóa Biểu",
+        `<p>Bạn có chắc chắn muốn <b>công bố thời khóa biểu này</b> làm thời khóa biểu chính thức của nhà trường?</p>
+         <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 6px;">💡 Dữ liệu cũ sẽ được lưu trữ an toàn trong danh sách TKB theo tuần và hệ thống sẽ tự động đồng bộ sang Google Sheets / Zalo Bot.</p>`,
+        () => {
+            try {
+                showLoadingOverlay("Đang thiết lập và công bố thời khóa biểu...");
+                const { slots } = window.lastParsedFetData;
+                
+                // Reset danh sách tự động tạo
+                newlyCreatedTeachersThisImport = [];
+                newlyCreatedSubjectsThisImport = [];
+                
+                // 1. Đảm bảo toàn bộ môn học, giáo viên, lớp học trong file TKB đều được tạo trong cơ sở dữ liệu nếu chưa có
+                slots.forEach(slot => {
+                    ensureSubjectExists(slot.subject);
+                    ensureTeacherExists(slot.teacher, slot.subject);
+                    ensureClassExists(slot.className, slot.session);
                 });
-            });
-        });
-        
-        // 3. Đổ dữ liệu từ slots của FET vào cấu trúc timetable
-        slots.forEach(slot => {
-            if (timetable[slot.className] && timetable[slot.className][slot.dayKey]) {
-                timetable[slot.className][slot.dayKey][slot.hourKey] = {
-                    subject: slot.subject,
-                    teacher: ensureTeacherExists(slot.teacher, slot.subject) // Trả về tên viết tắt
+                
+                // 2. Khởi tạo cấu trúc timetable trống cho tất cả các lớp hiện tại trong hệ thống (bao gồm cả các lớp vừa được tạo)
+                const timetable = {};
+                state.classes.forEach(c => {
+                    timetable[c.name] = {};
+                    ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'].forEach(day => {
+                        timetable[c.name][day] = {};
+                        [1, 2, 3, 4, 5].forEach(p => {
+                            timetable[c.name][day][p] = { subject: '', teacher: '' };
+                        });
+                    });
+                });
+                
+                // 3. Đổ dữ liệu từ slots của FET vào cấu trúc timetable
+                slots.forEach(slot => {
+                    if (timetable[slot.className] && timetable[slot.className][slot.dayKey]) {
+                        timetable[slot.className][slot.dayKey][slot.hourKey] = {
+                            subject: slot.subject,
+                            teacher: ensureTeacherExists(slot.teacher, slot.subject) // Trả về tên viết tắt
+                        };
+                    }
+                });
+                
+                // 4. Đọc tên đợt tuần & ngày áp dụng
+                const weekNameInput = document.getElementById('timetableWeekNameInput');
+                const weekNameVal = (weekNameInput && weekNameInput.value) ? weekNameInput.value.trim() : '';
+                const applyDateInput = document.getElementById('timetableApplyDateInput');
+                const applyDateVal = (applyDateInput && applyDateInput.value) ? applyDateInput.value.trim() : '';
+
+                state.weeklyTimetables = state.weeklyTimetables || [];
+                const finalWeekName = weekNameVal || `Tuần ${state.weeklyTimetables.length + 1} (${new Date().toLocaleDateString('vi-VN')})`;
+
+                const newWeekEntry = {
+                    id: 'wt_' + Date.now(),
+                    weekName: finalWeekName,
+                    applyDate: applyDateVal || state.timetableApplyDate || '',
+                    timetable: JSON.parse(JSON.stringify(timetable)),
+                    publishedAt: Date.now(),
+                    isCurrent: true
                 };
+
+                // Nếu trùng tên đợt thì cập nhật, ngược lại đưa lên đầu danh sách
+                const existingIdx = state.weeklyTimetables.findIndex(w => w.weekName.toLowerCase() === finalWeekName.toLowerCase());
+                if (existingIdx >= 0) {
+                    newWeekEntry.id = state.weeklyTimetables[existingIdx].id;
+                    state.weeklyTimetables[existingIdx] = newWeekEntry;
+                } else {
+                    state.weeklyTimetables.unshift(newWeekEntry);
+                }
+
+                state.currentWeekId = newWeekEntry.id;
+                state.timetable = timetable;
+                state.timetableApplyDate = applyDateVal;
+                
+                persistData();
+                refreshActiveViews();
+                hideLoadingOverlay();
+                
+                // Hiển thị thông báo kết quả & cảnh báo thông minh nếu có giáo viên/môn học tự động tạo
+                let warningHtml = "";
+                if (newlyCreatedTeachersThisImport.length > 0 || newlyCreatedSubjectsThisImport.length > 0) {
+                    warningHtml = `
+                        <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--warning); padding: 12px; border-radius: 6px; margin-top: 16px; margin-bottom: 12px; color: var(--text-main); font-size: 0.9rem;">
+                            <strong style="color: var(--warning); display: flex; align-items: center; gap: 4px;">
+                                <span class="material-icons-round" style="font-size: 1.2rem;">warning</span> Rà soát dữ liệu tự động tạo
+                            </strong>
+                            <p style="margin-top: 4px; color: var(--text-muted); font-size: 0.82rem;">Phần mềm phát hiện các tên lạ trong tệp FET và đã tự động thêm vào danh mục hệ thống:</p>
+                    `;
+                    if (newlyCreatedTeachersThisImport.length > 0) {
+                        const uniqTeachers = [...new Set(newlyCreatedTeachersThisImport)];
+                        warningHtml += `
+                            <div style="margin-top: 8px; font-weight: 600;">Giáo viên tự tạo (${uniqTeachers.length}):</div>
+                            <div style="font-family: monospace; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 4px; max-height: 80px; overflow-y: auto; margin-top: 4px; font-size: 0.8rem; color: var(--primary-light);">
+                                ${uniqTeachers.join(', ')}
+                            </div>
+                        `;
+                    }
+                    if (newlyCreatedSubjectsThisImport.length > 0) {
+                        const uniqSubjects = [...new Set(newlyCreatedSubjectsThisImport)];
+                        warningHtml += `
+                            <div style="margin-top: 8px; font-weight: 600;">Môn học tự tạo (${uniqSubjects.length}):</div>
+                            <div style="font-family: monospace; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 4px; max-height: 80px; overflow-y: auto; margin-top: 4px; font-size: 0.8rem; color: var(--primary-light);">
+                                ${uniqSubjects.join(', ')}
+                            </div>
+                        `;
+                    }
+                    warningHtml += `
+                            <p style="margin-top: 10px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">
+                                💡 <b>Mẹo:</b> Nếu đây là lỗi viết sai chính tả (ví dụ viết thiếu dấu), hãy vào cấu hình <b>Nhân sự & Tài khoản</b> hoặc <b>Cấu hình trường học</b> để đổi tên hoặc xóa các bản ghi thừa này.
+                            </p>
+                        </div>
+                    `;
+                }
+                
+                if (warningHtml) {
+                    openModal(
+                        "✓ Công Bố Thời Khóa Biểu Thành Công",
+                        `<div style="font-family: var(--font-main); color: var(--text-main); line-height: 1.5;">
+                            <p style="color: var(--success); font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 4px;">
+                                <span class="material-icons-round">check_circle</span> Đã công bố và lưu trữ đợt TKB "<b>${finalWeekName}</b>" thành công!
+                            </p>
+                            ${warningHtml}
+                        </div>`,
+                        `<button class="btn btn-secondary" onclick="closeModal()">Đóng</button>`
+                    );
+                } else {
+                    showToast(`Đã công bố và lưu trữ đợt TKB "${finalWeekName}" thành công!`, "success");
+                }
+
+                // Tự động kích hoạt đồng bộ lên Google Sheets nếu đã có Webhook URL
+                const savedWebhook = localStorage.getItem('fet_google_sheets_webhook_url') || (state && state.googleSheetsWebhookUrl);
+                if (savedWebhook) {
+                    setTimeout(() => {
+                        syncTimetableToGoogleSheets(true);
+                    }, 600);
+                }
+            } catch (e) {
+                hideLoadingOverlay();
+                console.error(e);
+                showToast("Có lỗi xảy ra khi công bố thời khóa biểu!", "danger");
             }
-        });
-        
-        // 4. Đọc tên đợt tuần & ngày áp dụng
-        const weekNameInput = document.getElementById('timetableWeekNameInput');
-        const weekNameVal = (weekNameInput && weekNameInput.value) ? weekNameInput.value.trim() : '';
-        const applyDateInput = document.getElementById('timetableApplyDateInput');
-        const applyDateVal = (applyDateInput && applyDateInput.value) ? applyDateInput.value.trim() : '';
-
-        state.weeklyTimetables = state.weeklyTimetables || [];
-        const finalWeekName = weekNameVal || `Tuần ${state.weeklyTimetables.length + 1} (${new Date().toLocaleDateString('vi-VN')})`;
-
-        const newWeekEntry = {
-            id: 'wt_' + Date.now(),
-            weekName: finalWeekName,
-            applyDate: applyDateVal || state.timetableApplyDate || '',
-            timetable: JSON.parse(JSON.stringify(timetable)),
-            publishedAt: Date.now(),
-            isCurrent: true
-        };
-
-        // Nếu trùng tên đợt thì cập nhật, ngược lại đưa lên đầu danh sách
-        const existingIdx = state.weeklyTimetables.findIndex(w => w.weekName.toLowerCase() === finalWeekName.toLowerCase());
-        if (existingIdx >= 0) {
-            newWeekEntry.id = state.weeklyTimetables[existingIdx].id;
-            state.weeklyTimetables[existingIdx] = newWeekEntry;
-        } else {
-            state.weeklyTimetables.unshift(newWeekEntry);
-        }
-
-        state.currentWeekId = newWeekEntry.id;
-        state.timetable = timetable;
-        state.timetableApplyDate = applyDateVal;
-        
-        persistData();
-        refreshActiveViews();
-        
-        // Hiển thị thông báo kết quả & cảnh báo thông minh nếu có giáo viên/môn học tự động tạo
-        let warningHtml = "";
-        if (newlyCreatedTeachersThisImport.length > 0 || newlyCreatedSubjectsThisImport.length > 0) {
-            warningHtml = `
-                <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--warning); padding: 12px; border-radius: 6px; margin-top: 16px; margin-bottom: 12px; color: var(--text-main); font-size: 0.9rem;">
-                    <strong style="color: var(--warning); display: flex; align-items: center; gap: 4px;">
-                        <span class="material-icons-round" style="font-size: 1.2rem;">warning</span> Rà soát dữ liệu tự động tạo
-                    </strong>
-                    <p style="margin-top: 4px; color: var(--text-muted); font-size: 0.82rem;">Phần mềm phát hiện các tên lạ trong tệp FET và đã tự động thêm vào danh mục hệ thống:</p>
-            `;
-            if (newlyCreatedTeachersThisImport.length > 0) {
-                const uniqTeachers = [...new Set(newlyCreatedTeachersThisImport)];
-                warningHtml += `
-                    <div style="margin-top: 8px; font-weight: 600;">Giáo viên tự tạo (${uniqTeachers.length}):</div>
-                    <div style="font-family: monospace; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 4px; max-height: 80px; overflow-y: auto; margin-top: 4px; font-size: 0.8rem; color: var(--primary-light);">
-                        ${uniqTeachers.join(', ')}
-                    </div>
-                `;
-            }
-            if (newlyCreatedSubjectsThisImport.length > 0) {
-                const uniqSubjects = [...new Set(newlyCreatedSubjectsThisImport)];
-                warningHtml += `
-                    <div style="margin-top: 8px; font-weight: 600;">Môn học tự tạo (${uniqSubjects.length}):</div>
-                    <div style="font-family: monospace; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 4px; max-height: 80px; overflow-y: auto; margin-top: 4px; font-size: 0.8rem; color: var(--primary-light);">
-                        ${uniqSubjects.join(', ')}
-                    </div>
-                `;
-            }
-            warningHtml += `
-                    <p style="margin-top: 10px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">
-                        💡 <b>Mẹo:</b> Nếu đây là lỗi viết sai chính tả (ví dụ viết thiếu dấu), hãy vào cấu hình <b>Nhân sự & Tài khoản</b> hoặc <b>Cấu hình trường học</b> để đổi tên hoặc xóa các bản ghi thừa này.
-                    </p>
-                </div>
-            `;
-        }
-        
-        if (warningHtml) {
-            openModal(
-                "✓ Công Bố Thời Khóa Biểu Thành Công",
-                `<div style="font-family: var(--font-main); color: var(--text-main); line-height: 1.5;">
-                    <p style="color: var(--success); font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 4px;">
-                        <span class="material-icons-round">check_circle</span> Đã công bố và lưu trữ đợt TKB "<b>${finalWeekName}</b>" thành công!
-                    </p>
-                    ${warningHtml}
-                </div>`,
-                `<button class="btn btn-secondary" onclick="closeModal()">Đóng</button>`
-            );
-        } else {
-            alert(`Đã công bố và lưu trữ đợt TKB "${finalWeekName}" thành công lên hệ thống!`);
-        }
-
-        // Tự động kích hoạt đồng bộ lên Google Sheets nếu đã có Webhook URL
-        const savedWebhook = localStorage.getItem('fet_google_sheets_webhook_url') || (state && state.googleSheetsWebhookUrl);
-        if (savedWebhook) {
-            setTimeout(() => {
-                syncTimetableToGoogleSheets(true);
-            }, 800);
-        }
-    } catch (e) {
-        console.error(e);
-        alert("Có lỗi xảy ra khi công bố thời khóa biểu!");
-    }
+        },
+        "Công bố ngay",
+        "btn-primary",
+        "rocket_launch"
+    );
 }
 
 async function syncTimetableToGoogleSheets(isSilent = false) {
@@ -9116,6 +9471,10 @@ async function syncTimetableToGoogleSheets(isSilent = false) {
         if (sheetInput && directSheetUrl) sheetInput.value = directSheetUrl;
     }
     
+    if (!isSilent) {
+        showLoadingOverlay("Đang đồng bộ dữ liệu thời khóa biểu sang Google Sheets...");
+    }
+
     try {
         const payload = {
             action: "sync_timetable",
@@ -9136,6 +9495,7 @@ async function syncTimetableToGoogleSheets(isSilent = false) {
         });
         
         const resData = await response.json();
+        hideLoadingOverlay();
         
         if (resultBox) {
             resultBox.style.display = 'block';
@@ -9152,6 +9512,7 @@ async function syncTimetableToGoogleSheets(isSilent = false) {
         
         showToast("Đã đồng bộ TKB lên Google Sheets thành công!", "success");
     } catch (err) {
+        hideLoadingOverlay();
         console.error("Lỗi đồng bộ Google Sheets:", err);
         if (resultBox) {
             resultBox.style.display = 'block';
@@ -9212,6 +9573,15 @@ window.syncTimetableToGoogleSheets = syncTimetableToGoogleSheets;
 window.handleExcelTimetableUpload = handleExcelTimetableUpload;
 window.openAssignSubjectsToGroupModal = openAssignSubjectsToGroupModal;
 window.saveAssignSubjectsToGroup = saveAssignSubjectsToGroup;
+window.deleteAllClasses = deleteAllClasses;
+window.deleteAllGroups = deleteAllGroups;
+window.deleteAllGlobalSubjects = deleteAllGlobalSubjects;
+window.deleteAllAccounts = deleteAllAccounts;
+window.deleteAllSubjectPeriods = deleteAllSubjectPeriods;
+window.deleteAllDutySubjects = deleteAllDutySubjects;
+window.showConfirmModal = showConfirmModal;
+window.showLoadingOverlay = showLoadingOverlay;
+window.hideLoadingOverlay = hideLoadingOverlay;
 
 // Khởi chạy ứng dụng khi tải trang xong
 window.onload = function() {
