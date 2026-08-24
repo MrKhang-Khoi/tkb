@@ -8680,11 +8680,15 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass, subject, absentTeacherShort) {
+function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass, subject, absentTeacherShort, includeOutsideGroup = false) {
     const currentUserGroup = state.currentUser;
     const suggestions = [];
     
-    const allTeachers = state.teachers.filter(t => t && t.shortName !== absentTeacherShort);
+    // Nếu là Tổ trưởng (không phải Admin) và không bật cờ mở rộng ngoài tổ: CHỈ LỌC GIÁO VIÊN TRONG TỔ
+    let allTeachers = (state.teachers || []).filter(t => t && t.shortName !== absentTeacherShort);
+    if (currentUserGroup && currentUserGroup !== 'admin' && !includeOutsideGroup) {
+        allTeachers = allTeachers.filter(t => t.group === currentUserGroup);
+    }
     
     allTeachers.forEach(teacher => {
         // 1. Kiểm tra xem giáo viên có tiết dạy trên TKB chính khóa không
@@ -8814,15 +8818,6 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
         }
 
         // 6. Phân hạng & Điểm ưu tiên:
-        // Điểm cơ bản theo chuyên môn và tổ:
-        // - Cùng tổ & Cùng môn: 100
-        // - Cùng tổ & Khác môn: 70
-        // - Ngoài tổ & Cùng môn: 40
-        // - Ngoài tổ & Khác môn: 10
-        // +15 nếu dạy cùng lớp
-        // +50 NẾU ĐANG CÓ MẶT Ở TRƯỜNG TRONG BUỔI ĐÓ (Ưu tiên số 1 trong thực tế vì không phải di chuyển)
-        // +15 nếu có tiết buổi khác
-        // +0 nếu ở nhà hoàn toàn
         let baseScore = 0;
         let tier = 'tier4';
         let tierLabel = '🏢 Ngoài tổ';
@@ -8909,10 +8904,6 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
     });
     
     // Sắp xếp ưu tiên:
-    // 1. Điểm tổng cao nhất (Cùng môn/tổ + Đang ở trường)
-    // 2. Giáo viên đang ở trường trước giáo viên ở nhà
-    // 3. Tải tiết trong ngày ít hơn
-    // 4. Tổng tiết tuần ít hơn
     suggestions.sort((a, b) => {
         if (a.score !== b.score) {
             return b.score - a.score;
@@ -8953,6 +8944,157 @@ function selectSubstituteCandidate(slotIdx, teacherShort) {
                 }
             });
         }
+    }
+}
+
+// Hàm hỗ trợ mở rộng tìm kiếm ngoài tổ khi tổ bận hết
+function expandOutsideGroupCandidates(slotIdx, dateStr, dayKey, period, session, className, subject, absentTeacherShort) {
+    const suggestions = getSubstituteSuggestions(dateStr, dayKey, period, session, className, subject, absentTeacherShort, true);
+    const container = document.getElementById(`subCandidatesBox_${slotIdx}`);
+    const selectDiv = document.getElementById(`subSelectDiv_${slotIdx}`);
+    if (!container || !selectDiv) return;
+
+    renderSlotCandidatesUI(slotIdx, suggestions, dateStr, dayKey, period, session, className, subject, absentTeacherShort, true);
+}
+
+// Hàm render danh sách ứng viên và dropdown cho 1 slot
+function renderSlotCandidatesUI(slotIdx, suggestions, dateStr, dayKey, period, session, className, subject, teacherShort, isExpanded = false) {
+    const candidatesBox = document.getElementById(`subCandidatesBox_${slotIdx}`);
+    const subSelect = document.getElementById(`subSelect_${slotIdx}`);
+    if (!candidatesBox || !subSelect) return;
+
+    candidatesBox.innerHTML = '';
+    
+    if (suggestions.length === 0) {
+        candidatesBox.innerHTML = `
+            <div style="font-size: 0.8rem; color: #f87171; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                <span>⚠️ Toàn bộ giáo viên trong tổ đều bận tiết này!</span>
+                ${!isExpanded ? `<button class="btn btn-secondary" onclick="expandOutsideGroupCandidates(${slotIdx}, '${dateStr}', '${dayKey}', ${period}, '${session}', '${className}', '${subject}', '${teacherShort}')" style="padding: 2px 8px; font-size: 0.75rem; height: 26px;">🔍 Tìm GV ngoài tổ</button>` : ''}
+            </div>
+        `;
+        subSelect.innerHTML = '<option value="">-- Toàn bộ giáo viên trong tổ đều bận tiết này --</option>';
+        subSelect.disabled = true;
+        return;
+    }
+
+    subSelect.disabled = false;
+
+    const titleText = isExpanded 
+        ? `Danh sách tất cả giáo viên trống tiết này (${suggestions.length} GV):`
+        : `Giáo viên trong tổ trống tiết này (${suggestions.length} GV - Bấm để chọn):`;
+
+    const candidatesTitle = document.createElement('div');
+    candidatesTitle.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;';
+    candidatesTitle.innerHTML = `
+        <span style="display: flex; align-items: center; gap: 4px;">
+            <span class="material-icons-round" style="font-size: 0.95rem; color: var(--primary-light);">people</span>
+            ${titleText}
+        </span>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">Ưu tiên: 🚗 Đang ở trường > ⭐ Cùng môn</span>
+    `;
+    candidatesBox.appendChild(candidatesTitle);
+
+    const chipsWrapper = document.createElement('div');
+    chipsWrapper.id = `subCandidates_${slotIdx}`;
+    chipsWrapper.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;';
+
+    suggestions.forEach((cand, cIdx) => {
+        const isDefaultSelected = (cIdx === 0);
+        const chip = document.createElement('div');
+        chip.className = 'sub-candidate-chip';
+        chip.dataset.shortName = cand.shortName;
+        chip.style.cssText = `
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            border: 1px solid ${isDefaultSelected ? 'var(--primary-light)' : 'rgba(255, 255, 255, 0.1)'};
+            background: ${isDefaultSelected ? 'rgba(99, 102, 241, 0.25)' : 'rgba(30, 41, 59, 0.6)'};
+            box-shadow: ${isDefaultSelected ? '0 0 0 2px rgba(99, 102, 241, 0.3)' : 'none'};
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            color: #f8fafc;
+        `;
+        
+        let presenceBadge = '';
+        if (cand.isAtSchoolSameSession) {
+            presenceBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.4);">${cand.presenceShort}</span>`;
+        } else if (cand.hasOtherSessionOnly) {
+            presenceBadge = `<span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.3);">${cand.presenceShort}</span>`;
+        } else {
+            presenceBadge = `<span style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(148, 163, 184, 0.25);" title="Không có tiết hôm nay (ở nhà - lưu ý nếu nhà xa)">🏡 Ở nhà (${cand.periodsOnThisDay}T)</span>`;
+        }
+
+        let tagBadge = '';
+        if (cand.isSameGroup && cand.teachesThisSubject) {
+            tagBadge = `<span style="color: #fbbf24; font-weight: 600;">⭐ Cùng môn</span>`;
+        } else if (cand.isSameGroup) {
+            tagBadge = `<span style="color: #a78bfa;">👥 Cùng tổ</span>`;
+        } else if (cand.teachesThisSubject) {
+            tagBadge = `<span style="color: #38bdf8;">📘 Ngoài tổ cùng môn</span>`;
+        } else {
+            tagBadge = `<span style="color: var(--text-muted);">🏢 Ngoài tổ</span>`;
+        }
+
+        chip.innerHTML = `
+            <b>${cand.fullName}</b> (${cand.shortName})
+            ${presenceBadge}
+            ${tagBadge}
+        `;
+
+        chip.onclick = () => {
+            selectSubstituteCandidate(slotIdx, cand.shortName);
+        };
+
+        chipsWrapper.appendChild(chip);
+    });
+
+    candidatesBox.appendChild(chipsWrapper);
+
+    // Cập nhật Dropdown
+    let selectHtml = '<option value="">-- Chọn giáo viên dạy thay --</option>';
+    const atSchoolGroup = suggestions.filter(s => s.isAtSchoolSameSession);
+    const atHomeSameSubGroup = suggestions.filter(s => !s.isAtSchoolSameSession && s.teachesThisSubject);
+    const atHomeOtherSubGroup = suggestions.filter(s => !s.isAtSchoolSameSession && !s.teachesThisSubject && s.isSameGroup);
+    const outsideGroup = suggestions.filter(s => !s.isAtSchoolSameSession && !s.isSameGroup);
+
+    if (atSchoolGroup.length > 0) {
+        selectHtml += `<optgroup label="🚗 ĐANG CÓ MẶT TẠI TRƯỜNG (Ưu tiên nhất)">`;
+        atSchoolGroup.forEach(s => {
+            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+        });
+        selectHtml += `</optgroup>`;
+    }
+
+    if (atHomeSameSubGroup.length > 0) {
+        selectHtml += `<optgroup label="⭐ CÙNG CHUYÊN MÔN">`;
+        atHomeSameSubGroup.forEach(s => {
+            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+        });
+        selectHtml += `</optgroup>`;
+    }
+
+    if (atHomeOtherSubGroup.length > 0) {
+        selectHtml += `<optgroup label="👥 CÙNG TỔ CHUYÊN MÔN (Ở nhà - Cân nhắc nếu nhà xa)">`;
+        atHomeOtherSubGroup.forEach(s => {
+            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+        });
+        selectHtml += `</optgroup>`;
+    }
+
+    if (outsideGroup.length > 0) {
+        selectHtml += `<optgroup label="🏢 GIÁO VIÊN NGOÀI TỔ">`;
+        outsideGroup.forEach(s => {
+            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
+        });
+        selectHtml += `</optgroup>`;
+    }
+
+    subSelect.innerHTML = selectHtml;
+    if (suggestions.length > 0) {
+        subSelect.value = suggestions[0].shortName;
     }
 }
 
@@ -9166,179 +9308,37 @@ function analyzeSubstituteSlots() {
                 `;
                 slotItem.appendChild(assignedDiv);
             } else {
-                // CHƯA PHÂN CÔNG -> Lấy gợi ý
-                const suggestions = getSubstituteSuggestions(slot.dateStr, slot.dayKey, slot.period, slot.session, slot.className, slot.subject, teacherShort);
-                const groupSuggestions = suggestions.filter(s => s.isSameGroup);
-                const sameSubjectGroupSuggestions = suggestions.filter(s => s.isSameGroup && s.teachesThisSubject);
+                // CHƯA PHÂN CÔNG -> Lấy gợi ý (mặc định chỉ trong tổ)
+                const suggestions = getSubstituteSuggestions(slot.dateStr, slot.dayKey, slot.period, slot.session, slot.className, slot.subject, teacherShort, false);
+                const sameSubjectGroupSuggestions = suggestions.filter(s => s.teachesThisSubject);
 
-                // Nếu TẤT CẢ giáo viên trong tổ đều bận
-                if (groupSuggestions.length === 0) {
-                    const warnDiv = document.createElement('div');
-                    warnDiv.style.cssText = 'background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-left: 4px solid #ef4444; border-radius: 6px; padding: 8px 12px; font-size: 0.82rem; color: #fca5a5; line-height: 1.4;';
-                    warnDiv.innerHTML = `
-                        <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-                            <span class="material-icons-round" style="font-size: 1.1rem; color: #f87171;">warning</span>
-                            Tất cả giáo viên trong tổ "${currentGroupName}" đều bận tiết này!
-                        </div>
-                        <div>Hệ thống đã tự động lọc các giáo viên ngoài tổ còn trống tiết bên dưới để bạn tham khảo hoặc báo cáo BGH.</div>
-                    `;
-                    slotItem.appendChild(warnDiv);
-                } else if (sameSubjectGroupSuggestions.length === 0) {
+                if (suggestions.length > 0 && sameSubjectGroupSuggestions.length === 0) {
                     const infoDiv = document.createElement('div');
                     infoDiv.style.cssText = 'background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 6px; padding: 6px 10px; font-size: 0.8rem; color: #fcd34d;';
                     infoDiv.innerHTML = `
-                        💡 Giáo viên cùng chuyên môn <b>${slot.subject}</b> trong tổ đều bận. Hệ thống ưu tiên gợi ý các giáo viên khác cùng tổ đang trống lịch.
+                        💡 Giáo viên cùng chuyên môn <b>${slot.subject}</b> trong tổ đều bận. Hệ thống gợi ý các giáo viên khác cùng tổ đang trống lịch.
                     `;
                     slotItem.appendChild(infoDiv);
                 }
 
                 // KHUNG DANH SÁCH CÁC GIÁO VIÊN RẢNH ĐỂ BẤM CHỌN NHANH TRỰC QUAN
-                if (suggestions.length > 0) {
-                    const candidatesBox = document.createElement('div');
-                    candidatesBox.id = `subCandidates_${slotIdx}`;
-                    candidatesBox.style.cssText = 'background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;';
-                    
-                    const candidatesTitle = document.createElement('div');
-                    candidatesTitle.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;';
-                    candidatesTitle.innerHTML = `
-                        <span style="display: flex; align-items: center; gap: 4px;">
-                            <span class="material-icons-round" style="font-size: 0.95rem; color: var(--primary-light);">people</span>
-                            Danh sách giáo viên trống tiết này (${suggestions.length} GV - Bấm để chọn):
-                        </span>
-                        <span style="font-size: 0.72rem; color: var(--text-muted);">Ưu tiên: 🚗 Đang ở trường > ⭐ Cùng môn > 👥 Cùng tổ</span>
-                    `;
-                    candidatesBox.appendChild(candidatesTitle);
-
-                    const chipsWrapper = document.createElement('div');
-                    chipsWrapper.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;';
-
-                    const topCandidate = suggestions[0];
-
-                    suggestions.forEach((cand, cIdx) => {
-                        const isDefaultSelected = (cIdx === 0);
-                        const chip = document.createElement('div');
-                        chip.className = 'sub-candidate-chip';
-                        chip.dataset.shortName = cand.shortName;
-                        chip.style.cssText = `
-                            cursor: pointer;
-                            padding: 5px 10px;
-                            border-radius: 6px;
-                            font-size: 0.78rem;
-                            border: 1px solid ${isDefaultSelected ? 'var(--primary-light)' : 'rgba(255, 255, 255, 0.1)'};
-                            background: ${isDefaultSelected ? 'rgba(99, 102, 241, 0.25)' : 'rgba(30, 41, 59, 0.6)'};
-                            box-shadow: ${isDefaultSelected ? '0 0 0 2px rgba(99, 102, 241, 0.3)' : 'none'};
-                            display: inline-flex;
-                            align-items: center;
-                            gap: 6px;
-                            transition: all 0.2s ease;
-                            color: #f8fafc;
-                        `;
-                        
-                        let presenceBadge = '';
-                        if (cand.isAtSchoolSameSession) {
-                            presenceBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.4);">${cand.presenceShort}</span>`;
-                        } else if (cand.hasOtherSessionOnly) {
-                            presenceBadge = `<span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.3);">${cand.presenceShort}</span>`;
-                        } else {
-                            presenceBadge = `<span style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(148, 163, 184, 0.25);" title="Không có tiết hôm nay (ở nhà - lưu ý nếu nhà xa)">🏡 Ở nhà (${cand.periodsOnThisDay}T)</span>`;
-                        }
-
-                        let tagBadge = '';
-                        if (cand.isSameGroup && cand.teachesThisSubject) {
-                            tagBadge = `<span style="color: #fbbf24; font-weight: 600;">⭐ Cùng môn</span>`;
-                        } else if (cand.isSameGroup) {
-                            tagBadge = `<span style="color: #a78bfa;">👥 Cùng tổ</span>`;
-                        } else if (cand.teachesThisSubject) {
-                            tagBadge = `<span style="color: #38bdf8;">📘 Ngoài tổ cùng môn</span>`;
-                        } else {
-                            tagBadge = `<span style="color: var(--text-muted);">🏢 Ngoài tổ</span>`;
-                        }
-
-                        chip.innerHTML = `
-                            <b>${cand.fullName}</b> (${cand.shortName})
-                            ${presenceBadge}
-                            ${tagBadge}
-                        `;
-
-                        chip.onclick = () => {
-                            selectSubstituteCandidate(slotIdx, cand.shortName);
-                        };
-
-                        chipsWrapper.appendChild(chip);
-                    });
-
-                    candidatesBox.appendChild(chipsWrapper);
-                    slotItem.appendChild(candidatesBox);
-                }
+                const candidatesBox = document.createElement('div');
+                candidatesBox.id = `subCandidatesBox_${slotIdx}`;
+                candidatesBox.style.cssText = 'background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;';
+                slotItem.appendChild(candidatesBox);
 
                 // Khung chọn giáo viên dạy thay & Ghi chú & Nút Phân công
                 const formDiv = document.createElement('div');
                 formDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 4px;';
 
                 const selectDiv = document.createElement('div');
+                selectDiv.id = `subSelectDiv_${slotIdx}`;
                 selectDiv.style.cssText = 'flex: 2 1 260px;';
 
                 const subSelect = document.createElement('select');
                 subSelect.id = `subSelect_${slotIdx}`;
                 subSelect.className = 'form-control';
                 subSelect.style.cssText = 'width: 100%; font-size: 0.85rem; height: 38px; min-height: 38px; padding: 6px 12px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; display: block;';
-
-                if (suggestions.length === 0) {
-                    subSelect.innerHTML = '<option value="">-- Toàn trường không có giáo viên nào trống tiết này --</option>';
-                    subSelect.disabled = true;
-                } else {
-                    let selectHtml = '<option value="">-- Chọn giáo viên dạy thay --</option>';
-
-                    // Phân nhóm optgroup theo sự thuận tiện thực tế
-                    const atSchoolGroup = suggestions.filter(s => s.isAtSchoolSameSession);
-                    const atHomeSameSubGroup = suggestions.filter(s => !s.isAtSchoolSameSession && s.teachesThisSubject);
-                    const atHomeOtherSubGroup = suggestions.filter(s => !s.isAtSchoolSameSession && !s.teachesThisSubject && s.isSameGroup);
-                    const outsideGroup = suggestions.filter(s => !s.isAtSchoolSameSession && !s.isSameGroup);
-
-                    if (atSchoolGroup.length > 0) {
-                        selectHtml += `<optgroup label="🚗 ĐANG CÓ MẶT TẠI TRƯỜNG (Ưu tiên nhất - Không phải di chuyển)">`;
-                        atSchoolGroup.forEach(s => {
-                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
-                        });
-                        selectHtml += `</optgroup>`;
-                    }
-
-                    if (atHomeSameSubGroup.length > 0) {
-                        selectHtml += `<optgroup label="⭐ CÙNG CHUYÊN MÔN (${atSchoolGroup.length > 0 ? 'Ở nhà / Buổi khác' : 'Gợi ý chuyên môn'})">`;
-                        atHomeSameSubGroup.forEach(s => {
-                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
-                        });
-                        selectHtml += `</optgroup>`;
-                    }
-
-                    if (atHomeOtherSubGroup.length > 0) {
-                        selectHtml += `<optgroup label="👥 CÙNG TỔ CHUYÊN MÔN (Ở nhà / Buổi khác - Cân nhắc nếu nhà xa)">`;
-                        atHomeOtherSubGroup.forEach(s => {
-                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
-                        });
-                        selectHtml += `</optgroup>`;
-                    }
-
-                    if (outsideGroup.length > 0) {
-                        selectHtml += `<optgroup label="🏢 GIÁO VIÊN NGOÀI TỔ">`;
-                        outsideGroup.forEach(s => {
-                            selectHtml += `<option value="${s.shortName}">${s.fullName} (${s.shortName}) [${s.loadText}] - ${s.reason}</option>`;
-                        });
-                        selectHtml += `</optgroup>`;
-                    }
-
-                    subSelect.innerHTML = selectHtml;
-
-                    // Mặc định tự động chọn gợi ý xếp hạng cao nhất
-                    if (suggestions.length > 0) {
-                        subSelect.value = suggestions[0].shortName;
-                    }
-
-                    subSelect.onchange = () => {
-                        selectSubstituteCandidate(slotIdx, subSelect.value);
-                    };
-                }
-
                 selectDiv.appendChild(subSelect);
                 formDiv.appendChild(selectDiv);
 
@@ -9358,7 +9358,6 @@ function analyzeSubstituteSlots() {
                 assignBtn.className = 'btn btn-success';
                 assignBtn.style.cssText = 'padding: 6px 16px; font-size: 0.85rem; height: 38px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
                 assignBtn.innerHTML = `<span class="material-icons-round" style="font-size: 1.05rem;">how_to_reg</span> Phân công`;
-                assignBtn.disabled = suggestions.length === 0;
 
                 assignBtn.onclick = () => {
                     const subTeacher = subSelect.value;
@@ -9374,6 +9373,13 @@ function analyzeSubstituteSlots() {
                 formDiv.appendChild(btnDiv);
 
                 slotItem.appendChild(formDiv);
+
+                // Render danh sách ứng viên và dropdown cho slot này
+                renderSlotCandidatesUI(slotIdx, suggestions, slot.dateStr, slot.dayKey, slot.period, slot.session, slot.className, slot.subject, teacherShort, false);
+
+                subSelect.onchange = () => {
+                    selectSubstituteCandidate(slotIdx, subSelect.value);
+                };
             }
 
             slotsListDiv.appendChild(slotItem);
@@ -10301,6 +10307,7 @@ window.switchGroupTab = switchGroupTab;
 window.analyzeSubstituteSlots = analyzeSubstituteSlots;
 window.syncEndDateAndAnalyze = syncEndDateAndAnalyze;
 window.selectSubstituteCandidate = selectSubstituteCandidate;
+window.expandOutsideGroupCandidates = expandOutsideGroupCandidates;
 window.autoAssignAllSlots = autoAssignAllSlots;
 window.addTeacher = addTeacher;
 window.addTeacherManual = addTeacherManual;
