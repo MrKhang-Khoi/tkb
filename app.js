@@ -514,29 +514,6 @@ function initFirebase() {
                     }
                     return c;
                 });
-                
-                state.subjects = (data.subjects || []).filter(s => s !== null && s !== undefined);
-                state.globalSubjects = (data.globalSubjects || []).filter(gs => gs !== null && gs !== undefined);
-                state.assignmentVersions = data.assignmentVersions || [];
-                state.groupLocks = data.groupLocks || {};
-
-                // Tạo danh mục môn học mặc định từ Tổ nếu dữ liệu trống
-                if (state.globalSubjects.length === 0 && state.groups.length > 0) {
-                    state.groups.forEach(g => {
-                        if (g.subjects) {
-                            g.subjects.forEach(subName => {
-                                if (!state.globalSubjects.some(gs => gs.name === subName && gs.groupId === g.id)) {
-                                    state.globalSubjects.push({
-                                        id: 'gs_' + Math.random().toString(36).substr(2, 9),
-                                        name: subName,
-                                        groupId: g.id
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-                
                 // Tự động di trú mật khẩu thô lên băm bảo mật
                 migrateAccountsToHashed();
                 
@@ -3501,38 +3478,6 @@ function syncGvcnAndHomeroom() {
     if (!state.classes) state.classes = [];
     if (!state.subjects) state.subjects = [];
     if (!state.assignments) state.assignments = {};
-
-    // Tự động tạo môn Chào cờ & HĐTN + SHL cho tất cả các khối lớp trong trường nếu bị thiếu
-    const existingGrades = [...new Set(state.classes.filter(c => c).map(c => c.grade))];
-    const homeroomTypes = [
-        { name: 'Chào Cờ', periods: 2 },
-        { name: 'HĐTN + SHL', periods: 3 }
-    ];
-
-    let hasAdded = false;
-    homeroomTypes.forEach(type => {
-        // Tìm xem môn này đã có ở khối lớp nào khác chưa để copy group (Tổ chuyên môn phụ trách)
-        const sample = state.subjects.find(s => s && s.name.toLowerCase() === type.name.toLowerCase());
-        const group = sample ? sample.group : 'unassigned';
-
-        existingGrades.forEach(grade => {
-            const hasSub = state.subjects.some(s => s && s.name.toLowerCase() === type.name.toLowerCase() && s.grade === grade);
-            if (!hasSub) {
-                state.subjects.push({
-                    id: 's_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                    name: type.name,
-                    grade: grade,
-                    periods: type.periods,
-                    group: group
-                });
-                hasAdded = true;
-            }
-        });
-    });
-
-    if (hasAdded) {
-        persistData();
-    }
 
     // 1. Đồng bộ xuôi từ giáo viên sang lớp học
     const teacherGvcnMap = {};
