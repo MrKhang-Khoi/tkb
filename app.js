@@ -476,18 +476,19 @@ function initFirebase() {
             const data = snapshot.val();
             if (data) {
                 state.lastUpdated = data.lastUpdated || 0;
-                state.groups = (data.groups || []).filter(g => g !== null && g !== undefined);
-                state.accounts = (data.accounts || []).filter(a => a !== null && a !== undefined);
-                state.teachers = (data.teachers || []).filter(t => t !== null && t !== undefined);
-                state.assignments = data.assignments || {};
-                state.timetable = data.timetable || {};
+                state.groups = Array.isArray(data.groups) ? data.groups.filter(g => g && !g.isPlaceholder && g.id !== '__empty_group__') : [];
+                state.accounts = Array.isArray(data.accounts) ? data.accounts.filter(a => a && !a.isPlaceholder && a.username !== '__empty_account__') : [];
+                state.teachers = Array.isArray(data.teachers) ? data.teachers.filter(t => t && !t.isPlaceholder && t.id !== '__empty_teacher__') : [];
+                state.assignments = (data.assignments && typeof data.assignments === 'object') ? data.assignments : {};
+                state.timetable = (data.timetable && typeof data.timetable === 'object') ? data.timetable : {};
                 state.timetableApplyDate = data.timetableApplyDate || "";
-                state.subjects = (data.subjects || []).filter(s => s !== null && s !== undefined);
-                state.globalSubjects = (data.globalSubjects || []).filter(gs => gs !== null && gs !== undefined);
-                state.assignmentVersions = data.assignmentVersions || [];
-                state.groupLocks = data.groupLocks || {};
-                state.weeklyTimetables = data.weeklyTimetables || [];
+                state.subjects = Array.isArray(data.subjects) ? data.subjects.filter(s => s && !s.isPlaceholder && s.id !== '__empty_subject__') : [];
+                state.globalSubjects = Array.isArray(data.globalSubjects) ? data.globalSubjects.filter(gs => gs && !gs.isPlaceholder && gs.id !== '__empty_gs__') : [];
+                state.assignmentVersions = Array.isArray(data.assignmentVersions) ? data.assignmentVersions : [];
+                state.groupLocks = (data.groupLocks && typeof data.groupLocks === 'object') ? data.groupLocks : {};
+                state.weeklyTimetables = Array.isArray(data.weeklyTimetables) ? data.weeklyTimetables : [];
                 state.currentWeekId = data.currentWeekId || null;
+                state.substitutions = Array.isArray(data.substitutions) ? data.substitutions : [];
 
                 // Tự động tạo đợt TKB theo tuần đầu tiên nếu có TKB mà chưa có weeklyTimetables
                 if (state.timetable && Object.keys(state.timetable).length > 0 && state.weeklyTimetables.length === 0) {
@@ -504,7 +505,7 @@ function initFirebase() {
                 }
                 
                 // Tương thích ngược: Chuyển đổi lớp học từ String sang Object nếu cần
-                let loadedClasses = (data.classes || []).filter(c => c !== null && c !== undefined);
+                let loadedClasses = Array.isArray(data.classes) ? data.classes.filter(c => c && !c.isPlaceholder && c.id !== '__empty_class__') : [];
                 state.classes = loadedClasses.map((c, idx) => {
                     if (typeof c === 'string') {
                         const match = c.match(/^\d+/);
@@ -562,11 +563,11 @@ function loadFromLocalStorage() {
         try {
             const parsed = JSON.parse(saved);
             state.lastUpdated = parsed.lastUpdated || 0;
-            state.groups = (parsed.groups || state.groups).filter(g => g !== null && g !== undefined);
-            state.accounts = (parsed.accounts || state.accounts).filter(a => a !== null && a !== undefined);
-            state.teachers = (parsed.teachers || state.teachers).filter(t => t !== null && t !== undefined);
+            state.groups = Array.isArray(parsed.groups) ? parsed.groups.filter(g => g && !g.isPlaceholder && g.id !== '__empty_group__') : [];
+            state.accounts = Array.isArray(parsed.accounts) ? parsed.accounts.filter(a => a && !a.isPlaceholder && a.username !== '__empty_account__') : [];
+            state.teachers = Array.isArray(parsed.teachers) ? parsed.teachers.filter(t => t && !t.isPlaceholder && t.id !== '__empty_teacher__') : [];
             
-            let loadedClasses = (parsed.classes || state.classes).filter(c => c !== null && c !== undefined);
+            let loadedClasses = Array.isArray(parsed.classes) ? parsed.classes.filter(c => c && !c.isPlaceholder && c.id !== '__empty_class__') : [];
             state.classes = loadedClasses.map((c, idx) => {
                 if (typeof c === 'string') {
                     const match = c.match(/^\d+/);
@@ -576,15 +577,15 @@ function loadFromLocalStorage() {
                 return c;
             });
             
-            state.subjects = (parsed.subjects || state.subjects).filter(s => s !== null && s !== undefined);
-            state.globalSubjects = (parsed.globalSubjects || state.globalSubjects).filter(gs => gs !== null && gs !== undefined);
-            state.assignments = parsed.assignments || state.assignments;
-            state.timetable = parsed.timetable || state.timetable;
+            state.subjects = Array.isArray(parsed.subjects) ? parsed.subjects.filter(s => s && !s.isPlaceholder && s.id !== '__empty_subject__') : [];
+            state.globalSubjects = Array.isArray(parsed.globalSubjects) ? parsed.globalSubjects.filter(gs => gs && !gs.isPlaceholder && gs.id !== '__empty_gs__') : [];
+            state.assignments = (parsed.assignments && typeof parsed.assignments === 'object') ? parsed.assignments : {};
+            state.timetable = (parsed.timetable && typeof parsed.timetable === 'object') ? parsed.timetable : {};
             state.timetableApplyDate = parsed.timetableApplyDate || '';
-            state.assignmentVersions = parsed.assignmentVersions || [];
-            state.groupLocks = parsed.groupLocks || {};
-            state.substitutions = parsed.substitutions || [];
-            state.weeklyTimetables = parsed.weeklyTimetables || [];
+            state.assignmentVersions = Array.isArray(parsed.assignmentVersions) ? parsed.assignmentVersions : [];
+            state.groupLocks = (parsed.groupLocks && typeof parsed.groupLocks === 'object') ? parsed.groupLocks : {};
+            state.substitutions = Array.isArray(parsed.substitutions) ? parsed.substitutions : [];
+            state.weeklyTimetables = Array.isArray(parsed.weeklyTimetables) ? parsed.weeklyTimetables : [];
             state.currentWeekId = parsed.currentWeekId || null;
 
             // Tự động tạo đợt TKB theo tuần đầu tiên nếu có TKB mà chưa có weeklyTimetables
@@ -611,59 +612,29 @@ function persistData() {
     localStorage.setItem('fet_hub_firebase_fallback', JSON.stringify(state));
 
     if (isFirebaseConnected && db) {
-        // Khóa lạc quan (Optimistic Locking) kiểm tra chênh lệch phiên dữ liệu
-        db.ref("school_data/lastUpdated").once("value").then(snap => {
-            const serverLastUpdated = snap.val() || 0;
-            if (serverLastUpdated > (state.lastUpdated || 0)) {
-                console.warn(`[Concurrency] Server timestamp (${serverLastUpdated}) is newer than local (${state.lastUpdated}). Aborting write.`);
-                showToast("Cảnh báo: Dữ liệu trên hệ thống đã được cập nhật bởi một người dùng khác trong khi bạn đang làm việc. Vui lòng nhấn F5 để tải dữ liệu mới nhất trước khi thực hiện lại thao tác này để tránh làm mất dữ liệu của người khác.", "danger");
-                return;
-            }
+        const newTimestamp = Date.now();
+        state.lastUpdated = newTimestamp;
 
-            const newTimestamp = Date.now();
-            state.lastUpdated = newTimestamp;
+        const payload = {
+            groups: (state.groups && state.groups.length > 0) ? state.groups : [{ id: '__empty_group__', name: '', subjects: [], isPlaceholder: true }],
+            accounts: (state.accounts && state.accounts.length > 0) ? state.accounts : [{ username: '__empty_account__', isPlaceholder: true }],
+            teachers: (state.teachers && state.teachers.length > 0) ? state.teachers : [{ id: '__empty_teacher__', fullName: '', shortName: '', isPlaceholder: true }],
+            classes: (state.classes && state.classes.length > 0) ? state.classes : [{ id: '__empty_class__', name: '', grade: '', isPlaceholder: true }],
+            subjects: (state.subjects && state.subjects.length > 0) ? state.subjects : [{ id: '__empty_subject__', name: '', grade: '', isPlaceholder: true }],
+            globalSubjects: (state.globalSubjects && state.globalSubjects.length > 0) ? state.globalSubjects : [{ id: '__empty_gs__', name: '', isPlaceholder: true }],
+            assignments: state.assignments || {},
+            timetable: state.timetable || {},
+            timetableApplyDate: state.timetableApplyDate || "",
+            assignmentVersions: state.assignmentVersions || [],
+            groupLocks: state.groupLocks || {},
+            substitutions: state.substitutions || [],
+            weeklyTimetables: state.weeklyTimetables || [],
+            currentWeekId: state.currentWeekId || null,
+            lastUpdated: newTimestamp
+        };
 
-            db.ref("school_data").set({
-                groups: state.groups,
-                accounts: state.accounts,
-                teachers: state.teachers,
-                classes: state.classes,
-                subjects: state.subjects,
-                globalSubjects: state.globalSubjects || [],
-                assignments: state.assignments,
-                timetable: state.timetable,
-                timetableApplyDate: state.timetableApplyDate || "",
-                assignmentVersions: state.assignmentVersions || [],
-                groupLocks: state.groupLocks || {},
-                substitutions: state.substitutions || [],
-                weeklyTimetables: state.weeklyTimetables || [],
-                currentWeekId: state.currentWeekId || null,
-                lastUpdated: newTimestamp
-            }).catch(err => {
-                console.error("Lỗi đồng bộ Firebase, dữ liệu đã lưu ở LocalStorage:", err);
-            });
-        }).catch(err => {
-            console.error("Lỗi khi kiểm tra timestamp Firebase, ghi đè trực tiếp:", err);
-            // Fallback ghi đè nếu lỗi kiểm tra timestamp
-            const newTimestamp = Date.now();
-            state.lastUpdated = newTimestamp;
-            db.ref("school_data").set({
-                groups: state.groups,
-                accounts: state.accounts,
-                teachers: state.teachers,
-                classes: state.classes,
-                subjects: state.subjects,
-                globalSubjects: state.globalSubjects || [],
-                assignments: state.assignments,
-                timetable: state.timetable,
-                timetableApplyDate: state.timetableApplyDate || "",
-                assignmentVersions: state.assignmentVersions || [],
-                groupLocks: state.groupLocks || {},
-                substitutions: state.substitutions || [],
-                weeklyTimetables: state.weeklyTimetables || [],
-                currentWeekId: state.currentWeekId || null,
-                lastUpdated: newTimestamp
-            });
+        db.ref("school_data").set(payload).catch(err => {
+            console.error("Lỗi đồng bộ Firebase, dữ liệu đã lưu ở LocalStorage:", err);
         });
     }
 }
@@ -3863,27 +3834,34 @@ function deleteTeacher(id) {
 }
 
 function deleteAllTeachers() {
-    if (state.teachers.length === 0) {
+    if (!state.teachers || state.teachers.length === 0) {
         showToast("Danh sách giáo viên đang trống!", "warning");
         return;
     }
     showConfirmModal(
         "Xác Nhận Xóa Tất Cả Giáo Viên",
         `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${state.teachers.length}</b> giáo viên trong hệ thống?</p>
-         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Thao tác này sẽ xóa toàn bộ danh sách giáo viên và phân công giảng dạy liên quan. Hành động này KHÔNG THỂ hoàn tác!</p>`,
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Thao tác này sẽ xóa toàn bộ danh sách giáo viên, liên kết chủ nhiệm và phân công giảng dạy liên quan. Hành động này KHÔNG THỂ hoàn tác!</p>`,
         () => {
             const count = state.teachers.length;
             const teacherShortNames = state.teachers.map(t => t.shortName);
-            Object.keys(state.assignments).forEach(key => {
-                if (teacherShortNames.includes(state.assignments[key].teacher)) {
-                    if (key.startsWith('Kiêm nhiệm_')) {
-                        delete state.assignments[key];
-                    } else {
-                        state.assignments[key].teacher = '';
+            if (state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    if (state.assignments[key] && teacherShortNames.includes(state.assignments[key].teacher)) {
+                        if (key.startsWith('Kiêm nhiệm_')) {
+                            delete state.assignments[key];
+                        } else {
+                            state.assignments[key].teacher = '';
+                        }
                     }
-                }
-            });
+                });
+            }
             state.teachers = [];
+            if (state.classes) {
+                state.classes.forEach(c => {
+                    c.gvcn = '';
+                });
+            }
             persistData();
             refreshActiveViews();
             showToast(`Đã xóa tất cả ${count} giáo viên thành công!`, "success");
