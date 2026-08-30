@@ -1165,9 +1165,7 @@ async function login() {
         localStorage.setItem('fet_hub_current_user', acc.group);
         localStorage.setItem('fet_hub_current_role_badge', roleBadgeText);
 
-        showToast(`Đăng nhập thành công! Chào mừng ${roleBadgeText}.`, "success");
-
-        // Chuyển trang mượt mà sau 250ms
+        // Chuyển sang giao diện làm việc
         setTimeout(() => {
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('headerUserInfo').style.display = 'flex';
@@ -1189,7 +1187,10 @@ async function login() {
                 loginBtn.style.opacity = '1';
                 loginBtn.innerHTML = originalBtnHtml;
             }
-        }, 250);
+
+            // Hiển thị thông báo chào mừng sau khi đã vào hẳn giao diện chính
+            showToast(`Đăng nhập thành công! Chào mừng ${roleBadgeText}.`, "success");
+        }, 200);
 
     } catch (err) {
         if (loginBtn) {
