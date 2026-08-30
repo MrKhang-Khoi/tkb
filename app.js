@@ -149,7 +149,7 @@ let editingSubjectConfigId = null;
 let showPasswordMap = {};
 let editingAssignmentState = null;
 
-// Hàm tách khóa phân công an toàn (giải quyết lỗi tách khóa khi ID môn học chứa dấu gạch dưới)
+// Hàm tách khóa phân công an toàn (xử lý cả lớp có dấu gạch dưới như PĐ_6, PĐ_7 và ID môn học chứa dấu gạch dưới)
 function parseAssignmentKey(key) {
     if (key.startsWith('Kiêm nhiệm_')) {
         const parts = key.split('_');
@@ -167,6 +167,31 @@ function parseAssignmentKey(key) {
             };
         }
     }
+
+    // Ưu tiên khớp chính xác theo danh sách lớp thực tế trong state.classes
+    if (state.classes && Array.isArray(state.classes) && state.classes.length > 0) {
+        const sortedClasses = [...state.classes].sort((a, b) => (b.name || '').length - (a.name || '').length);
+        for (const c of sortedClasses) {
+            if (c && c.name && key.startsWith(c.name + '_')) {
+                return {
+                    cls: c.name,
+                    subId: key.substring(c.name.length + 1)
+                };
+            }
+        }
+    }
+
+    // Fallback nếu lớp có tiền tố PĐ_ hoặc PD_
+    if (/^(PĐ_|PD_)/i.test(key)) {
+        const parts = key.split('_');
+        if (parts.length >= 3) {
+            return {
+                cls: `${parts[0]}_${parts[1]}`,
+                subId: parts.slice(2).join('_')
+            };
+        }
+    }
+
     const idx = key.indexOf('_');
     if (idx === -1) return { cls: key, subId: '' };
     return {
@@ -1354,12 +1379,33 @@ function getSubjectForClass(clsName, subName) {
     const clsObj = state.classes.find(c => c.name === clsName);
     if (!clsObj) return null;
     const grade = clsObj.grade;
-    const sub = state.subjects.find(s => s.name === subName && s.grade === grade);
-    if (!sub) return null;
 
-    // Kiểm tra xem môn học có áp dụng cho loại lớp học này không
+    // 1. Kiểm tra xem môn học có áp dụng cho loại lớp học này không
     if (!isSubjectApplicableForClass(clsName, subName)) {
         return null;
+    }
+
+    // 2. Tìm môn học khớp chính xác tên môn và khối
+    let sub = state.subjects.find(s => s.name.toLowerCase() === subName.toLowerCase() && s.grade === grade);
+
+    // 3. Nếu là lớp Phụ đạo (PĐ_6, PĐ_7...)
+    if (isPhuDaoClass(clsName)) {
+        if (sub) {
+            return {
+                ...sub,
+                periods: isPhuDaoSubject(sub.name) ? sub.periods : 2
+            };
+        }
+        // Nếu trường chưa tạo môn PĐ_... trong 3.1 nhưng có môn gốc (Toán, Văn, Tiếng Anh)
+        const baseName = subName.replace(/^(PĐ_|PD_|PHỤ ĐẠO_|PHU DAO_)/i, '').trim();
+        const fallbackSub = state.subjects.find(s => s.name.toLowerCase() === baseName.toLowerCase() && s.grade === grade);
+        if (fallbackSub) {
+            return {
+                ...fallbackSub,
+                name: subName,
+                periods: 2
+            };
+        }
     }
 
     return sub;
