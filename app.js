@@ -1298,17 +1298,72 @@ function isPhuDaoSubject(subjectName) {
     return clean.startsWith('PĐ') || clean.startsWith('PD') || clean.includes('PHỤ ĐẠO') || clean.includes('PHU DAO');
 }
 
+// Helper kiểm tra môn học có phải là 1 trong 3 môn Phụ đạo (Toán, Ngữ văn, Tiếng Anh)
+function isPhuDaoAllowedSubject(subjectName) {
+    if (!subjectName) return false;
+    const clean = subjectName.toString()
+        .replace(/^(PĐ_|PD_|PĐ\s+|PD\s+|PHỤ ĐẠO_|PHỤ ĐẠO\s+|PHU DAO_|PHU DAO\s+)/i, '')
+        .replace(/[⭐★]/g, '')
+        .trim()
+        .toLowerCase();
+
+    // 1. Môn Toán
+    if (
+        clean === 'toán' || clean === 'toan' || clean === 'toán học' || clean === 'toan hoc' ||
+        clean.startsWith('toán') || clean.startsWith('toan')
+    ) {
+        return true;
+    }
+
+    // 2. Môn Ngữ Văn
+    if (
+        clean === 'ngữ văn' || clean === 'ngu van' || clean === 'văn' || clean === 'van' || clean === 'nv' ||
+        clean.startsWith('ngữ văn') || clean.startsWith('ngu van') || clean.startsWith('văn') || clean.startsWith('van ')
+    ) {
+        return true;
+    }
+
+    // 3. Môn Tiếng Anh
+    if (
+        clean === 'tiếng anh' || clean === 'tieng anh' || clean === 't.anh' || clean === 't.a' || clean === 'ta' || clean === 'anh' ||
+        clean === 'ngoại ngữ' || clean === 'ngoai ngu' || clean === 'ngoại ngữ 1' || clean === 'ngoai ngu 1' || clean === 'nn1' ||
+        clean.startsWith('tiếng anh') || clean.startsWith('tieng anh') || clean.startsWith('t.anh') || clean.startsWith('t.a') || clean.startsWith('anh ')
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+// Helper phân loại nhóm môn phụ đạo ('math', 'literature', 'english')
+function getPhuDaoSubjectType(subjectName) {
+    if (!subjectName) return null;
+    const clean = subjectName.toString()
+        .replace(/^(PĐ_|PD_|PĐ\s+|PD\s+|PHỤ ĐẠO_|PHỤ ĐẠO\s+|PHU DAO_|PHU DAO\s+)/i, '')
+        .replace(/[⭐★]/g, '')
+        .trim()
+        .toLowerCase();
+
+    if (clean === 'toán' || clean === 'toan' || clean === 'toán học' || clean === 'toan hoc' || clean.startsWith('toán') || clean.startsWith('toan')) {
+        return 'math';
+    }
+    if (clean === 'ngữ văn' || clean === 'ngu van' || clean === 'văn' || clean === 'van' || clean === 'nv' || clean.startsWith('ngữ văn') || clean.startsWith('ngu van') || clean.startsWith('văn') || clean.startsWith('van ')) {
+        return 'literature';
+    }
+    if (clean === 'tiếng anh' || clean === 'tieng anh' || clean === 't.anh' || clean === 't.a' || clean === 'ta' || clean === 'anh' || clean === 'ngoại ngữ' || clean === 'ngoai ngu' || clean === 'ngoại ngữ 1' || clean === 'ngoai ngu 1' || clean === 'nn1' || clean.startsWith('tiếng anh') || clean.startsWith('tieng anh') || clean.startsWith('t.anh') || clean.startsWith('t.a') || clean.startsWith('anh ')) {
+        return 'english';
+    }
+    return null;
+}
+
 // Kiểm tra xem môn học có áp dụng cho loại lớp học này không
 function isSubjectApplicableForClass(clsName, subName) {
     const isPdCls = isPhuDaoClass(clsName);
     const isPdSub = isPhuDaoSubject(subName);
 
     if (isPdCls) {
-        // Lớp Phụ đạo (PĐ_6, PĐ_7...) CHỈ học các môn Phụ đạo (PĐ_Toán, PĐ_Văn, PĐ_T.A, PĐ_Tiếng Anh...)
-        if (isPdSub) return true;
-        // Tương thích ngược nếu trường dùng tên môn gốc
-        const clean = subName.trim().toLowerCase();
-        return clean === 'toán' || clean === 'ngữ văn' || clean === 'văn' || clean === 'tiếng anh';
+        // Lớp Phụ đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9...) CHỈ học 3 môn: Toán, Ngữ văn, Tiếng Anh
+        return isPhuDaoAllowedSubject(subName);
     } else {
         // Lớp chính khóa (6A1, 7A1...) CHỈ học các môn chính khóa (Toán, Văn, Tin...), KHÔNG học các môn có tiền tố PĐ_
         return !isPdSub;
@@ -1528,7 +1583,7 @@ function initGroupDashboard(groupId) {
 }
 
 function getSubjectForClass(clsName, subName) {
-    const clsObj = state.classes.find(c => c.name === clsName);
+    const clsObj = (state.classes || []).find(c => c && c.name === clsName);
     if (!clsObj) return null;
     const grade = clsObj.grade;
 
@@ -1538,9 +1593,9 @@ function getSubjectForClass(clsName, subName) {
     }
 
     // 2. Tìm môn học khớp chính xác tên môn và khối
-    let sub = state.subjects.find(s => s.name.toLowerCase() === subName.toLowerCase() && s.grade === grade);
+    let sub = (state.subjects || []).find(s => s && s.name.toLowerCase() === subName.toLowerCase() && s.grade === grade);
 
-    // 3. Nếu là lớp Phụ đạo (PĐ_6, PĐ_7...)
+    // 3. Nếu là lớp Phụ đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9...)
     if (isPhuDaoClass(clsName)) {
         if (sub) {
             return {
@@ -1548,15 +1603,17 @@ function getSubjectForClass(clsName, subName) {
                 periods: isPhuDaoSubject(sub.name) ? sub.periods : 2
             };
         }
-        // Nếu trường chưa tạo môn PĐ_... trong 3.1 nhưng có môn gốc (Toán, Văn, Tiếng Anh)
-        const baseName = subName.replace(/^(PĐ_|PD_|PHỤ ĐẠO_|PHU DAO_)/i, '').trim();
-        const fallbackSub = state.subjects.find(s => s.name.toLowerCase() === baseName.toLowerCase() && s.grade === grade);
-        if (fallbackSub) {
-            return {
-                ...fallbackSub,
-                name: subName,
-                periods: 2
-            };
+        // Nếu không tìm thấy môn khớp chính xác tên và khối (ví dụ subName là "T.Anh", môn trong khối là "Tiếng Anh" hoặc "PĐ_T.Anh")
+        const subType = getPhuDaoSubjectType(subName);
+        if (subType) {
+            const fallbackSub = (state.subjects || []).find(s => s && s.grade === grade && getPhuDaoSubjectType(s.name) === subType);
+            if (fallbackSub) {
+                return {
+                    ...fallbackSub,
+                    name: subName,
+                    periods: isPhuDaoSubject(fallbackSub.name) ? fallbackSub.periods : 2
+                };
+            }
         }
     }
 
