@@ -4439,49 +4439,95 @@ function startAccountEdit(username) {
         groupOptions += `<option value="${g.id}" ${selected}>${g.name}</option>`;
     });
 
+    const isSystemAdmin = acc.username === 'admin';
+
     const bodyHtml = `
-        <div class="form-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Tên đăng nhập</label>
-            <input type="text" class="form-control" value="${acc.username}" disabled style="background-color: var(--bg-hover); cursor: not-allowed;">
+        <div class="form-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px;">
+            <label for="editAccUsername" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Tên đăng nhập</label>
+            <input type="text" id="editAccUsername" class="form-control" value="${acc.username}" placeholder="Nhập tên đăng nhập..." ${isSystemAdmin ? 'disabled title="Không thể đổi tên tài khoản admin hệ thống" style="background-color: var(--bg-hover); cursor: not-allowed;"' : ''}>
+            ${isSystemAdmin ? '<small style="color: var(--text-muted); font-size: 0.78rem;">Tài khoản quản trị admin mặc định không thể đổi tên.</small>' : ''}
         </div>
-        <div class="form-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Mật khẩu</label>
-            <input type="text" id="editAccPassword" class="form-control" value="${acc.password}">
+        <div class="form-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px;">
+            <label for="editAccPassword" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Mật khẩu mới (Để trống nếu giữ nguyên)</label>
+            <div style="position: relative; display: flex; align-items: center;">
+                <input type="password" id="editAccPassword" class="form-control" placeholder="Để trống nếu không muốn đổi mật khẩu..." style="padding-right: 40px; width: 100%;">
+                <span class="material-icons-round" onclick="togglePasswordVisibility('editAccPassword', this)" style="position: absolute; right: 12px; cursor: pointer; color: var(--text-muted); user-select: none;">visibility</span>
+            </div>
+            <small style="color: var(--text-muted); font-size: 0.78rem;">Chỉ nhập khi Admin muốn đặt lại mật khẩu mới cho tài khoản này (tối thiểu 4 ký tự).</small>
         </div>
-        <div class="form-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Tổ chuyên môn quản lý</label>
-            <select id="editAccGroup" class="form-control">
-                ${groupOptions}
+        <div class="form-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px;">
+            <label for="editAccGroup" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Tổ chuyên môn quản lý</label>
+            <select id="editAccGroup" class="form-control" ${isSystemAdmin ? 'disabled' : ''}>
+                ${isSystemAdmin ? '<option value="admin" selected>Toàn quyền quản trị hệ thống (Admin)</option>' : groupOptions}
             </select>
         </div>
     `;
 
     const footerHtml = `
-        <button class="btn btn-primary" onclick="saveAccountEdit('${acc.username}')">Lưu Thay Đổi</button>
+        <button class="btn btn-primary" id="btnSaveAccountEdit" onclick="saveAccountEdit('${acc.username}')" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-icons-round" style="font-size: 1.1rem;">save</span> Lưu Thay Đổi
+        </button>
         <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
     `;
 
-    openModal("Chỉnh Sửa Tài Khoản Tổ Trưởng", bodyHtml, footerHtml);
+    openModal("Chỉnh Sửa Tài Khoản " + (isSystemAdmin ? "Quản Trị" : "Tổ Trưởng"), bodyHtml, footerHtml);
 }
 
-async function saveAccountEdit(username) {
-    const acc = state.accounts.find(a => a.username === username);
-    if (acc) {
-        const newPass = document.getElementById('editAccPassword').value.trim();
-        const newGroup = document.getElementById('editAccGroup').value;
+async function saveAccountEdit(oldUsername) {
+    const acc = state.accounts.find(a => a.username === oldUsername);
+    if (!acc) {
+        showToast("Không tìm thấy thông tin tài khoản cần sửa!", "danger");
+        return;
+    }
 
-        if (!newPass) {
-            showToast("Mật khẩu không được để trống!", "warning");
+    const usernameInput = document.getElementById('editAccUsername');
+    const newUsername = usernameInput ? usernameInput.value.trim().toLowerCase() : oldUsername;
+    const newPass = document.getElementById('editAccPassword')?.value.trim() || '';
+    const newGroup = document.getElementById('editAccGroup')?.value || acc.group;
+    const saveBtn = document.getElementById('btnSaveAccountEdit');
+
+    if (!newUsername) {
+        showToast("Tên đăng nhập không được để trống!", "warning");
+        return;
+    }
+
+    // Kiểm tra trùng tên đăng nhập với tài khoản khác
+    if (newUsername !== oldUsername) {
+        const conflict = state.accounts.find(a => a.username === newUsername);
+        if (conflict) {
+            showToast(`Tên đăng nhập "${newUsername}" đã được sử dụng bởi tài khoản khác!`, "warning");
             return;
         }
-
-        acc.password = await sha256(newPass);
-        acc.group = newGroup;
-
-        persistData();
-        closeModal();
-        refreshActiveViews();
     }
+
+    // Kiểm tra mật khẩu nếu có nhập
+    if (newPass !== '' && newPass.length < 4) {
+        showToast("Mật khẩu mới phải có ít nhất 4 ký tự!", "warning");
+        return;
+    }
+
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span class="material-icons-round spin-anim" style="font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sync</span> Đang lưu...`;
+    }
+
+    // Cập nhật tên đăng nhập
+    acc.username = newUsername;
+
+    // Cập nhật mật khẩu nếu Admin có nhập mật khẩu mới
+    if (newPass !== '') {
+        acc.password = await sha256(newPass);
+    }
+
+    // Cập nhật tổ chuyên môn
+    if (oldUsername !== 'admin') {
+        acc.group = newGroup;
+    }
+
+    persistData();
+    closeModal();
+    refreshActiveViews();
+    showToast(`Đã cập nhật thông tin tài khoản "${newUsername}" thành công!`, "success");
 }
 
 
