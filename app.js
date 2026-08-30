@@ -864,8 +864,8 @@ function renderMergedAssignments() {
             const groupId = (gs && gs.groupId) ? gs.groupId : sub.group;
             const groupObj = state.groups.find(g => g.id === groupId);
 
-            let statusType = 'assigned'; // 'unassigned', 'mismatch', 'assigned'
-            let statusText = '';
+            let statusType;
+            let statusText;
             let rowStyle = '';
 
             if (!assign.teacher || assign.periods === 0) {
@@ -876,6 +876,7 @@ function renderMergedAssignments() {
                 statusText = `Lệch tiết (${assign.periods}T vs Chuẩn ${sub.periods}T)`;
                 rowStyle = `style="background-color: rgba(245, 158, 11, 0.08);"`;
             } else {
+                statusType = 'assigned';
                 statusText = 'Đã phân công';
             }
 
@@ -923,8 +924,8 @@ function renderMergedAssignments() {
 
             const standardPeriods = 5;
 
-            let statusType = 'assigned';
-            let statusText = '';
+            let statusType;
+            let statusText;
             let rowStyle = '';
 
             if (!homeroomGvcn || homeroomAssignedPeriods === 0) {
@@ -935,6 +936,7 @@ function renderMergedAssignments() {
                 statusText = `Lệch tiết (${homeroomAssignedPeriods}T vs Chuẩn ${standardPeriods}T)`;
                 rowStyle = `style="background-color: rgba(245, 158, 11, 0.08);"`;
             } else {
+                statusType = 'assigned';
                 statusText = 'Đã phân công';
             }
 
@@ -993,8 +995,8 @@ function renderMergedAssignments() {
                 const teacherGroup = teacherObj ? teacherObj.group : subGroupId;
                 const groupObj = state.groups.find(g => g.id === teacherGroup);
 
-                let statusType = 'assigned';
-                let statusText = '';
+                let statusType;
+                let statusText;
                 let rowStyle = '';
 
                 if (assign.periods !== sub.periods) {
@@ -1002,6 +1004,7 @@ function renderMergedAssignments() {
                     statusText = `Lệch tiết (${assign.periods}T vs Chuẩn ${sub.periods}T)`;
                     rowStyle = `style="background-color: rgba(245, 158, 11, 0.08);"`;
                 } else {
+                    statusType = 'assigned';
                     statusText = 'Đã phân công';
                 }
 
@@ -1070,7 +1073,7 @@ function renderMergedAssignments() {
 
     // Render kết quả ra bảng
     filteredRows.forEach((r, idx) => {
-        let statusHtml = '';
+        let statusHtml;
         if (r.statusType === 'unassigned') {
             statusHtml = `<span class="text-danger" style="font-weight: 600;">${r.statusText}</span>`;
         } else if (r.statusType === 'mismatch') {
@@ -1583,7 +1586,7 @@ function renderBatchAssignPanel(groupId) {
         .filter(name => name && !dutyNames.has(name.toLowerCase()))
         .sort((a, b) => a.localeCompare(b, 'vi'));
 
-    let subjectItems = [];
+    let subjectItems;
     if (groupSubjectNames.length > 0) {
         subjectItems = groupSubjectNames.map(name => ({
             value: name,
@@ -2281,7 +2284,7 @@ function updateClassCheckboxesState() {
         // Find if the selected teacher has this duty
         const selfAssign = dutyAssigns.find(a => a.teacher === selectedTeacher);
         
-        let titleStr = '';
+        let titleStr;
         if (selfAssign) {
             cb.checked = true;
             cb.disabled = false; // Luôn cho phép bỏ chọn để hủy phân công
@@ -2351,7 +2354,7 @@ function updateClassCheckboxesState() {
         label.style.opacity = '1';
         label.style.cursor = 'pointer';
 
-        let titleStr = '';
+        let titleStr;
 
         if (!selectedSubject) {
             cb.disabled = true;
@@ -2663,6 +2666,7 @@ function exportAllAssignmentsExcel() {
     XLSX.utils.book_append_sheet(wb, ws, "Phân công toàn trường");
     
     XLSX.writeFile(wb, "Phan_Cong_Chuyen_Mon_Toan_Truong.xlsx");
+    showToast('Đã xuất file Excel phân công toàn trường thành công!', 'success');
 }
 
 function renderMatrix(groupId) {
@@ -2755,7 +2759,7 @@ function renderMatrix(groupId) {
 
         const percentage = Math.min((totalAssigned / t.quota) * 100, 100);
         
-        let statusBadgeHtml = '';
+        let statusBadgeHtml;
         let progressBarStyle = `width: ${percentage}%; height: 100%; transition: var(--transition); border-radius: 4px;`;
         
         if (totalAssigned === 0) {
@@ -3331,6 +3335,7 @@ function exportGroupData() {
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", `phan_cong_to_${group}.json`);
     dlAnchorElem.click();
+    showToast('Đã xuất tệp dữ liệu phân công của tổ!', 'success');
 }
 
 // ================= TAB 1: SCHOOL SETUP (CLASSES & DEPARTMENTS) =================
@@ -3588,7 +3593,7 @@ function renderGroups() {
         });
         const subList = Array.from(assignedSubs).sort((a, b) => a.localeCompare(b, 'vi'));
 
-        let badgesHtml = '';
+        let badgesHtml;
         if (subList.length === 0) {
             badgesHtml = `<span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">Chưa gán môn</span>`;
         } else {
@@ -5177,6 +5182,7 @@ function exportFETCSV() {
     dlAnchorElem.click();
     document.body.removeChild(dlAnchorElem);
     URL.revokeObjectURL(url);
+    showToast('Đã xuất tệp CSV hoạt động FET thành công!', 'success');
 }
 
 // ================= EXCEL DATA IMPORT SYSTEM =================
@@ -5221,7 +5227,7 @@ function importClassesExcel(event) {
                 }
 
                 let sessionVal = sessionKey ? String(row[sessionKey] || '').trim().toLowerCase() : '';
-                let session = 'sáng';
+                let session;
                 if (sessionVal.includes('chiều') || sessionVal.includes('pm') || sessionVal === 'c') {
                     session = 'chiều';
                 } else if (sessionVal.includes('sáng') || sessionVal.includes('am') || sessionVal === 's') {
@@ -5485,12 +5491,11 @@ function importSubjectsExcel(event) {
                 const nameStr = subName.toString().trim();
                 const gradeStr = grade.toString().trim();
                 
-                let matchedGroup = null;
                 let groupId = 'unassigned';
 
                 if (groupStr) {
                     const cleanGroupStr = groupStr.toString().trim();
-                    matchedGroup = state.groups.find(g => 
+                    const matchedGroup = state.groups.find(g => 
                         g.name.toLowerCase().trim() === cleanGroupStr.toLowerCase() || 
                         g.name.toLowerCase().includes(cleanGroupStr.toLowerCase()) || 
                         cleanGroupStr.toLowerCase().includes(g.name.toLowerCase())
@@ -6056,6 +6061,7 @@ function copyFETPathToClipboard() {
     const span = document.getElementById('fetOutputFolderPathSpan');
     if (span) {
         navigator.clipboard.writeText(span.innerText).then(() => {
+            showToast('Đã sao chép đường dẫn thư mục FET vào bộ nhớ tạm!', 'success');
             const successMsg = document.getElementById('fetCopySuccessMsg');
             if (successMsg) {
                 successMsg.style.display = 'block';
@@ -6065,6 +6071,7 @@ function copyFETPathToClipboard() {
             }
         }).catch(err => {
             console.error('Lỗi khi sao chép:', err);
+            showToast('Không thể sao chép đường dẫn tự động!', 'danger');
         });
     }
 }
@@ -7120,7 +7127,7 @@ function resolveAllTeacherShortNames() {
                 const parts = t.fullName.trim().replace(/\s+/g, ' ').split(' ');
                 const name = parts[parts.length - 1];
                 
-                let proposed = '';
+                let proposed;
                 if (parts.length > 1) {
                     const middle = parts[parts.length - 2];
                     let initial = middle.charAt(0).toUpperCase();
@@ -7654,10 +7661,10 @@ function renderAdminGroupLockStatus() {
         const isLocked = lockInfo && lockInfo.locked;
         const isUnlockRequested = lockInfo && lockInfo.unlockRequested;
         
-        let statusHtml = '';
+        let statusHtml;
         let timeStr = '-';
         let userStr = '-';
-        let actionBtn = '';
+        let actionBtn;
 
         if (isLocked) {
             timeStr = new Date(lockInfo.lockedAt).toLocaleString('vi-VN');
@@ -8661,7 +8668,7 @@ function renderGroupTimetableStats(groupId, activeTimetable) {
         totalGroupTKBPeriods += totalTKB;
         const quota = t.quota || 19;
         const diff = totalTKB - quota;
-        let diffBadge = '';
+        let diffBadge;
         if (diff === 0) {
             diffBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Đủ ĐM (${quota}T)</span>`;
         } else if (diff > 0) {
@@ -9012,7 +9019,7 @@ function generateGroupSpreadsheetML(localClasses, groupTeachers, localTimetable,
         return rowsXml;
     }
 
-    const safeSheetName = escapeXml(groupName).replace(/[:\\\/\?\*\[\]]/g, '').substr(0, 30);
+    const safeSheetName = escapeXml(groupName).replace(/[:/?*[\]\\]/g, '').substr(0, 30);
     xml += `\n <Worksheet ss:Name="TKB ${safeSheetName}">`;
     xml += `\n  <Table ss:ExpandedColumnCount="31" ss:DefaultRowHeight="20">`;
     xml += `\n   <Column ss:Index="1" ss:Width="160"/>`; // Cột Giáo viên (Canh trái)
@@ -9109,6 +9116,7 @@ function printGroupTimetablePDF() {
         printHeader.style.display = 'block';
     }
 
+    showToast('Đang mở hộp thoại in thời khóa biểu tổ...', 'info');
     document.body.classList.add('printing-group-timetable');
     window.print();
     document.body.classList.remove('printing-group-timetable');
@@ -9126,7 +9134,7 @@ function initGroupSubstituteTab(groupId) {
     select.innerHTML = '<option value="">-- Chọn giáo viên vắng --</option>';
     
     const effectiveGroupId = groupId || state.currentUser;
-    let groupTeachers = [];
+    let groupTeachers;
     
     if (effectiveGroupId && effectiveGroupId !== 'admin') {
         // Chỉ lấy giáo viên thuộc tổ chuyên môn này
@@ -9258,7 +9266,7 @@ function normalizeSubjectName(sub) {
     if (!sub) return '';
     let s = sub.toString().toLowerCase().trim();
     // Loại bỏ dấu ngoặc, số khối (ví dụ: "Tin (9)", "Tin 9", "Toán 8", "Ngữ văn 6" -> "tin học", "toán", "ngữ văn")
-    s = s.replace(/\s*\([^\)]*\)/g, '').replace(/\s+[6-9]$/, '').replace(/\s+1[0-2]$/, '').trim();
+    s = s.replace(/\s*\([^)]*\)/g, '').replace(/\s+[6-9]$/, '').replace(/\s+1[0-2]$/, '').trim();
     
     const map = {
         'tin': 'tin học',
@@ -9470,9 +9478,9 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
         const hasOtherSessionOnly = !isAtSchoolSameSession && uniqOtherSession.length > 0;
         const isFreeAllDay = (periodsOnThisDay === 0);
 
-        let presenceLabel = '';
-        let presenceShort = '';
-        let presenceBadgeColor = '';
+        let presenceLabel;
+        let presenceShort;
+        let presenceBadgeColor;
         if (isAtSchoolSameSession) {
             presenceLabel = `🚗 Có mặt ở trường (dạy T${uniqSameSession.join(', T')})`;
             presenceShort = `🚗 Đang ở trường (T${uniqSameSession.join(',')})`;
@@ -9489,10 +9497,10 @@ function getSubstituteSuggestions(dateStr, dayKey, period, session, targetClass,
         }
 
         // 6. Phân hạng & Điểm ưu tiên:
-        let baseScore = 0;
-        let tier = 'tier4';
-        let tierLabel = '🏢 Ngoài tổ';
-        let reason = 'Giáo viên ngoài tổ';
+        let baseScore;
+        let tier;
+        let tierLabel;
+        let reason;
 
         if (isSameGroup) {
             if (teachesInThisClass && teachesThisSubject) {
@@ -9685,7 +9693,7 @@ function renderSlotCandidatesUI(slotIdx, suggestions, dateStr, dayKey, period, s
             color: #f8fafc;
         `;
         
-        let presenceBadge = '';
+        let presenceBadge;
         if (cand.isAtSchoolSameSession) {
             presenceBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.4);">${cand.presenceShort}</span>`;
         } else if (cand.hasOtherSessionOnly) {
@@ -9694,7 +9702,7 @@ function renderSlotCandidatesUI(slotIdx, suggestions, dateStr, dayKey, period, s
             presenceBadge = `<span style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(148, 163, 184, 0.25);" title="Không có tiết hôm nay (ở nhà - lưu ý nếu nhà xa)">🏡 Ở nhà (${cand.periodsOnThisDay}T)</span>`;
         }
 
-        let tagBadge = '';
+        let tagBadge;
         if (cand.isSameGroup && cand.teachesThisSubject) {
             tagBadge = `<span style="color: #fbbf24; font-weight: 600;">⭐ Cùng môn</span>`;
         } else if (cand.isSameGroup) {
