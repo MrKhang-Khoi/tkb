@@ -1077,6 +1077,48 @@ function getSelectedSubject() {
     return el.dataset.value || el.value;
 }
 
+// Helper lấy danh sách môn học do tổ chuyên môn phụ trách (Ưu tiên tuyệt đối môn do Admin gán cho tổ)
+function getGroupAssignedSubjects(groupId) {
+    if (!groupId) return [];
+    const groupObj = state.groups.find(g => g && g.id === groupId);
+    if (!groupObj) return [];
+
+    const assignedSet = new Set();
+    // 1. Môn được gán trực tiếp cho tổ trong groupObj.subjects
+    if (groupObj.subjects && Array.isArray(groupObj.subjects)) {
+        groupObj.subjects.forEach(s => {
+            if (s && typeof s === 'string' && s.trim()) {
+                assignedSet.add(s.trim());
+            }
+        });
+    }
+
+    // 2. Môn trong globalSubjects được gán groupId hoặc group name
+    (state.globalSubjects || []).forEach(gs => {
+        if (gs && (gs.groupId === groupId || gs.group === groupId || gs.group === groupObj.name)) {
+            if (gs.name && typeof gs.name === 'string' && gs.name.trim()) {
+                assignedSet.add(gs.name.trim());
+            }
+        }
+    });
+
+    // 3. Fallback: Chỉ khi tổ chưa từng được Admin gán môn nào, mới lấy từ môn giáo viên trong tổ đăng ký
+    if (assignedSet.size === 0) {
+        const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
+        groupTeachers.forEach(t => {
+            if (t && t.subjects && Array.isArray(t.subjects)) {
+                t.subjects.forEach(s => {
+                    if (s && typeof s === 'string' && s.trim()) {
+                        assignedSet.add(s.trim());
+                    }
+                });
+            }
+        });
+    }
+
+    return Array.from(assignedSet);
+}
+
 function initSearchableDropdown(inputId, menuId, items, onSelectCallback) {
     const input = document.getElementById(inputId);
     const menu = document.getElementById(menuId);
@@ -1306,52 +1348,27 @@ function renderBatchAssignPanel(groupId) {
         onBatchTeacherChange();
     });
 
-    // Nạp môn học vào dropdown: Ưu tiên môn thuộc tổ chuyên môn này lên đầu
+    // Nạp môn học vào dropdown: Chỉ hiển thị các môn do tổ chuyên môn này quản lý
     const dutyNames = new Set(state.subjects.filter(s => s && s.grade === 'Kiêm nhiệm').map(s => s.name.toLowerCase()));
     
-    // Môn trực thuộc tổ này
-    const groupSubjectNames = new Set();
-    if (groupObj.subjects && Array.isArray(groupObj.subjects)) {
-        groupObj.subjects.forEach(sub => sub && groupSubjectNames.add(sub));
-    }
-    state.globalSubjects.forEach(gs => {
-        if (gs && (gs.groupId === groupId || gs.group === groupId || gs.group === groupObj.name)) {
-            groupSubjectNames.add(gs.name);
-        }
-    });
-    groupTeachers.forEach(t => {
-        if (t && t.subjects) {
-            t.subjects.forEach(sub => sub && groupSubjectNames.add(sub));
-        }
-    });
+    // Lấy chính xác các môn do tổ phụ trách
+    const groupSubjectNames = getGroupAssignedSubjects(groupId)
+        .filter(name => name && !dutyNames.has(name.toLowerCase()))
+        .sort((a, b) => a.localeCompare(b, 'vi'));
 
-    const subjectNamesFromGlobal = state.globalSubjects.filter(gs => gs).map(gs => gs.name);
-    const subjectNamesFromSubjects = state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm').map(s => s.name);
-    const allUniqueSubjectNames = [...new Set([...subjectNamesFromGlobal, ...subjectNamesFromSubjects])]
-        .filter(name => name && !dutyNames.has(name.toLowerCase()));
-
-    // Sắp xếp môn của tổ
-    const groupList = [];
-    const otherList = [];
-    allUniqueSubjectNames.forEach(name => {
-        if (groupSubjectNames.has(name)) {
-            groupList.push(name);
-        } else {
-            otherList.push(name);
-        }
-    });
-    groupList.sort((a, b) => a.localeCompare(b, 'vi'));
-    otherList.sort((a, b) => a.localeCompare(b, 'vi'));
-
-    // Nếu tổ đã có danh sách môn phụ trách -> Chỉ hiển thị các môn này để tránh rối
     let subjectItems = [];
-    if (groupList.length > 0) {
-        subjectItems = groupList.map(name => ({
+    if (groupSubjectNames.length > 0) {
+        subjectItems = groupSubjectNames.map(name => ({
             value: name,
             label: `⭐ ${name}`
         }));
     } else {
-        subjectItems = allUniqueSubjectNames.sort((a, b) => a.localeCompare(b, 'vi')).map(name => ({
+        const subjectNamesFromGlobal = (state.globalSubjects || []).filter(gs => gs).map(gs => gs.name);
+        const subjectNamesFromSubjects = (state.subjects || []).filter(s => s && s.grade !== 'Kiêm nhiệm').map(s => s.name);
+        const allUniqueSubjectNames = [...new Set([...subjectNamesFromGlobal, ...subjectNamesFromSubjects])]
+            .filter(name => name && !dutyNames.has(name.toLowerCase()))
+            .sort((a, b) => a.localeCompare(b, 'vi'));
+        subjectItems = allUniqueSubjectNames.map(name => ({
             value: name,
             label: name
         }));
@@ -1477,15 +1494,19 @@ function onBatchTeacherChange() {
     // Chỉ tự động gợi ý môn học nếu ô môn học đang trống
     const currentSub = getSelectedSubject();
     if (!currentSub) {
-        const firstSubject = teacher.subjects[0];
-        const foundSub = state.globalSubjects.find(gs => gs && gs.name.toLowerCase() === firstSubject.toLowerCase());
-        if (foundSub) {
-            subjectSelect.value = foundSub.name;
-            subjectSelect.dataset.value = foundSub.name;
-            onBatchSubjectChange();
-        } else {
-            subjectSelect.value = firstSubject;
-            subjectSelect.dataset.value = firstSubject;
+        const allowedGroupSubs = getGroupAssignedSubjects(state.currentUser || (teacher ? teacher.group : ''));
+        let targetSubject = '';
+        if (teacher.subjects && teacher.subjects.length > 0) {
+            const matched = teacher.subjects.find(s => allowedGroupSubs.includes(s));
+            if (matched) targetSubject = matched;
+        }
+        if (!targetSubject && allowedGroupSubs.length > 0) {
+            targetSubject = allowedGroupSubs[0];
+        }
+
+        if (targetSubject) {
+            subjectSelect.value = targetSubject;
+            subjectSelect.dataset.value = targetSubject;
             onBatchSubjectChange();
         }
     }
@@ -2272,8 +2293,10 @@ function renderMatrix(groupId) {
         return;
     }
 
-    const allowedSubjects = [...new Set(groupTeachers.flatMap(t => (t && t.subjects) || []))];
-    const groupSubjects = state.subjects.filter(s => s && allowedSubjects.includes(s.name));
+    const allowedSubjects = getGroupAssignedSubjects(groupId);
+    const groupSubjects = allowedSubjects.length > 0
+        ? state.subjects.filter(s => s && allowedSubjects.includes(s.name))
+        : state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm');
 
     const filterSelect = document.getElementById('filterMemberAssignmentStatus');
     const filterVal = filterSelect ? filterSelect.value : 'all';
@@ -2745,9 +2768,10 @@ function renderUnassignedSubjects(groupId) {
     if (!list) return;
     list.innerHTML = '';
 
-    const groupTeachers = state.teachers.filter(t => t.group === groupId);
-    const allowedSubjects = [...new Set(groupTeachers.flatMap(t => t.subjects || []))];
-    const groupSubjects = state.subjects.filter(s => allowedSubjects.includes(s.name));
+    const allowedSubjects = getGroupAssignedSubjects(groupId);
+    const groupSubjects = allowedSubjects.length > 0
+        ? state.subjects.filter(s => s && allowedSubjects.includes(s.name))
+        : state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm');
     
     let issueCount = 0;
 
@@ -4240,15 +4264,16 @@ function saveGlobalSubEdit(id) {
 }
 
 function syncGroupsFromGlobalSubjects() {
-    // 1. Cập nhật mảng môn học của từng tổ chuyên môn dựa trên các môn mà giáo viên trong tổ đăng ký dạy
+    // Đồng bộ mảng môn học của từng tổ chuyên môn:
+    // Đảm bảo g.subjects luôn đồng bộ với globalSubjects được gán cho tổ đó và không ghi đè mất phân công của Admin
     state.groups.forEach(g => {
-        const groupTeachers = state.teachers.filter(t => t.group === g.id);
-        g.subjects = [...new Set(groupTeachers.flatMap(t => t.subjects || []))];
-    });
-
-    // 2. Đồng bộ tổ quản lý của các môn học trong cấu hình số tiết (không dùng s.group nữa, đặt thành unassigned)
-    state.subjects.forEach(s => {
-        s.group = 'unassigned';
+        if (!g.subjects) g.subjects = [];
+        const globalSubsForGroup = (state.globalSubjects || [])
+            .filter(gs => gs && (gs.groupId === g.id || gs.group === g.id || gs.group === g.name))
+            .map(gs => gs.name);
+        
+        const merged = new Set([...g.subjects, ...globalSubsForGroup]);
+        g.subjects = Array.from(merged);
     });
 }
 
