@@ -1414,9 +1414,18 @@ function renderDropdownItems(input, menu, filteredItems) {
         const div = document.createElement('div');
         div.className = 'dropdown-item';
         if (idx === 0) div.classList.add('active');
-        div.style.cssText = 'padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; transition: background 0.15s;';
-        div.innerText = item.label;
+        div.style.cssText = 'padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; transition: background 0.15s; border-bottom: 1px solid rgba(255,255,255,0.03);';
         
+        if (item.html) {
+            div.innerHTML = item.html;
+        } else {
+            div.innerText = item.label;
+        }
+
+        if (item.isCompleted) {
+            div.style.background = 'rgba(16, 185, 129, 0.05)';
+        }
+
         div.addEventListener('mouseenter', () => {
             menu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
             div.classList.add('active');
@@ -1447,18 +1456,19 @@ function validateSearchableInput(input) {
     }
 
     // 1. Try exact match with item.value
-    let match = items.find(item => item.value.toLowerCase() === val);
+    let match = items.find(item => item.value && item.value.toLowerCase() === val);
 
     // 2. Try exact match with item.label
     if (!match) {
-        match = items.find(item => item.label.toLowerCase() === val);
+        match = items.find(item => item.label && item.label.toLowerCase() === val);
     }
 
-    // 3. Try partial/smart match
+    // 3. Try partial/smart match (matches shortName in parentheses or name prefix)
     if (!match) {
         const possibleMatches = items.filter(item => {
-            const cleanLabel = item.label.toLowerCase();
-            return cleanLabel === val || cleanLabel.startsWith(val + ' (') || cleanLabel.includes('(' + val + ')');
+            const cleanLabel = (item.label || '').toLowerCase();
+            const itemVal = (item.value || '').toLowerCase();
+            return cleanLabel === val || itemVal === val || cleanLabel.startsWith(val + ' (') || cleanLabel.includes('(' + val + ')');
         });
         if (possibleMatches.length === 1) {
             match = possibleMatches[0];
@@ -1568,12 +1578,57 @@ function renderBatchAssignPanel(groupId) {
     const groupObj = state.groups.find(g => g && g.id === groupId);
     if (!groupObj) return;
 
-    // Nạp giáo viên thuộc tổ này vào datalist tùy biến
+    // Nạp giáo viên thuộc tổ này vào datalist tùy biến kèm thống kê số tiết
     const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
-    const teacherItems = groupTeachers.map(t => ({
-        value: t.shortName,
-        label: `${t.fullName} (${t.shortName})`
-    }));
+    const teacherItems = groupTeachers.map(t => {
+        let totalAssigned = 0;
+        if (state.assignments) {
+            Object.keys(state.assignments).forEach(key => {
+                const assign = state.assignments[key];
+                if (assign && assign.teacher && assign.teacher.trim().toLowerCase() === t.shortName.trim().toLowerCase() && assign.periods > 0) {
+                    totalAssigned += assign.periods;
+                }
+            });
+        }
+        const quota = t.quota || 19;
+        const isDone = totalAssigned >= quota;
+        const isPartial = totalAssigned > 0 && totalAssigned < quota;
+
+        let badgeHtml = '';
+        if (isDone) {
+            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.45);">✅ Đủ ${totalAssigned}/${quota}T</span>`;
+        } else if (isPartial) {
+            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 600; padding: 2px 7px; border-radius: 10px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45);">⚡ ${totalAssigned}/${quota}T (Thiếu ${quota - totalAssigned}T)</span>`;
+        } else {
+            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 500; padding: 2px 7px; border-radius: 10px; background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25);">Chưa phân (0/${quota}T)</span>`;
+        }
+
+        return {
+            value: t.shortName,
+            label: `${t.fullName} (${t.shortName})`,
+            html: `
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-weight: 600; color: ${isDone ? '#a7f3d0' : 'var(--text-main)'};">${t.fullName}</span>
+                        <span style="color: var(--primary-light); font-family: monospace; font-size: 0.8rem;">(${t.shortName})</span>
+                    </div>
+                    <div>${badgeHtml}</div>
+                </div>
+            `,
+            totalAssigned: totalAssigned,
+            quota: quota,
+            isCompleted: isDone
+        };
+    });
+
+    // Sắp xếp ưu tiên: Giáo viên chưa đủ định mức lên trước, giáo viên đã đủ định mức đưa xuống dưới
+    teacherItems.sort((a, b) => {
+        if (a.isCompleted !== b.isCompleted) {
+            return a.isCompleted ? 1 : -1;
+        }
+        return a.label.localeCompare(b.label, 'vi');
+    });
+
     initSearchableDropdown('batchTeacherSelect', 'batchTeacherMenu', teacherItems, (val) => {
         onBatchTeacherChange();
     });
@@ -1903,25 +1958,55 @@ function applyBatchAssignment() {
     if (state.assignments) {
         Object.keys(state.assignments).forEach(k => {
             const assign = state.assignments[k];
-            if (assign && assign.teacher === teacher) {
+            if (assign && assign.teacher && assign.teacher.trim().toLowerCase() === teacher.trim().toLowerCase() && assign.periods > 0) {
                 currentTotalPeriods += (assign.periods || 0);
             }
         });
     }
 
-    // Tính số tiết mới sẽ được thêm vào
-    let newlyAddedPeriods = 0;
-    checkedClassList.forEach(item => newlyAddedPeriods += item.periods);
-    checkedDutyList.forEach(item => newlyAddedPeriods += item.periods);
-    if (isDutySubject && dutySubObj) {
-        const dutyP = customPeriods > 0 ? customPeriods : (dutySubObj.periods || 0);
-        newlyAddedPeriods += dutyP;
+    // Nếu đang chỉnh sửa lại một phân công cũ, trừ đi số tiết cũ của môn/lớp đang sửa để dự báo chính xác
+    if (editingAssignmentState) {
+        checkedClassList.forEach(item => {
+            const key = `${item.clsName}_${item.subId}`;
+            if (state.assignments[key] && state.assignments[key].teacher === teacher) {
+                currentTotalPeriods -= (state.assignments[key].periods || 0);
+            }
+        });
+        if (currentTotalPeriods < 0) currentTotalPeriods = 0;
     }
+
+    // Tính số tiết mới sẽ được thêm vào theo từng môn học
+    const classesBySubject = {};
+    let totalTeachingPeriods = 0;
+    checkedClassList.forEach(item => {
+        if (!classesBySubject[item.subName]) {
+            classesBySubject[item.subName] = [];
+        }
+        classesBySubject[item.subName].push(item);
+        totalTeachingPeriods += item.periods;
+    });
+
+    let totalDutyPeriods = 0;
+    let dutyItems = [...checkedDutyList];
+    if (isDutySubject && dutySubObj && !dutyItems.some(d => d.id === dutySubObj.id)) {
+        const dutyP = customPeriods > 0 ? customPeriods : (dutySubObj.periods || 0);
+        dutyItems.push({ id: dutySubObj.id, name: dutySubObj.name, periods: dutyP });
+    }
+    dutyItems.forEach(d => totalDutyPeriods += d.periods);
+
+    const newlyAddedPeriods = totalTeachingPeriods + totalDutyPeriods;
+    const totalAfter = currentTotalPeriods + newlyAddedPeriods;
+    const quotaDiff = totalAfter - teacherQuota;
+    const pct = Math.min(Math.round((totalAfter / teacherQuota) * 100), 100);
 
     // Lưu dữ liệu vào biến tạm chờ xác nhận
     pendingBatchAssignmentData = {
         teacher: teacher,
         teacherDisplayName: teacherDisplayName,
+        teacherQuota: teacherQuota,
+        currentTotalPeriods: currentTotalPeriods,
+        newlyAddedPeriods: newlyAddedPeriods,
+        totalAfter: totalAfter,
         subjectName: subjectName,
         isDutySubject: isDutySubject,
         dutySubObj: dutySubObj,
@@ -1931,52 +2016,82 @@ function applyBatchAssignment() {
         isEditing: !!editingAssignmentState
     };
 
-    // Render HTML hộp thoại xác nhận đẹp mắt, chuyên nghiệp
-    let classesHtml = '';
-    if (checkedClassList.length > 0) {
-        const badgesHtml = checkedClassList.map(item => `
-            <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin: 3px;">
-                <span class="material-icons-round" style="font-size: 1rem; color: var(--primary-light);">school</span>
-                <span style="font-weight: 600; color: #fff;">${item.clsName}</span>
-                <span style="color: var(--primary-light); font-weight: 700; background: rgba(0,0,0,0.25); padding: 1px 6px; border-radius: 4px;">${item.periods}T</span>
-            </div>
-        `).join('');
+    // 1. Khối tổng quan số tiết phân công đợt này
+    let statusText = '';
+    let statusColor = '#34d399';
+    let progressBg = 'linear-gradient(90deg, #10b981, #34d399)';
 
-        classesHtml = `
-            <div style="margin-top: 14px;">
-                <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                    <span class="material-icons-round" style="font-size: 1.1rem; color: var(--primary-light);">menu_book</span>
-                    Môn giảng dạy: <span style="color: #fff; font-weight: 700;">${subjectName}</span> (${checkedClassList.length} lớp):
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow-y: auto; padding: 4px; background: rgba(15, 23, 42, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                    ${badgesHtml}
-                </div>
-            </div>
-        `;
+    if (quotaDiff === 0) {
+        statusText = `🎉 Đạt vừa đúng định mức (${teacherQuota}/${teacherQuota}T)`;
+        statusColor = '#34d399';
+        progressBg = 'linear-gradient(90deg, #10b981, #34d399)';
+    } else if (quotaDiff < 0) {
+        statusText = `⚡ Còn thiếu ${Math.abs(quotaDiff)} tiết nữa mới đủ định mức (${totalAfter}/${teacherQuota}T)`;
+        statusColor = '#fbbf24';
+        progressBg = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+    } else {
+        statusText = `⚠️ Vượt định mức +${quotaDiff} tiết (Dạy thừa: ${totalAfter}/${teacherQuota}T)`;
+        statusColor = '#f87171';
+        progressBg = 'linear-gradient(90deg, #ef4444, #f87171)';
     }
 
+    // 2. Render danh sách môn giảng dạy với tổng số tiết rõ ràng
+    let classesHtml = '';
+    const subjectKeys = Object.keys(classesBySubject);
+    if (subjectKeys.length > 0) {
+        classesHtml = subjectKeys.map(subKey => {
+            const items = classesBySubject[subKey];
+            const subSum = items.reduce((sum, item) => sum + item.periods, 0);
+            const badgesHtml = items.map(item => `
+                <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); padding: 4px 10px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin: 3px;">
+                    <span class="material-icons-round" style="font-size: 0.95rem; color: var(--primary-light);">school</span>
+                    <span style="font-weight: 600; color: #fff;">${item.clsName}</span>
+                    <span style="color: var(--primary-light); font-weight: 700; background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.8rem;">${item.periods}T</span>
+                </div>
+            `).join('');
+
+            return `
+                <div style="margin-top: 12px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                        <div style="font-size: 0.9rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-icons-round" style="font-size: 1.15rem; color: var(--primary-light);">menu_book</span>
+                            Môn ${subKey} (${items.length} lớp)
+                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 10px; border-radius: 20px;">
+                            Tổng: ${subSum} tiết
+                        </span>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                        ${badgesHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 3. Render danh sách nhiệm vụ kiêm nhiệm
     let dutiesHtml = '';
-    if (checkedDutyList.length > 0 || (isDutySubject && dutySubObj)) {
-        let dutyItems = [...checkedDutyList];
-        if (isDutySubject && dutySubObj && !dutyItems.some(d => d.id === dutySubObj.id)) {
-            const dutyP = customPeriods > 0 ? customPeriods : (dutySubObj.periods || 0);
-            dutyItems.push({ id: dutySubObj.id, name: dutySubObj.name, periods: dutyP });
-        }
+    if (dutyItems.length > 0) {
         const dutyBadges = dutyItems.map(d => `
-            <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin: 3px;">
-                <span class="material-icons-round" style="font-size: 1rem; color: #fbbf24;">stars</span>
+            <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); padding: 4px 10px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin: 3px;">
+                <span class="material-icons-round" style="font-size: 0.95rem; color: #fbbf24;">stars</span>
                 <span style="font-weight: 600; color: #fde68a;">${d.name}</span>
-                <span style="color: #fbbf24; font-weight: 700; background: rgba(0,0,0,0.25); padding: 1px 6px; border-radius: 4px;">${d.periods}T</span>
+                <span style="color: #fbbf24; font-weight: 700; background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.8rem;">${d.periods}T</span>
             </div>
         `).join('');
 
         dutiesHtml = `
-            <div style="margin-top: 14px;">
-                <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                    <span class="material-icons-round" style="font-size: 1.1rem; color: #f59e0b;">assignment</span>
-                    Nhiệm vụ kiêm nhiệm (${dutyItems.length} nhiệm vụ):
+            <div style="margin-top: 12px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(245, 158, 11, 0.15); border-radius: 10px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: #fde68a; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons-round" style="font-size: 1.15rem; color: #f59e0b;">assignment</span>
+                        Nhiệm vụ kiêm nhiệm (${dutyItems.length} nhiệm vụ)
+                    </div>
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #fbbf24; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 10px; border-radius: 20px;">
+                        Tổng: ${totalDutyPeriods} tiết
+                    </span>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; background: rgba(15, 23, 42, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                     ${dutyBadges}
                 </div>
             </div>
@@ -1985,9 +2100,9 @@ function applyBatchAssignment() {
 
     const modalBodyHtml = `
         <div style="font-size: 0.9rem; line-height: 1.5;">
-            <!-- Thẻ giáo viên -->
+            <!-- Thẻ thông tin giáo viên -->
             <div style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: rgba(79, 70, 229, 0.12); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 12px;">
-                <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                <div style="width: 46px; height: 46px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.15rem; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
                     ${teacher.substring(0, 2).toUpperCase()}
                 </div>
                 <div style="flex: 1;">
@@ -1998,13 +2113,40 @@ function applyBatchAssignment() {
                 </div>
             </div>
 
+            <!-- Bảng tổng hợp số tiết đợt phân công này -->
+            <div style="margin-top: 14px; padding: 12px 16px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; text-align: center; margin-bottom: 10px;">
+                    <div style="background: rgba(15, 23, 42, 0.5); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Số tiết hiện có</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #94a3b8; margin-top: 2px;">${currentTotalPeriods}T</div>
+                    </div>
+                    <div style="background: rgba(56, 189, 248, 0.1); padding: 8px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                        <div style="font-size: 0.75rem; color: #7dd3fc;">➕ Phân công đợt này</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #38bdf8; margin-top: 2px;">+${newlyAddedPeriods}T</div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
+                        <div style="font-size: 0.75rem; color: #6ee7b7;">🟰 Tổng sau phân công</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #34d399; margin-top: 2px;">${totalAfter}/${teacherQuota}T</div>
+                    </div>
+                </div>
+
+                <!-- Thanh tiến độ tải dạy -->
+                <div style="background: rgba(15, 23, 42, 0.6); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
+                    <div style="width: ${pct}%; height: 100%; background: ${progressBg}; transition: width 0.3s ease;"></div>
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 600; color: ${statusColor}; text-align: center;">
+                    ${statusText}
+                </div>
+            </div>
+
+            <!-- Chi tiết các môn & lớp phân công -->
             ${classesHtml}
             ${dutiesHtml}
 
             <!-- Lời nhắc thân thiện -->
-            <div style="margin-top: 16px; padding: 10px 14px; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.3); border-radius: 8px; color: #fde68a; font-size: 0.82rem; display: flex; align-items: center; gap: 8px;">
+            <div style="margin-top: 14px; padding: 10px 14px; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.3); border-radius: 8px; color: #fde68a; font-size: 0.82rem; display: flex; align-items: center; gap: 8px;">
                 <span class="material-icons-round" style="font-size: 1.15rem; color: #f59e0b;">info</span>
-                <span>Tổ trưởng vui lòng kiểm tra kỹ danh sách. Nếu sai sót, bấm <b>"Hủy & Chọn lại"</b> để giữ nguyên lựa chọn và điều chỉnh.</span>
+                <span>Tổ trưởng kiểm tra kỹ tổng số tiết. Nếu đúng, bấm <b>"Xác nhận phân công"</b> để lưu vào hệ thống.</span>
             </div>
         </div>
     `;
@@ -2015,7 +2157,7 @@ function applyBatchAssignment() {
                 <span class="material-icons-round" style="font-size: 1rem;">close</span> Hủy & Chọn lại
             </button>
             <button class="btn btn-primary" onclick="confirmExecuteBatchAssignment()" style="display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);">
-                <span class="material-icons-round" style="font-size: 1.05rem;">check_circle</span> Xác nhận phân công
+                <span class="material-icons-round" style="font-size: 1.05rem;">check_circle</span> Xác nhận phân công (${newlyAddedPeriods}T)
             </button>
         </div>
     `;
@@ -2154,9 +2296,29 @@ function confirmExecuteBatchAssignment() {
     renderMatrix(state.currentUser);
     renderTeacherStats(state.currentUser);
     renderUnassignedSubjects(state.currentUser);
+    renderBatchAssignPanel(state.currentUser);
     updateClassCheckboxesState();
 
-    showToast(`Đã phân công thành công cho giáo viên ${teacher}!`, 'success');
+    // Kiểm tra định mức sau khi phân công của giáo viên
+    const tObj = state.teachers.find(t => t.shortName === teacher);
+    const teacherName = tObj ? tObj.fullName : teacher;
+    const quota = tObj ? (tObj.quota || 19) : 19;
+    let totalAssigned = 0;
+    if (state.assignments) {
+        Object.keys(state.assignments).forEach(k => {
+            const a = state.assignments[k];
+            if (a && a.teacher && a.teacher.trim().toLowerCase() === teacher.trim().toLowerCase() && a.periods > 0) {
+                totalAssigned += a.periods;
+            }
+        });
+    }
+
+    if (totalAssigned >= quota) {
+        showToast(`Đã phân công hoàn tất cho GV ${teacherName} (${totalAssigned}/${quota}T - Đã đủ định mức)!`, 'success');
+        clearBatchSelections();
+    } else {
+        showToast(`Đã phân công thành công cho GV ${teacherName} (+${newlyAddedPeriods}T, hiện có: ${totalAssigned}/${quota}T)!`, 'success');
+    }
 }
 
 function clearBatchSelections() {
@@ -4884,9 +5046,28 @@ function saveDutyConfigEdit(id) {
         s.periods = newPeriods;
         s.group = ownerGroup;
 
+        // TỰ ĐỘNG ĐỒNG BỘ SỐ TIẾT MỚI SANG TOÀN BỘ PHÂN CÔNG KIÊM NHIỆM
+        let syncedCount = 0;
+        if (state.assignments) {
+            Object.keys(state.assignments).forEach(key => {
+                const parsed = parseAssignmentKey(key);
+                if (parsed.subId === id || parsed.subId === s.id || key.includes(`_${id}`)) {
+                    if (state.assignments[key] && state.assignments[key].teacher) {
+                        state.assignments[key].periods = newPeriods;
+                        syncedCount++;
+                    }
+                }
+            });
+        }
+
         persistData();
         closeModal();
         refreshActiveViews();
+        if (syncedCount > 0) {
+            showToast(`Đã cập nhật nhiệm vụ ${newName} thành ${newPeriods} tiết và tự động đồng bộ cho ${syncedCount} GV kiêm nhiệm!`, "success");
+        } else {
+            showToast(`Đã cập nhật số tiết nhiệm vụ ${newName} thành ${newPeriods} tiết!`, "success");
+        }
     }
 }
 
@@ -4900,39 +5081,77 @@ function addSubjectConfig() {
 
     const gs = state.globalSubjects.find(item => item.name === name);
     const ownerGroup = (gs && gs.groupId) ? gs.groupId : 'unassigned';
+    let syncedCount = 0;
 
     if (grade === 'all') {
         const grades = ['6', '7', '8', '9'];
-        let addedAny = false;
         grades.forEach((g, index) => {
-            if (!state.subjects.some(s => s.name.toLowerCase() === name.toLowerCase() && s.grade === g)) {
-                state.subjects.push({
+            let existing = state.subjects.find(s => s.name.toLowerCase() === name.toLowerCase() && s.grade === g);
+            if (existing) {
+                existing.periods = periods;
+                existing.group = ownerGroup;
+            } else {
+                existing = {
                     id: 's_' + (Date.now() + index),
                     name: name,
                     grade: g,
                     periods: periods,
                     group: ownerGroup
+                };
+                state.subjects.push(existing);
+            }
+
+            // Tự động đồng bộ số tiết sang phân công hiện có
+            if (state.assignments) {
+                Object.keys(state.assignments).forEach(key => {
+                    const parsed = parseAssignmentKey(key);
+                    if (parsed.subId === existing.id) {
+                        if (state.assignments[key] && state.assignments[key].teacher) {
+                            state.assignments[key].periods = periods;
+                            syncedCount++;
+                        }
+                    }
                 });
-                addedAny = true;
             }
         });
-        if (!addedAny) {
-            showToast("Môn học này đã được cấu hình cho tất cả các khối lớp từ trước!", "warning");
-            return;
+        if (syncedCount > 0) {
+            showToast(`Đã áp dụng ${periods} tiết cho môn ${name} (Khối 6-9) và tự động đồng bộ ${syncedCount} lớp đã phân công!`, "success");
+        } else {
+            showToast(`Đã áp dụng ${periods} tiết cho môn ${name} (Khối 6-9)!`, "success");
         }
     } else {
-        if (state.subjects.some(s => s.name.toLowerCase() === name.toLowerCase() && s.grade === grade)) {
-            showToast("Môn học này đã được cấu hình cho khối lớp này rồi!", "warning");
-            return;
+        let existing = state.subjects.find(s => s.name.toLowerCase() === name.toLowerCase() && s.grade === grade);
+        if (existing) {
+            existing.periods = periods;
+            existing.group = ownerGroup;
+        } else {
+            existing = {
+                id: 's_' + Date.now(),
+                name: name,
+                grade: grade,
+                periods: periods,
+                group: ownerGroup
+            };
+            state.subjects.push(existing);
         }
 
-        state.subjects.push({
-            id: 's_' + Date.now(),
-            name: name,
-            grade: grade,
-            periods: periods,
-            group: ownerGroup
-        });
+        // Tự động đồng bộ số tiết sang phân công hiện có
+        if (state.assignments) {
+            Object.keys(state.assignments).forEach(key => {
+                const parsed = parseAssignmentKey(key);
+                if (parsed.subId === existing.id) {
+                    if (state.assignments[key] && state.assignments[key].teacher) {
+                        state.assignments[key].periods = periods;
+                        syncedCount++;
+                    }
+                }
+            });
+        }
+        if (syncedCount > 0) {
+            showToast(`Đã áp dụng ${periods} tiết cho môn ${name} (Khối ${grade}) và tự động đồng bộ ${syncedCount} lớp đã phân công!`, "success");
+        } else {
+            showToast(`Đã áp dụng ${periods} tiết cho môn ${name} (Khối ${grade})!`, "success");
+        }
     }
 
     persistData();
@@ -5088,9 +5307,39 @@ function saveSubjectConfigEdit(id) {
         s.periods = newPeriods;
         s.group = ownerGroup;
 
+        // TỰ ĐỘNG ĐỒNG BỘ SỐ TIẾT MỚI SANG TOÀN BỘ PHÂN CÔNG CHUYÊN MÔN CỦA MÔN NÀY
+        let syncedCount = 0;
+        if (state.assignments) {
+            Object.keys(state.assignments).forEach(key => {
+                const parsed = parseAssignmentKey(key);
+                let isMatch = false;
+                if (parsed.subId === id || parsed.subId === s.id) {
+                    isMatch = true;
+                } else if (parsed.cls) {
+                    const clsObj = state.classes.find(c => c.name === parsed.cls);
+                    if (clsObj && clsObj.grade === newGrade) {
+                        const subObj = state.subjects.find(sub => sub.id === parsed.subId);
+                        if (subObj && subObj.name.toLowerCase() === newName.toLowerCase()) {
+                            isMatch = true;
+                        }
+                    }
+                }
+
+                if (isMatch && state.assignments[key] && state.assignments[key].teacher) {
+                    state.assignments[key].periods = newPeriods;
+                    syncedCount++;
+                }
+            });
+        }
+
         persistData();
         closeModal();
         refreshActiveViews();
+        if (syncedCount > 0) {
+            showToast(`Đã lưu và tự động đồng bộ ${newPeriods} tiết cho ${syncedCount} lớp đã phân công môn ${newName} (Khối ${newGrade})!`, "success");
+        } else {
+            showToast(`Đã cập nhật số tiết môn ${newName} (Khối ${newGrade}) thành ${newPeriods} tiết/tuần!`, "success");
+        }
     }
 }
 
@@ -5525,6 +5774,18 @@ function importSubjectsExcel(event) {
                 if (existingSub) {
                     existingSub.periods = periods;
                     existingSub.group = groupId;
+
+                    // Tự động đồng bộ số tiết mới sang các phân công hiện có của môn này
+                    if (state.assignments) {
+                        Object.keys(state.assignments).forEach(key => {
+                            const parsed = parseAssignmentKey(key);
+                            if (parsed.subId === existingSub.id) {
+                                if (state.assignments[key] && state.assignments[key].teacher) {
+                                    state.assignments[key].periods = periods;
+                                }
+                            }
+                        });
+                    }
                 } else {
                     state.subjects.push({
                         id: 's_' + Date.now() + Math.random().toString(36).substr(2, 4),
