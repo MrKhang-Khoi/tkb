@@ -1414,7 +1414,8 @@ function renderDropdownItems(input, menu, filteredItems) {
         const div = document.createElement('div');
         div.className = 'dropdown-item';
         if (idx === 0) div.classList.add('active');
-        div.style.cssText = 'padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; transition: background 0.15s; border-bottom: 1px solid rgba(255,255,255,0.03);';
+        
+        div.style.cssText = `padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; transition: all 0.15s ease; border-bottom: 1px solid rgba(255,255,255,0.03); white-space: nowrap; ${item.isAssigned ? 'opacity: 0.55; background: rgba(15, 23, 42, 0.35);' : ''}`;
         
         if (item.html) {
             div.innerHTML = item.html;
@@ -1422,13 +1423,14 @@ function renderDropdownItems(input, menu, filteredItems) {
             div.innerText = item.label;
         }
 
-        if (item.isCompleted) {
-            div.style.background = 'rgba(16, 185, 129, 0.05)';
-        }
-
         div.addEventListener('mouseenter', () => {
             menu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
             div.classList.add('active');
+            if (item.isAssigned) div.style.opacity = '1';
+        });
+
+        div.addEventListener('mouseleave', () => {
+            if (item.isAssigned) div.style.opacity = '0.55';
         });
 
         div.addEventListener('click', (e) => {
@@ -1578,7 +1580,7 @@ function renderBatchAssignPanel(groupId) {
     const groupObj = state.groups.find(g => g && g.id === groupId);
     if (!groupObj) return;
 
-    // Nạp giáo viên thuộc tổ này vào datalist tùy biến kèm thống kê số tiết
+    // Nạp giáo viên thuộc tổ này vào datalist tùy biến: 2 trạng thái (Chưa phân công & Đã phân công)
     const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
     const teacherItems = groupTeachers.map(t => {
         let totalAssigned = 0;
@@ -1590,41 +1592,36 @@ function renderBatchAssignPanel(groupId) {
                 }
             });
         }
-        const quota = t.quota || 19;
-        const isDone = totalAssigned >= quota;
-        const isPartial = totalAssigned > 0 && totalAssigned < quota;
+        const isAssigned = totalAssigned > 0;
 
         let badgeHtml = '';
-        if (isDone) {
-            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.45);">✅ Đủ ${totalAssigned}/${quota}T</span>`;
-        } else if (isPartial) {
-            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 600; padding: 2px 7px; border-radius: 10px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45);">⚡ ${totalAssigned}/${quota}T (Thiếu ${quota - totalAssigned}T)</span>`;
+        if (isAssigned) {
+            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); white-space: nowrap; flex-shrink: 0;">Đã phân (${totalAssigned}T)</span>`;
         } else {
-            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 500; padding: 2px 7px; border-radius: 10px; background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25);">Chưa phân (0/${quota}T)</span>`;
+            badgeHtml = `<span style="font-size: 0.72rem; font-weight: 500; padding: 2px 8px; border-radius: 12px; background: rgba(148, 163, 184, 0.12); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); white-space: nowrap; flex-shrink: 0;">Chưa phân</span>`;
         }
 
         return {
             value: t.shortName,
             label: `${t.fullName} (${t.shortName})`,
             html: `
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-weight: 600; color: ${isDone ? '#a7f3d0' : 'var(--text-main)'};">${t.fullName}</span>
-                        <span style="color: var(--primary-light); font-family: monospace; font-size: 0.8rem;">(${t.shortName})</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 12px; white-space: nowrap;">
+                    <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span style="font-weight: ${isAssigned ? '500' : '600'}; color: ${isAssigned ? '#94a3b8' : '#ffffff'};">${t.fullName}</span>
+                        <span style="color: ${isAssigned ? '#64748b' : 'var(--primary-light)'}; font-family: monospace; font-size: 0.8rem;">(${t.shortName})</span>
                     </div>
                     <div>${badgeHtml}</div>
                 </div>
             `,
             totalAssigned: totalAssigned,
-            quota: quota,
-            isCompleted: isDone
+            isAssigned: isAssigned
         };
     });
 
-    // Sắp xếp ưu tiên: Giáo viên chưa đủ định mức lên trước, giáo viên đã đủ định mức đưa xuống dưới
+    // Sắp xếp ưu tiên: Giáo viên CHƯA phân công lên trước, giáo viên ĐÃ phân công đưa xuống dưới
     teacherItems.sort((a, b) => {
-        if (a.isCompleted !== b.isCompleted) {
-            return a.isCompleted ? 1 : -1;
+        if (a.isAssigned !== b.isAssigned) {
+            return a.isAssigned ? 1 : -1; // Chưa phân công lên đầu, đã phân công xuống dưới
         }
         return a.label.localeCompare(b.label, 'vi');
     });
