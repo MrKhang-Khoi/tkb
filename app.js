@@ -189,6 +189,49 @@ function parseAssignmentKey(key) {
     };
 }
 
+// ================= FIREBASE KEY SANITIZATION =================
+function encodeFirebaseKey(key) {
+    if (!key || typeof key !== 'string') return key;
+    return key
+        .replace(/\./g, '__dot__')
+        .replace(/#/g, '__hash__')
+        .replace(/\$/g, '__dollar__')
+        .replace(/\//g, '__slash__')
+        .replace(/\[/g, '__lbr__')
+        .replace(/\]/g, '__rbr__');
+}
+
+function decodeFirebaseKey(key) {
+    if (!key || typeof key !== 'string') return key;
+    return key
+        .replace(/__dot__/g, '.')
+        .replace(/__hash__/g, '#')
+        .replace(/__dollar__/g, '$')
+        .replace(/__slash__/g, '/')
+        .replace(/__lbr__/g, '[')
+        .replace(/__rbr__/g, ']');
+}
+
+function sanitizeObjectKeysForFirebase(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj || {};
+    const result = {};
+    Object.keys(obj).forEach(k => {
+        const safeKey = encodeFirebaseKey(k);
+        result[safeKey] = obj[k];
+    });
+    return result;
+}
+
+function desanitizeObjectKeysFromFirebase(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj || {};
+    const result = {};
+    Object.keys(obj).forEach(k => {
+        const originalKey = decodeFirebaseKey(k);
+        result[originalKey] = obj[k];
+    });
+    return result;
+}
+
 // Lấy toàn bộ phân công của một nhiệm vụ kiêm nhiệm
 function getDutyAssignments(dutyId) {
     const results = [];
@@ -482,49 +525,6 @@ function initFirebase() {
                 triggerOfflineFallback();
             }
         }, 2500);
-
-// ================= FIREBASE KEY SANITIZATION =================
-function encodeFirebaseKey(key) {
-    if (!key || typeof key !== 'string') return key;
-    return key
-        .replace(/\./g, '__dot__')
-        .replace(/#/g, '__hash__')
-        .replace(/\$/g, '__dollar__')
-        .replace(/\//g, '__slash__')
-        .replace(/\[/g, '__lbr__')
-        .replace(/\]/g, '__rbr__');
-}
-
-function decodeFirebaseKey(key) {
-    if (!key || typeof key !== 'string') return key;
-    return key
-        .replace(/__dot__/g, '.')
-        .replace(/__hash__/g, '#')
-        .replace(/__dollar__/g, '$')
-        .replace(/__slash__/g, '/')
-        .replace(/__lbr__/g, '[')
-        .replace(/__rbr__/g, ']');
-}
-
-function sanitizeObjectKeysForFirebase(obj) {
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj || {};
-    const result = {};
-    Object.keys(obj).forEach(k => {
-        const safeKey = encodeFirebaseKey(k);
-        result[safeKey] = obj[k];
-    });
-    return result;
-}
-
-function desanitizeObjectKeysFromFirebase(obj) {
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj || {};
-    const result = {};
-    Object.keys(obj).forEach(k => {
-        const originalKey = decodeFirebaseKey(k);
-        result[originalKey] = obj[k];
-    });
-    return result;
-}
 
         // Lắng nghe dữ liệu thay đổi trên Realtime Database
         db.ref("school_data").on("value", (snapshot) => {
