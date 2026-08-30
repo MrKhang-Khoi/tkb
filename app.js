@@ -1119,6 +1119,28 @@ function getGroupAssignedSubjects(groupId) {
     return Array.from(assignedSet);
 }
 
+// Helper nhận diện lớp Phụ đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9...)
+function isPhuDaoClass(className) {
+    if (!className) return false;
+    const clean = className.trim().toUpperCase();
+    return clean.startsWith('PĐ') || clean.startsWith('PD') || clean.includes('PHỤ ĐẠO') || clean.includes('PHU DAO');
+}
+
+// Danh sách các môn mà lớp Phụ đạo theo học (Toán, Văn, Tiếng Anh)
+function isPhuDaoSubject(subjectName) {
+    if (!subjectName) return false;
+    const clean = subjectName.trim().toLowerCase();
+    return clean === 'toán' || clean === 'toan' ||
+           clean === 'ngữ văn' || clean === 'ngu van' || clean === 'văn' || clean === 'van' ||
+           clean === 'tiếng anh' || clean === 'tieng anh' || clean === 'anh' || clean === 'ngoại ngữ' || clean === 'ngoai ngu' ||
+           clean.startsWith('tiếng anh') || clean.startsWith('tieng anh');
+}
+
+// Số tiết chuẩn cho các môn Phụ đạo (2 tiết/tuần mỗi môn)
+function getPhuDaoStandardPeriods(subjectName) {
+    return 2;
+}
+
 function initSearchableDropdown(inputId, menuId, items, onSelectCallback) {
     const input = document.getElementById(inputId);
     const menu = document.getElementById(menuId);
@@ -1318,7 +1340,23 @@ function getSubjectForClass(clsName, subName) {
     const clsObj = state.classes.find(c => c.name === clsName);
     if (!clsObj) return null;
     const grade = clsObj.grade;
-    return state.subjects.find(s => s.name === subName && s.grade === grade);
+    const sub = state.subjects.find(s => s.name === subName && s.grade === grade);
+    if (!sub) return null;
+
+    // Đối với các lớp Phụ đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9)
+    if (isPhuDaoClass(clsName)) {
+        // Nếu không thuộc 3 môn Phụ đạo (Toán, Văn, Tiếng Anh) thì lớp Phụ đạo không học
+        if (!isPhuDaoSubject(subName)) {
+            return null;
+        }
+        // Trả về số tiết chuẩn của lớp Phụ đạo (2 tiết)
+        return {
+            ...sub,
+            periods: getPhuDaoStandardPeriods(subName)
+        };
+    }
+
+    return sub;
 }
 
 function renderBatchAssignPanel(groupId) {
@@ -1402,17 +1440,19 @@ function renderBatchAssignPanel(groupId) {
 
         classesByGrade[grade].forEach(c => {
             const label = document.createElement('label');
-            label.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; cursor: pointer; font-size: 0.85rem; font-weight: 500;';
+            const isPd = isPhuDaoClass(c.name);
+            label.style.cssText = `display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; cursor: pointer; font-size: 0.85rem; font-weight: 500; ${isPd ? 'background: rgba(168, 85, 247, 0.15); border: 1px dashed rgba(168, 85, 247, 0.45); padding: 2px 8px; border-radius: 6px;' : ''}`;
             
             const cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.className = 'batch-class-cb';
             cb.dataset.grade = grade;
+            cb.dataset.isPd = isPd ? 'true' : 'false';
             cb.value = c.name;
             cb.style.cssText = 'cursor: pointer;';
             
             label.appendChild(cb);
-            label.appendChild(document.createTextNode(c.name));
+            label.appendChild(document.createTextNode(isPd ? `${c.name} (PĐ 2T)` : c.name));
             gradeRow.appendChild(label);
         });
 
@@ -2495,16 +2535,23 @@ function renderMatrix(groupId) {
     state.classes.forEach(clsObj => {
         const cls = clsObj.name;
         const grade = clsObj.grade;
+        const isPd = isPhuDaoClass(cls);
+
         groupSubjects.forEach(sub => {
             if (sub.grade === grade) {
+                // Nếu là lớp Phụ đạo nhưng môn này không thuộc 3 môn Phụ đạo (Toán, Văn, Tiếng Anh) thì bỏ qua
+                if (isPd && !isPhuDaoSubject(sub.name)) {
+                    return;
+                }
                 const key = `${cls}_${sub.id}`;
                 const val = state.assignments[key];
+                const requiredPeriods = isPd ? getPhuDaoStandardPeriods(sub.name) : sub.periods;
                 if (!val || !val.teacher || val.periods === 0) {
                     unassignedList.push({
                         clsName: cls,
                         subId: sub.id,
                         subName: sub.name,
-                        periods: sub.periods
+                        periods: requiredPeriods
                     });
                 }
             }
@@ -2781,8 +2828,15 @@ function renderUnassignedSubjects(groupId) {
 
         groupSubjects.forEach(sub => {
             if (sub.grade === grade) {
+                const isPd = isPhuDaoClass(cls);
+                // Nếu là lớp Phụ đạo mà môn này không thuộc 3 môn Phụ đạo (Toán, Văn, Tiếng Anh) thì bỏ qua
+                if (isPd && !isPhuDaoSubject(sub.name)) {
+                    return;
+                }
+
                 const key = `${cls}_${sub.id}`;
                 const val = state.assignments[key] || { teacher: '', periods: 0 };
+                const requiredPeriods = isPd ? getPhuDaoStandardPeriods(sub.name) : sub.periods;
 
                 if (!val.teacher || val.periods === 0) {
                     issueCount++;
@@ -2790,17 +2844,17 @@ function renderUnassignedSubjects(groupId) {
                         <div class="teacher-stat-card" style="border-left: 4px solid var(--danger); padding: 10px; margin-bottom: 8px;">
                             <div class="teacher-info-row" style="margin-bottom: 0;">
                                 <span style="font-weight: 600;">Lớp ${cls} - Môn ${sub.name}</span>
-                                <span class="text-danger" style="font-size: 0.75rem; font-weight: 600;">Chưa phân công (${sub.periods}T)</span>
+                                <span class="text-danger" style="font-size: 0.75rem; font-weight: 600;">Chưa phân công (${requiredPeriods}T)</span>
                             </div>
                         </div>
                     `;
-                } else if (val.periods !== sub.periods) {
+                } else if (val.periods !== requiredPeriods) {
                     issueCount++;
                     list.innerHTML += `
                         <div class="teacher-stat-card" style="border-left: 4px solid var(--warning); padding: 10px; margin-bottom: 8px;">
                             <div class="teacher-info-row" style="margin-bottom: 0;">
                                 <span style="font-weight: 600;">Lớp ${cls} - Môn ${sub.name}</span>
-                                <span class="text-warning" style="font-size: 0.75rem; font-weight: 600;">Lệch tiết (${val.periods}T/${sub.periods}T)</span>
+                                <span class="text-warning" style="font-size: 0.75rem; font-weight: 600;">Lệch tiết (${val.periods}T/${requiredPeriods}T)</span>
                             </div>
                         </div>
                     `;
