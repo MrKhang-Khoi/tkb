@@ -383,19 +383,35 @@ function showConfirmModal(title, messageHtml, onConfirm, confirmText = 'Xác nh�
         </div>
     `;
     const footerHtml = `
-        <button class="btn ${confirmBtnClass}" id="confirmModalAcceptBtn" style="display: inline-flex; align-items: center; gap: 6px;">
+        <button class="btn ${confirmBtnClass}" id="confirmModalAcceptBtn" style="display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px ${isDanger ? 'rgba(239, 68, 68, 0.3)' : 'rgba(79, 70, 229, 0.3)'};">
             <span class="material-icons-round" style="font-size: 1.1rem;">check_circle</span> ${confirmText}
         </button>
-        <button class="btn btn-secondary" onclick="closeModal()">Hủy bỏ</button>
+        <button class="btn btn-secondary" id="confirmModalCancelBtn" onclick="closeModal()">Hủy bỏ</button>
     `;
     openModal(title, bodyHtml, footerHtml);
     
     setTimeout(() => {
         const btn = document.getElementById('confirmModalAcceptBtn');
+        const cancelBtn = document.getElementById('confirmModalCancelBtn');
         if (btn) {
-            btn.onclick = () => {
-                closeModal();
-                if (typeof onConfirm === 'function') onConfirm();
+            btn.onclick = async () => {
+                btn.disabled = true;
+                btn.style.opacity = '0.85';
+                btn.innerHTML = `<span class="material-icons-round spin-anim" style="font-size: 1.1rem; vertical-align: middle; margin-right: 6px;">sync</span> Đang thực hiện...`;
+                if (cancelBtn) cancelBtn.disabled = true;
+
+                setTimeout(async () => {
+                    try {
+                        if (typeof onConfirm === 'function') {
+                            await onConfirm();
+                        }
+                    } catch (err) {
+                        console.error("Lỗi khi thực hiện xác nhận:", err);
+                        showToast("Có lỗi xảy ra: " + (err.message || err), "danger");
+                    } finally {
+                        closeModal();
+                    }
+                }, 180);
             };
         }
     }, 50);
