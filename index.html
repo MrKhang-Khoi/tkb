@@ -248,8 +248,21 @@
                         </div>
                         
                         <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px;">
-                            <div class="form-group" style="flex: 1 1 200px; margin-bottom: 0; position: relative;">
-                                <label for="batchTeacherSelect">1. Chọn giáo viên</label>
+                            <div class="form-group" style="flex: 1 1 260px; margin-bottom: 0; position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
+                                    <label for="batchTeacherSelect" style="margin-bottom: 0; font-weight: 600; font-size: 0.85rem;">1. Chọn giáo viên</label>
+                                    <div id="batchTeacherFilterPills" style="display: inline-flex; background: rgba(15, 23, 42, 0.6); padding: 2px; border-radius: 8px; border: 1px solid var(--border); gap: 2px;">
+                                        <button type="button" class="teacher-filter-pill" id="pillFilterAll" onclick="setBatchTeacherFilter('all')" style="padding: 2px 7px; font-size: 0.72rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s; background: var(--primary); color: #fff;" title="Xem tất cả giáo viên trong tổ">
+                                            Tất cả (<span id="countPillAll">0</span>)
+                                        </button>
+                                        <button type="button" class="teacher-filter-pill" id="pillFilterUnassigned" onclick="setBatchTeacherFilter('unassigned')" style="padding: 2px 7px; font-size: 0.72rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s; background: transparent; color: #94a3b8;" title="Chỉ xem giáo viên chưa có tiết phân công">
+                                            Chưa phân (<span id="countPillUnassigned">0</span>)
+                                        </button>
+                                        <button type="button" class="teacher-filter-pill" id="pillFilterAssigned" onclick="setBatchTeacherFilter('assigned')" style="padding: 2px 7px; font-size: 0.72rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s; background: transparent; color: #94a3b8;" title="Chỉ xem giáo viên đã được phân công">
+                                            Đã phân (<span id="countPillAssigned">0</span>)
+                                        </button>
+                                    </div>
+                                </div>
                                 <div class="searchable-select" id="batchTeacherContainer" style="position: relative;">
                                     <input type="text" id="batchTeacherSelect" class="form-control search-input" placeholder="Gõ hoặc chọn giáo viên..." style="padding: 8px 30px 8px 12px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; width: 100%;" autocomplete="off">
                                     <span class="dropdown-arrow" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--text-muted); pointer-events: none;">▼</span>

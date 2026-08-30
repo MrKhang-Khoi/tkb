@@ -1563,24 +1563,49 @@ function getSubjectForClass(clsName, subName) {
     return sub;
 }
 
-function renderBatchAssignPanel(groupId) {
+function setBatchTeacherFilter(filterVal) {
+    state.teacherFilterMode = filterVal || 'all';
+    
+    // Cập nhật giao diện Pills trên mục 1. Chọn giáo viên
+    const pillAll = document.getElementById('pillFilterAll');
+    const pillUnassigned = document.getElementById('pillFilterUnassigned');
+    const pillAssigned = document.getElementById('pillFilterAssigned');
+
+    if (pillAll) {
+        pillAll.style.background = state.teacherFilterMode === 'all' ? 'var(--primary)' : 'transparent';
+        pillAll.style.color = state.teacherFilterMode === 'all' ? '#fff' : 'var(--text-muted)';
+        pillAll.style.fontWeight = state.teacherFilterMode === 'all' ? '600' : 'normal';
+    }
+    if (pillUnassigned) {
+        pillUnassigned.style.background = state.teacherFilterMode === 'unassigned' ? 'rgba(245, 158, 11, 0.25)' : 'transparent';
+        pillUnassigned.style.color = state.teacherFilterMode === 'unassigned' ? '#fbbf24' : 'var(--text-muted)';
+        pillUnassigned.style.fontWeight = state.teacherFilterMode === 'unassigned' ? '600' : 'normal';
+    }
+    if (pillAssigned) {
+        pillAssigned.style.background = state.teacherFilterMode === 'assigned' ? 'rgba(16, 185, 129, 0.25)' : 'transparent';
+        pillAssigned.style.color = state.teacherFilterMode === 'assigned' ? '#34d399' : 'var(--text-muted)';
+        pillAssigned.style.fontWeight = state.teacherFilterMode === 'assigned' ? '600' : 'normal';
+    }
+
+    // Đồng bộ với select filter ở tiêu đề danh sách chi tiết (nếu có)
+    const filterSelect = document.getElementById('filterMemberAssignmentStatus');
+    if (filterSelect && filterSelect.value !== state.teacherFilterMode) {
+        filterSelect.value = state.teacherFilterMode;
+    }
+
+    // Nạp lại dropdown chọn giáo viên tương ứng theo bộ lọc
+    renderBatchTeacherDropdown(state.currentUser);
+
+    // Đồng bộ lại ma trận chi tiết bên dưới
+    renderMatrix(state.currentUser);
+}
+
+function renderBatchTeacherDropdown(groupId) {
+    groupId = groupId || state.currentUser;
     const teacherSelect = document.getElementById('batchTeacherSelect');
-    const subjectSelect = document.getElementById('batchSubjectSelect');
-    const classCheckboxes = document.getElementById('batchClassCheckboxes');
-    if (!teacherSelect || !subjectSelect || !classCheckboxes) return;
+    const teacherMenu = document.getElementById('batchTeacherMenu');
+    if (!teacherSelect || !teacherMenu) return;
 
-    // Save current selection to avoid losing it when repopulating
-    const savedTeacherValue = teacherSelect.value;
-    const savedTeacherData = teacherSelect.dataset.value;
-    const savedSubjectValue = subjectSelect.value;
-    const savedSubjectData = subjectSelect.dataset.value;
-
-    classCheckboxes.innerHTML = '';
-
-    const groupObj = state.groups.find(g => g && g.id === groupId);
-    if (!groupObj) return;
-
-    // Nạp giáo viên thuộc tổ này vào datalist tùy biến: 2 trạng thái (Chưa phân công & Đã phân công)
     const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
     const teacherItems = groupTeachers.map(t => {
         let totalAssigned = 0;
@@ -1618,17 +1643,60 @@ function renderBatchAssignPanel(groupId) {
         };
     });
 
-    // Sắp xếp ưu tiên: Giáo viên CHƯA phân công lên trước, giáo viên ĐÃ phân công đưa xuống dưới
-    teacherItems.sort((a, b) => {
+    const allCount = teacherItems.length;
+    const unassignedCount = teacherItems.filter(t => !t.isAssigned).length;
+    const assignedCount = teacherItems.filter(t => t.isAssigned).length;
+
+    // Cập nhật số lượng trên các nút pill
+    const countAll = document.getElementById('countPillAll');
+    const countUnassigned = document.getElementById('countPillUnassigned');
+    const countAssigned = document.getElementById('countPillAssigned');
+    if (countAll) countAll.textContent = allCount;
+    if (countUnassigned) countUnassigned.textContent = unassignedCount;
+    if (countAssigned) countAssigned.textContent = assignedCount;
+
+    // Lọc theo chế độ
+    const filterMode = state.teacherFilterMode || 'all';
+    let filteredTeachers = teacherItems;
+    if (filterMode === 'unassigned') {
+        filteredTeachers = teacherItems.filter(t => !t.isAssigned);
+        teacherSelect.placeholder = `Tìm trong ${unassignedCount} GV chưa phân công...`;
+    } else if (filterMode === 'assigned') {
+        filteredTeachers = teacherItems.filter(t => t.isAssigned);
+        teacherSelect.placeholder = `Tìm trong ${assignedCount} GV đã phân công...`;
+    } else {
+        teacherSelect.placeholder = `Gõ hoặc chọn giáo viên (${allCount})...`;
+    }
+
+    // Sắp xếp ưu tiên: Chưa phân công lên trước, đã phân công xuống dưới
+    filteredTeachers.sort((a, b) => {
         if (a.isAssigned !== b.isAssigned) {
-            return a.isAssigned ? 1 : -1; // Chưa phân công lên đầu, đã phân công xuống dưới
+            return a.isAssigned ? 1 : -1;
         }
         return a.label.localeCompare(b.label, 'vi');
     });
 
-    initSearchableDropdown('batchTeacherSelect', 'batchTeacherMenu', teacherItems, (val) => {
+    initSearchableDropdown('batchTeacherSelect', 'batchTeacherMenu', filteredTeachers, (val) => {
         onBatchTeacherChange();
     });
+}
+
+function renderBatchAssignPanel(groupId) {
+    const teacherSelect = document.getElementById('batchTeacherSelect');
+    const subjectSelect = document.getElementById('batchSubjectSelect');
+    const classCheckboxes = document.getElementById('batchClassCheckboxes');
+    if (!teacherSelect || !subjectSelect || !classCheckboxes) return;
+
+    // Save current selection to avoid losing it when repopulating
+    const savedTeacherValue = teacherSelect.value;
+    const savedTeacherData = teacherSelect.dataset.value;
+    const savedSubjectValue = subjectSelect.value;
+    const savedSubjectData = subjectSelect.dataset.value;
+
+    classCheckboxes.innerHTML = '';
+
+    // Nạp giáo viên thuộc tổ này vào datalist tùy biến kèm bộ lọc Tất cả / Chưa phân / Đã phân
+    renderBatchTeacherDropdown(groupId);
 
     // Nạp môn học vào dropdown: Chỉ hiển thị các môn do tổ chuyên môn này quản lý
     const dutyNames = new Set(state.subjects.filter(s => s && s.grade === 'Kiêm nhiệm').map(s => s.name.toLowerCase()));
@@ -2954,7 +3022,10 @@ function renderMatrix(groupId) {
         : state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm');
 
     const filterSelect = document.getElementById('filterMemberAssignmentStatus');
-    const filterVal = filterSelect ? filterSelect.value : 'all';
+    const filterVal = state.teacherFilterMode || (filterSelect ? filterSelect.value : 'all');
+    if (filterSelect && filterSelect.value !== filterVal) {
+        filterSelect.value = filterVal;
+    }
 
     // Tính toán số lượng trước để cập nhật select box
     let allCount = groupTeachers.length;
