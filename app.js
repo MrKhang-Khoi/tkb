@@ -483,6 +483,49 @@ function initFirebase() {
             }
         }, 2500);
 
+// ================= FIREBASE KEY SANITIZATION =================
+function encodeFirebaseKey(key) {
+    if (!key || typeof key !== 'string') return key;
+    return key
+        .replace(/\./g, '__dot__')
+        .replace(/#/g, '__hash__')
+        .replace(/\$/g, '__dollar__')
+        .replace(/\//g, '__slash__')
+        .replace(/\[/g, '__lbr__')
+        .replace(/\]/g, '__rbr__');
+}
+
+function decodeFirebaseKey(key) {
+    if (!key || typeof key !== 'string') return key;
+    return key
+        .replace(/__dot__/g, '.')
+        .replace(/__hash__/g, '#')
+        .replace(/__dollar__/g, '$')
+        .replace(/__slash__/g, '/')
+        .replace(/__lbr__/g, '[')
+        .replace(/__rbr__/g, ']');
+}
+
+function sanitizeObjectKeysForFirebase(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj || {};
+    const result = {};
+    Object.keys(obj).forEach(k => {
+        const safeKey = encodeFirebaseKey(k);
+        result[safeKey] = obj[k];
+    });
+    return result;
+}
+
+function desanitizeObjectKeysFromFirebase(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj || {};
+    const result = {};
+    Object.keys(obj).forEach(k => {
+        const originalKey = decodeFirebaseKey(k);
+        result[originalKey] = obj[k];
+    });
+    return result;
+}
+
         // Lắng nghe dữ liệu thay đổi trên Realtime Database
         db.ref("school_data").on("value", (snapshot) => {
             firebaseLoaded = true;
@@ -493,13 +536,13 @@ function initFirebase() {
                 state.groups = Array.isArray(data.groups) ? data.groups.filter(g => g && !g.isPlaceholder && g.id !== '__empty_group__') : [];
                 state.accounts = Array.isArray(data.accounts) ? data.accounts.filter(a => a && !a.isPlaceholder && a.username !== '__empty_account__') : [];
                 state.teachers = Array.isArray(data.teachers) ? data.teachers.filter(t => t && !t.isPlaceholder && t.id !== '__empty_teacher__') : [];
-                state.assignments = (data.assignments && typeof data.assignments === 'object') ? data.assignments : {};
-                state.timetable = (data.timetable && typeof data.timetable === 'object') ? data.timetable : {};
+                state.assignments = (data.assignments && typeof data.assignments === 'object') ? desanitizeObjectKeysFromFirebase(data.assignments) : {};
+                state.timetable = (data.timetable && typeof data.timetable === 'object') ? desanitizeObjectKeysFromFirebase(data.timetable) : {};
                 state.timetableApplyDate = data.timetableApplyDate || "";
                 state.subjects = Array.isArray(data.subjects) ? data.subjects.filter(s => s && !s.isPlaceholder && s.id !== '__empty_subject__') : [];
                 state.globalSubjects = Array.isArray(data.globalSubjects) ? data.globalSubjects.filter(gs => gs && !gs.isPlaceholder && gs.id !== '__empty_gs__') : [];
                 state.assignmentVersions = Array.isArray(data.assignmentVersions) ? data.assignmentVersions : [];
-                state.groupLocks = (data.groupLocks && typeof data.groupLocks === 'object') ? data.groupLocks : {};
+                state.groupLocks = (data.groupLocks && typeof data.groupLocks === 'object') ? desanitizeObjectKeysFromFirebase(data.groupLocks) : {};
                 state.weeklyTimetables = Array.isArray(data.weeklyTimetables) ? data.weeklyTimetables : [];
                 state.currentWeekId = data.currentWeekId || null;
                 state.substitutions = Array.isArray(data.substitutions) ? data.substitutions : [];
@@ -570,11 +613,11 @@ function loadFromLocalStorage() {
             
             state.subjects = Array.isArray(parsed.subjects) ? parsed.subjects.filter(s => s && !s.isPlaceholder && s.id !== '__empty_subject__') : [];
             state.globalSubjects = Array.isArray(parsed.globalSubjects) ? parsed.globalSubjects.filter(gs => gs && !gs.isPlaceholder && gs.id !== '__empty_gs__') : [];
-            state.assignments = (parsed.assignments && typeof parsed.assignments === 'object') ? parsed.assignments : {};
-            state.timetable = (parsed.timetable && typeof parsed.timetable === 'object') ? parsed.timetable : {};
+            state.assignments = (parsed.assignments && typeof parsed.assignments === 'object') ? desanitizeObjectKeysFromFirebase(parsed.assignments) : {};
+            state.timetable = (parsed.timetable && typeof parsed.timetable === 'object') ? desanitizeObjectKeysFromFirebase(parsed.timetable) : {};
             state.timetableApplyDate = parsed.timetableApplyDate || '';
             state.assignmentVersions = Array.isArray(parsed.assignmentVersions) ? parsed.assignmentVersions : [];
-            state.groupLocks = (parsed.groupLocks && typeof parsed.groupLocks === 'object') ? parsed.groupLocks : {};
+            state.groupLocks = (parsed.groupLocks && typeof parsed.groupLocks === 'object') ? desanitizeObjectKeysFromFirebase(parsed.groupLocks) : {};
             state.substitutions = Array.isArray(parsed.substitutions) ? parsed.substitutions : [];
             state.weeklyTimetables = Array.isArray(parsed.weeklyTimetables) ? parsed.weeklyTimetables : [];
             state.currentWeekId = parsed.currentWeekId || null;
@@ -613,11 +656,11 @@ function persistData() {
             classes: (state.classes && state.classes.length > 0) ? state.classes : [{ id: '__empty_class__', name: '', grade: '', isPlaceholder: true }],
             subjects: (state.subjects && state.subjects.length > 0) ? state.subjects : [{ id: '__empty_subject__', name: '', grade: '', isPlaceholder: true }],
             globalSubjects: (state.globalSubjects && state.globalSubjects.length > 0) ? state.globalSubjects : [{ id: '__empty_gs__', name: '', isPlaceholder: true }],
-            assignments: state.assignments || {},
-            timetable: state.timetable || {},
+            assignments: sanitizeObjectKeysForFirebase(state.assignments || {}),
+            timetable: sanitizeObjectKeysForFirebase(state.timetable || {}),
             timetableApplyDate: state.timetableApplyDate || "",
             assignmentVersions: state.assignmentVersions || [],
-            groupLocks: state.groupLocks || {},
+            groupLocks: sanitizeObjectKeysForFirebase(state.groupLocks || {}),
             substitutions: state.substitutions || [],
             weeklyTimetables: state.weeklyTimetables || [],
             currentWeekId: state.currentWeekId || null,
