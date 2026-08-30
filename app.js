@@ -149,8 +149,9 @@ let editingSubjectConfigId = null;
 let showPasswordMap = {};
 let editingAssignmentState = null;
 
-// Hàm tách khóa phân công an toàn (xử lý cả lớp có dấu gạch dưới như PĐ_6, PĐ_7 và ID môn học chứa dấu gạch dưới)
+// Hàm tách khóa phân công siêu nhanh O(1) (xử lý cả lớp có dấu gạch dưới như PĐ_6, PĐ_7 và ID môn học chứa dấu gạch dưới)
 function parseAssignmentKey(key) {
+    if (!key || typeof key !== 'string') return { cls: '', subId: '' };
     if (key.startsWith('Kiêm nhiệm_')) {
         const parts = key.split('_');
         if (parts.length >= 3) {
@@ -168,26 +169,14 @@ function parseAssignmentKey(key) {
         }
     }
 
-    // Ưu tiên khớp chính xác theo danh sách lớp thực tế trong state.classes
-    if (state.classes && Array.isArray(state.classes) && state.classes.length > 0) {
-        const sortedClasses = [...state.classes].sort((a, b) => (b.name || '').length - (a.name || '').length);
-        for (const c of sortedClasses) {
-            if (c && c.name && key.startsWith(c.name + '_')) {
-                return {
-                    cls: c.name,
-                    subId: key.substring(c.name.length + 1)
-                };
-            }
-        }
-    }
-
-    // Fallback nếu lớp có tiền tố PĐ_ hoặc PD_
+    // Lớp có tiền tố PĐ_ hoặc PD_ (ví dụ: PĐ_6_s_12345, PD_7_s_67890)
     if (/^(PĐ_|PD_)/i.test(key)) {
-        const parts = key.split('_');
-        if (parts.length >= 3) {
+        const firstUnderscore = key.indexOf('_');
+        const secondUnderscore = key.indexOf('_', firstUnderscore + 1);
+        if (secondUnderscore !== -1) {
             return {
-                cls: `${parts[0]}_${parts[1]}`,
-                subId: parts.slice(2).join('_')
+                cls: key.substring(0, secondUnderscore),
+                subId: key.substring(secondUnderscore + 1)
             };
         }
     }
@@ -4366,10 +4355,11 @@ function saveGlobalSubEdit(id) {
 }
 
 function syncGroupsFromGlobalSubjects() {
-    // Đồng bộ mảng môn học của từng tổ chuyên môn:
-    // Đảm bảo g.subjects luôn đồng bộ với globalSubjects được gán cho tổ đó và không ghi đè mất phân công của Admin
+    const validGlobalNames = new Set((state.globalSubjects || []).map(gs => gs && gs.name));
     state.groups.forEach(g => {
         if (!g.subjects) g.subjects = [];
+        g.subjects = g.subjects.filter(s => s && validGlobalNames.has(s));
+        
         const globalSubsForGroup = (state.globalSubjects || [])
             .filter(gs => gs && (gs.groupId === g.id || gs.group === g.id || gs.group === g.name))
             .map(gs => gs.name);
