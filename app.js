@@ -2761,45 +2761,116 @@ function updateClassCheckboxesState() {
     }
 }
 
-function exportGroupAssignmentExcel() {
-    const groupId = state.currentUser;
-    const groupObj = state.groups.find(g => g.id === groupId);
-    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
-    
-    // Lọc giáo viên của tổ
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
-    if (!groupTeachers || groupTeachers.length === 0) {
-        if (typeof showToast === 'function') {
-            showToast("Không tìm thấy giáo viên nào trong tổ chuyên môn!", "warning");
-        } else {
-            showToast("Không tìm thấy giáo viên nào trong tổ chuyên môn!", "warning");
+// Xác định cấp bậc chức vụ trong tổ của giáo viên:
+// 1: Tổ trưởng (Tổ trưởng, Trưởng bộ môn, TTCM...)
+// 2: Tổ phó (Tổ phó, Phó bộ môn, TPCM...)
+// 3: Thành viên (Giáo viên khác trong tổ)
+function getTeacherRoleRank(t) {
+    if (!t) return 3;
+
+    // 1. Kiểm tra trường chức vụ (position / role / chucVu) của giáo viên
+    const pos = (t.position || t.role || t.chucVu || '').toString().toLowerCase().trim();
+    if (pos) {
+        if (pos.includes('tổ phó') || pos.includes('to pho') || pos.includes('phó tổ') || pos.includes('phó bộ môn') || pos.includes('phó trưởng') || pos === 'tp' || pos === 'tpcm') {
+            return 2;
         }
-        return;
+        if (pos.includes('tổ trưởng') || pos.includes('to truong') || pos.includes('trưởng bộ môn') || pos.includes('trưởng tổ') || pos === 'tt' || pos === 'ttcm') {
+            return 1;
+        }
     }
 
-    const data = [];
-    let stt = 1;
-    let totalGroupPeriods = 0;
-    
-    groupTeachers.forEach(t => {
-        let totalAssigned = 0;
-        const teacherAssignments = [];
+    // 2. Kiểm tra reduction (nếu có cấu hình chức vụ giảm tiết)
+    if (t.reduction) {
+        if (t.reduction.deputy || t.reduction.toPho) return 2;
+        if (t.reduction.leader || t.reduction.toTruong) return 1;
+    }
+
+    // 3. Kiểm tra các nhiệm vụ kiêm nhiệm được phân công trong state.assignments
+    if (state.assignments && t.shortName) {
+        let isLeader = false;
+        let isDeputy = false;
 
         Object.keys(state.assignments).forEach(key => {
             const assign = state.assignments[key];
             if (assign && assign.teacher === t.shortName && assign.periods > 0) {
                 const parsedKey = parseAssignmentKey(key);
+                let subName = '';
+                if (parsedKey && parsedKey.cls === 'Kiêm nhiệm') {
+                    const sub = (state.subjects || []).find(s => s && s.id === parsedKey.subId);
+                    subName = (sub ? sub.name : '').toLowerCase();
+                } else if (parsedKey && parsedKey.subId) {
+                    const sub = (state.subjects || []).find(s => s && s.id === parsedKey.subId);
+                    if (sub && sub.grade === 'Kiêm nhiệm') {
+                        subName = sub.name.toLowerCase();
+                    }
+                }
+
+                if (subName) {
+                    if (subName.includes('tổ phó') || subName.includes('to pho') || subName.includes('phó tổ') || subName.includes('phó bộ môn') || subName.includes('phó trưởng') || subName === 'tpcm') {
+                        isDeputy = true;
+                    } else if (subName.includes('tổ trưởng') || subName.includes('to truong') || subName.includes('trưởng tổ') || subName.includes('trưởng bộ môn') || subName === 'ttcm') {
+                        isLeader = true;
+                    }
+                }
+            }
+        });
+
+        if (isLeader) return 1;
+        if (isDeputy) return 2;
+    }
+
+    return 3;
+}
+
+// So sánh tên giáo viên theo tiếng Việt (theo Tên, sau đó đến Họ và tên đệm)
+function compareVietnameseTeacherNames(a, b) {
+    const getCleanName = (obj) => {
+        if (!obj) return '';
+        if (typeof obj === 'string') return obj.trim();
+        return (obj.fullName || obj.shortName || (obj.teacher ? (obj.teacher.fullName || obj.teacher.shortName) : '') || '').trim();
+    };
+    const nameA = getCleanName(a);
+    const nameB = getCleanName(b);
+    const partsA = nameA.split(/\s+/);
+    const partsB = nameB.split(/\s+/);
+    const firstNameA = partsA[partsA.length - 1] || '';
+    const firstNameB = partsB[partsB.length - 1] || '';
+    const cmp = firstNameA.localeCompare(firstNameB, 'vi', { sensitivity: 'base' });
+    if (cmp !== 0) return cmp;
+    return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
+}
+
+function exportGroupAssignmentExcel() {
+    const groupId = state.currentUser;
+    const groupObj = (state.groups || []).find(g => g.id === groupId || g.name === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
+    
+    // Lọc giáo viên của tổ
+    const groupTeachers = (state.teachers || []).filter(t => t && (t.group === groupId || (groupObj && t.group === groupObj.id)));
+    if (!groupTeachers || groupTeachers.length === 0) {
+        showToast("Không tìm thấy giáo viên nào trong tổ chuyên môn!", "warning");
+        return;
+    }
+
+    let totalGroupPeriods = 0;
+    const rawRows = groupTeachers.map(t => {
+        let totalAssigned = 0;
+        const teacherAssignments = [];
+
+        Object.keys(state.assignments || {}).forEach(key => {
+            const assign = state.assignments[key];
+            if (assign && (assign.teacher === t.shortName || assign.teacher === t.fullName) && assign.periods > 0) {
+                const parsedKey = parseAssignmentKey(key);
                 const clsName = parsedKey.cls;
                 const subId = parsedKey.subId;
-                const sub = state.subjects.find(s => s.id === subId);
-                if (sub) {
-                    teacherAssignments.push({
-                        clsName: clsName,
-                        subName: sub.name,
-                        periods: assign.periods
-                    });
-                    totalAssigned += assign.periods;
-                }
+                const sub = (state.subjects || []).find(s => s.id === subId) || (state.globalSubjects || []).find(s => s.id === subId);
+                const subName = sub ? sub.name : (parsedKey.subId || 'Nhiệm vụ');
+                teacherAssignments.push({
+                    clsName: clsName,
+                    subName: subName,
+                    periods: assign.periods
+                });
+                totalAssigned += assign.periods;
             }
         });
 
@@ -2827,8 +2898,6 @@ function exportGroupAssignmentExcel() {
 
         // 2. Xác định danh sách nhiệm vụ kiêm nhiệm
         const kiemNhiemList = [];
-        
-        // Kiểm tra xem giáo viên có được phân công Chào cờ và HĐTN + SHL không (tìm trực tiếp từ danh sách thô trước lọc)
         const rawTeachingAssignments = teacherAssignments.filter(a => a.clsName !== 'Kiêm nhiệm');
         const hasChaoCo = rawTeachingAssignments.some(a => a.subName && a.subName.toLowerCase().includes('chào cờ'));
         const hasHdtnShl = rawTeachingAssignments.some(a => a.subName && (a.subName.toLowerCase().includes('hđtn') || a.subName.toLowerCase().includes('shl')));
@@ -2838,22 +2907,64 @@ function exportGroupAssignmentExcel() {
             kiemNhiemList.push("GVCN (5T)");
         }
 
-        // Thêm các nhiệm vụ kiêm nhiệm từ danh sách phân công
         dutyAssignments.forEach(a => {
             kiemNhiemList.push(`${a.subName} (${a.periods}T)`);
         });
 
         const kiemNhiemStr = kiemNhiemList.join(', ') || '';
 
-        data.push({
-            'STT': stt++,
-            'Họ tên': t.fullName,
-            'Tổ chuyên môn': groupName,
-            'Nhiệm vụ kiêm nhiệm': kiemNhiemStr,
-            'Phân công chuyên môn': detailsStr,
-            'Số tiết': totalAssigned
-        });
+        // Xác định chức danh / cấp bậc: 1 - Tổ trưởng, 2 - Tổ phó, 3 - Thành viên
+        let roleRank = 3;
+        const posLower = (t.position || t.role || t.chucVu || '').toString().toLowerCase();
+        const knLower = kiemNhiemStr.toLowerCase();
+
+        const isLeader = (
+            (!knLower.includes('tổ phó') && !knLower.includes('to pho') && (knLower.includes('tổ trưởng') || knLower.includes('to truong') || knLower.includes('trưởng bộ môn') || knLower.includes('trưởng tổ') || knLower.includes('ttcm'))) ||
+            (!posLower.includes('tổ phó') && !posLower.includes('to pho') && (posLower.includes('tổ trưởng') || posLower.includes('to truong') || posLower.includes('trưởng bộ môn') || posLower.includes('trưởng tổ') || posLower === 'tt' || posLower === 'ttcm')) ||
+            (t.reduction && (t.reduction.leader || t.reduction.toTruong))
+        );
+
+        const isDeputy = (
+            knLower.includes('tổ phó') || knLower.includes('to pho') || knLower.includes('phó tổ') || knLower.includes('phó bộ môn') || knLower.includes('phó trưởng') || knLower.includes('tpcm') ||
+            posLower.includes('tổ phó') || posLower.includes('to pho') || posLower.includes('phó tổ') || posLower.includes('phó bộ môn') || posLower.includes('phó trưởng') || posLower === 'tp' || posLower === 'tpcm' ||
+            (t.reduction && (t.reduction.deputy || t.reduction.toPho))
+        );
+
+        if (isLeader) {
+            roleRank = 1;
+        } else if (isDeputy) {
+            roleRank = 2;
+        } else {
+            roleRank = 3;
+        }
+
+        return {
+            teacher: t,
+            fullName: t.fullName,
+            groupName: groupName,
+            roleRank: roleRank,
+            kiemNhiemStr: kiemNhiemStr,
+            detailsStr: detailsStr,
+            totalAssigned: totalAssigned
+        };
     });
+
+    // Sắp xếp thứ tự giáo viên trong tổ: Tổ trưởng (1) -> Tổ phó (2) -> Thành viên (3) -> Theo tên tiếng Việt
+    rawRows.sort((a, b) => {
+        if (a.roleRank !== b.roleRank) {
+            return a.roleRank - b.roleRank;
+        }
+        return compareVietnameseTeacherNames(a.teacher, b.teacher);
+    });
+
+    const data = rawRows.map((r, idx) => ({
+        'STT': idx + 1,
+        'Họ tên': r.fullName,
+        'Tổ chuyên môn': r.groupName,
+        'Nhiệm vụ kiêm nhiệm': r.kiemNhiemStr,
+        'Phân công chuyên môn': r.detailsStr,
+        'Số tiết': r.totalAssigned
+    }));
 
     // Thêm dòng tổng cộng
     data.push({
@@ -2866,10 +2977,7 @@ function exportGroupAssignmentExcel() {
     });
 
     if (typeof XLSX !== 'undefined' && XLSX.utils && XLSX.writeFile) {
-        // Tạo bảng Excel
         const ws = XLSX.utils.json_to_sheet(data);
-        
-        // Cấu hình độ rộng cột cho đẹp mắt
         ws['!cols'] = [
             { wch: 8 },   // STT
             { wch: 25 },  // Họ tên
@@ -2885,50 +2993,33 @@ function exportGroupAssignmentExcel() {
         const safeGroupName = groupName.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
         const filename = `Phan_Cong_Chuyen_Mon_${safeGroupName}.xlsx`;
         XLSX.writeFile(wb, filename);
-        if (typeof showToast === 'function') {
-            showToast(`Đã xuất file Excel phân công của ${groupName}!`, "success");
-        }
+        showToast(`Đã xuất file Excel phân công của ${groupName}!`, "success");
     }
 }
 
 function exportAllAssignmentsExcel() {
-    const data = [];
-    let stt = 1;
-
-    // Sắp xếp danh sách giáo viên toàn trường theo thứ tự tổ chuyên môn và họ tên
-    const sortedTeachers = [...state.teachers].sort((a, b) => {
-        const groupA = state.groups.find(g => g.id === a.group);
-        const groupB = state.groups.find(g => g.id === b.group);
-        const nameA = groupA ? groupA.name : '';
-        const nameB = groupB ? groupB.name : '';
-        if (nameA !== nameB) {
-            return nameA.localeCompare(nameB, 'vi');
-        }
-        return a.fullName.localeCompare(b.fullName, 'vi');
-    });
-
-    sortedTeachers.forEach(t => {
-        const groupObj = state.groups.find(g => g.id === t.group);
-        const groupName = groupObj ? groupObj.name : 'Chưa gán';
+    // 1. Tính toán chi tiết phân công cho từng giáo viên toàn trường
+    const rawRows = (state.teachers || []).map(t => {
+        const groupObj = (state.groups || []).find(g => g.id === t.group || g.name === t.group);
+        const groupName = groupObj ? groupObj.name : (t.group && t.group !== 'unassigned' ? t.group : 'Chưa gán');
 
         let totalAssigned = 0;
         const teacherAssignments = [];
 
-        Object.keys(state.assignments).forEach(key => {
+        Object.keys(state.assignments || {}).forEach(key => {
             const assign = state.assignments[key];
-            if (assign && assign.teacher === t.shortName && assign.periods > 0) {
+            if (assign && (assign.teacher === t.shortName || assign.teacher === t.fullName) && assign.periods > 0) {
                 const parsedKey = parseAssignmentKey(key);
                 const clsName = parsedKey.cls;
                 const subId = parsedKey.subId;
-                const sub = state.subjects.find(s => s.id === subId);
-                if (sub) {
-                    teacherAssignments.push({
-                        clsName: clsName,
-                        subName: sub.name,
-                        periods: assign.periods
-                    });
-                    totalAssigned += assign.periods;
-                }
+                const sub = (state.subjects || []).find(s => s.id === subId) || (state.globalSubjects || []).find(s => s.id === subId);
+                const subName = sub ? sub.name : (parsedKey.subId || 'Nhiệm vụ');
+                teacherAssignments.push({
+                    clsName: clsName,
+                    subName: subName,
+                    periods: assign.periods
+                });
+                totalAssigned += assign.periods;
             }
         });
 
@@ -2960,8 +3051,8 @@ function exportAllAssignmentsExcel() {
         
         // Kiểm tra xem giáo viên có được phân công Chào cờ và HĐTN + SHL không (tìm trực tiếp từ danh sách thô trước lọc)
         const rawTeachingAssignments = teacherAssignments.filter(a => a.clsName !== 'Kiêm nhiệm');
-        const hasChaoCo = rawTeachingAssignments.some(a => a.subName.toLowerCase().includes('chào cờ'));
-        const hasHdtnShl = rawTeachingAssignments.some(a => a.subName.toLowerCase().includes('hđtn') || a.subName.toLowerCase().includes('shl'));
+        const hasChaoCo = rawTeachingAssignments.some(a => a.subName && a.subName.toLowerCase().includes('chào cờ'));
+        const hasHdtnShl = rawTeachingAssignments.some(a => a.subName && (a.subName.toLowerCase().includes('hđtn') || a.subName.toLowerCase().includes('shl')));
         const isGvcn = (hasChaoCo && hasHdtnShl) || (t.reduction && t.reduction.homeroom && t.reduction.homeroomClass) || (t.homeroomClass);
 
         if (isGvcn) {
@@ -2975,15 +3066,84 @@ function exportAllAssignmentsExcel() {
 
         const kiemNhiemStr = kiemNhiemList.join(', ') || '';
 
-        data.push({
-            'STT': stt++,
-            'Họ tên': t.fullName,
-            'Tổ chuyên môn': groupName,
-            'Nhiệm vụ kiêm nhiệm': kiemNhiemStr,
-            'Phân công chuyên môn': detailsStr,
-            'Số tiết': totalAssigned
-        });
+        // Xác định chức danh / cấp bậc: 1 - Tổ trưởng, 2 - Tổ phó, 3 - Thành viên
+        let roleRank = 3;
+        const posLower = (t.position || t.role || t.chucVu || '').toString().toLowerCase();
+        const knLower = kiemNhiemStr.toLowerCase();
+
+        // Kiểm tra Tổ trưởng trước (không chứa "phó")
+        const isLeader = (
+            (!knLower.includes('tổ phó') && !knLower.includes('to pho') && (knLower.includes('tổ trưởng') || knLower.includes('to truong') || knLower.includes('trưởng bộ môn') || knLower.includes('trưởng tổ') || knLower.includes('ttcm'))) ||
+            (!posLower.includes('tổ phó') && !posLower.includes('to pho') && (posLower.includes('tổ trưởng') || posLower.includes('to truong') || posLower.includes('trưởng bộ môn') || posLower.includes('trưởng tổ') || posLower === 'tt' || posLower === 'ttcm')) ||
+            (t.reduction && (t.reduction.leader || t.reduction.toTruong))
+        );
+
+        const isDeputy = (
+            knLower.includes('tổ phó') || knLower.includes('to pho') || knLower.includes('phó tổ') || knLower.includes('phó bộ môn') || knLower.includes('phó trưởng') || knLower.includes('tpcm') ||
+            posLower.includes('tổ phó') || posLower.includes('to pho') || posLower.includes('phó tổ') || posLower.includes('phó bộ môn') || posLower.includes('phó trưởng') || posLower === 'tp' || posLower === 'tpcm' ||
+            (t.reduction && (t.reduction.deputy || t.reduction.toPho))
+        );
+
+        if (isLeader) {
+            roleRank = 1;
+        } else if (isDeputy) {
+            roleRank = 2;
+        } else {
+            roleRank = 3;
+        }
+
+        return {
+            teacher: t,
+            fullName: t.fullName,
+            shortName: t.shortName,
+            group: t.group,
+            groupName: groupName,
+            roleRank: roleRank,
+            kiemNhiemStr: kiemNhiemStr,
+            detailsStr: detailsStr,
+            totalAssigned: totalAssigned
+        };
     });
+
+    // 2. Sắp xếp danh sách giáo viên toàn trường:
+    // - Nhóm theo Tổ chuyên môn (theo thứ tự khai báo trong state.groups)
+    // - Trong từng tổ: Tổ trưởng (Rank 1) -> Tổ phó (Rank 2) -> Thành viên (Rank 3)
+    // - Cùng cấp bậc trong tổ: Sắp xếp theo tên tiếng Việt
+    rawRows.sort((a, b) => {
+        const idxA = (state.groups || []).findIndex(g => g.id === a.group || g.name === a.group || g.name === a.groupName);
+        const idxB = (state.groups || []).findIndex(g => g.id === b.group || g.name === b.group || g.name === b.groupName);
+
+        // 1. So sánh tổ chuyên môn
+        if (a.groupName !== b.groupName) {
+            if (idxA !== -1 && idxB !== -1) {
+                if (idxA !== idxB) return idxA - idxB;
+            } else if (idxA !== -1) {
+                return -1;
+            } else if (idxB !== -1) {
+                return 1;
+            } else {
+                const groupCmp = a.groupName.localeCompare(b.groupName, 'vi');
+                if (groupCmp !== 0) return groupCmp;
+            }
+        }
+
+        // 2. Trong cùng một tổ: Tổ trưởng (1) -> Tổ phó (2) -> Thành viên (3)
+        if (a.roleRank !== b.roleRank) {
+            return a.roleRank - b.roleRank;
+        }
+
+        // 3. Cùng cấp bậc: Sắp xếp theo tên tiếng Việt
+        return compareVietnameseTeacherNames(a.teacher, b.teacher);
+    });
+
+    const data = rawRows.map((r, idx) => ({
+        'STT': idx + 1,
+        'Họ tên': r.fullName,
+        'Tổ chuyên môn': r.groupName,
+        'Nhiệm vụ kiêm nhiệm': r.kiemNhiemStr,
+        'Phân công chuyên môn': r.detailsStr,
+        'Số tiết': r.totalAssigned
+    }));
 
     // Tạo bảng Excel
     const ws = XLSX.utils.json_to_sheet(data);
@@ -12017,6 +12177,8 @@ window.expandOutsideGroupCandidates = expandOutsideGroupCandidates;
 window.autoAssignAllSlots = autoAssignAllSlots;
 window.exportSubstitutionsExcel = exportSubstitutionsExcel;
 window.exportCurrentAnalyzedSubstitutionsExcel = exportCurrentAnalyzedSubstitutionsExcel;
+window.exportGroupAssignmentExcel = exportGroupAssignmentExcel;
+window.exportAllAssignmentsExcel = exportAllAssignmentsExcel;
 window.printSubstitutionsPDF = printSubstitutionsPDF;
 window.printCurrentAnalyzedSubstitutionsPDF = printCurrentAnalyzedSubstitutionsPDF;
 window.addTeacher = addTeacher;
