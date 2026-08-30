@@ -232,6 +232,60 @@ function desanitizeObjectKeysFromFirebase(obj) {
     return result;
 }
 
+// ================= TOAST NOTIFICATION ENGINE =================
+function showToast(message, type = 'info') {
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    const bg = type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : type === 'danger' ? '#ef4444' : '#6366f1';
+    const icon = type === 'success' ? 'check_circle' : type === 'warning' ? 'warning' : type === 'danger' ? 'error' : 'info';
+    
+    toast.style.cssText = `
+        padding: 12px 20px;
+        border-radius: 10px;
+        background: ${bg};
+        color: #fff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: auto;
+        border: 1px solid rgba(255,255,255,0.2);
+    `;
+    
+    toast.innerHTML = `<span class="material-icons-round" style="font-size: 1.25rem;">${icon}</span> <span>${message}</span>`;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0) scale(1)';
+    }, 10);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-15px) scale(0.95)';
+        setTimeout(() => {
+            if (typeof toast.remove === 'function') {
+                toast.remove();
+            } else if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 250);
+    }, 3200);
+}
+
 // Lấy toàn bộ phân công của một nhiệm vụ kiêm nhiệm
 function getDutyAssignments(dutyId) {
     const results = [];
@@ -1046,54 +1100,88 @@ function renderMergedAssignments() {
 async function login() {
     const user = document.getElementById('loginUsername').value.trim().toLowerCase();
     const pass = document.getElementById('loginPassword').value;
+    const loginBtn = document.getElementById('loginBtn') || document.querySelector('#loginSection button.btn-primary');
 
     if (!user || !pass) {
-        alert("Vui lòng nhập tên đăng nhập và mật khẩu!");
+        showToast("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!", "warning");
         return;
     }
 
-    const hashedPass = await sha256(pass);
-    const acc = state.accounts.find(a => a.username === user && (a.password === pass || a.password === hashedPass));
-    if (!acc) {
-        alert("Tên đăng nhập hoặc mật khẩu không chính xác!");
-        return;
+    // Hiệu ứng đang đăng nhập trên nút
+    const originalBtnHtml = loginBtn ? loginBtn.innerHTML : '';
+    if (loginBtn) {
+        loginBtn.disabled = true;
+        loginBtn.style.opacity = '0.85';
+        loginBtn.innerHTML = `<span class="material-icons-round spin-anim" style="font-size: 1.2rem; vertical-align: middle; margin-right: 6px;">sync</span> Đang xác thực...`;
     }
 
-    // Tự động nâng cấp mật khẩu cũ sang dạng băm (Migration)
-    if (acc.password === pass) {
-        acc.password = hashedPass;
-        // Ghi trực tiếp lên Firebase mà không tăng timestamp tránh lock
-        if (isFirebaseConnected && db) {
-            db.ref("school_data/accounts").set(state.accounts);
+    try {
+        const hashedPass = await sha256(pass);
+        const acc = state.accounts.find(a => a.username === user && (a.password === pass || a.password === hashedPass));
+        if (!acc) {
+            if (loginBtn) {
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = '1';
+                loginBtn.innerHTML = originalBtnHtml;
+            }
+            showToast("Tên đăng nhập hoặc mật khẩu không chính xác!", "danger");
+            return;
         }
-    }
 
-    state.currentUser = acc.group;
+        // Tự động nâng cấp mật khẩu cũ sang dạng băm (Migration)
+        if (acc.password === pass) {
+            acc.password = hashedPass;
+            if (isFirebaseConnected && db) {
+                db.ref("school_data/accounts").set(state.accounts);
+            }
+        }
 
-    const roleBadgeText = acc.group === 'admin' 
-        ? "Quản trị viên (Admin)" 
-        : (() => {
-            const groupObj = state.groups.find(g => g.id === acc.group);
-            return groupObj ? `Tổ: ${groupObj.name}` : "Tổ trưởng";
-        })();
+        state.currentUser = acc.group;
 
-    // Lưu phiên làm việc vào localStorage
-    localStorage.setItem('fet_hub_current_user', acc.group);
-    localStorage.setItem('fet_hub_current_role_badge', roleBadgeText);
+        const roleBadgeText = acc.group === 'admin' 
+            ? "Quản trị viên (Admin)" 
+            : (() => {
+                const groupObj = state.groups.find(g => g.id === acc.group);
+                return groupObj ? `Tổ: ${groupObj.name}` : "Tổ trưởng";
+            })();
 
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('headerUserInfo').style.display = 'flex';
+        // Lưu phiên làm việc vào localStorage
+        localStorage.setItem('fet_hub_current_user', acc.group);
+        localStorage.setItem('fet_hub_current_role_badge', roleBadgeText);
 
-    if (acc.group === 'admin') {
-        document.getElementById('userRoleBadge').innerText = roleBadgeText;
-        document.getElementById('adminDashboard').style.display = 'block';
-        document.getElementById('groupDashboard').style.display = 'none';
-        refreshActiveViews();
-    } else {
-        document.getElementById('userRoleBadge').innerText = roleBadgeText;
-        document.getElementById('adminDashboard').style.display = 'none';
-        document.getElementById('groupDashboard').style.display = 'block';
-        initGroupDashboard(acc.group);
+        showToast(`Đăng nhập thành công! Chào mừng ${roleBadgeText}.`, "success");
+
+        // Chuyển trang mượt mà sau 250ms
+        setTimeout(() => {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('headerUserInfo').style.display = 'flex';
+
+            if (acc.group === 'admin') {
+                document.getElementById('userRoleBadge').innerText = roleBadgeText;
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.getElementById('groupDashboard').style.display = 'none';
+                refreshActiveViews();
+            } else {
+                document.getElementById('userRoleBadge').innerText = roleBadgeText;
+                document.getElementById('adminDashboard').style.display = 'none';
+                document.getElementById('groupDashboard').style.display = 'block';
+                initGroupDashboard(acc.group);
+            }
+
+            if (loginBtn) {
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = '1';
+                loginBtn.innerHTML = originalBtnHtml;
+            }
+        }, 250);
+
+    } catch (err) {
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.style.opacity = '1';
+            loginBtn.innerHTML = originalBtnHtml;
+        }
+        showToast("Lỗi xác thực: " + err.message, "danger");
     }
 }
 
@@ -1689,10 +1777,13 @@ function toggleBatchClasses(action) {
     }
 }
 
+// ================= PHÂN CÔNG HÀNG LOẠT (BATCH ASSIGNMENT) =================
+let pendingBatchAssignmentData = null;
+
 function applyBatchAssignment() {
     const groupId = state.currentUser;
     if (groupId && state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
-        alert("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!");
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!", "warning");
         return;
     }
 
@@ -1704,13 +1795,228 @@ function applyBatchAssignment() {
     const teacher = getSelectedTeacher();
     const subjectName = getSelectedSubject();
     if (!teacher) {
-        alert('Vui lòng chọn giáo viên!');
+        showToast('Vui lòng chọn giáo viên cần phân công!', 'warning');
         return;
     }
 
-    let hasAction = false;
+    const tObj = state.teachers.find(t => t.shortName === teacher);
+    const teacherDisplayName = tObj ? `${tObj.fullName} (${tObj.shortName})` : teacher;
+    const teacherQuota = tObj ? (tObj.quota || 16) : 16;
+    const customPeriods = parseInt(periodsInput.value) || 0;
 
-    // 1. Phân công các nhiệm vụ kiêm nhiệm qua checkbox
+    // 1. Thu thập các nhiệm vụ kiêm nhiệm được chọn
+    const checkedDutyList = [];
+    const dutyCheckboxes = document.querySelectorAll('.batch-duty-cb');
+    dutyCheckboxes.forEach(cb => {
+        if (cb.checked) {
+            const dutyId = cb.dataset.dutyId;
+            const subObj = state.subjects.find(s => s && s.id === dutyId);
+            if (subObj) {
+                const dutyPeriods = customPeriods > 0 ? customPeriods : (subObj.periods || 0);
+                checkedDutyList.push({
+                    id: dutyId,
+                    name: subObj.name,
+                    periods: dutyPeriods
+                });
+            }
+        }
+    });
+
+    // 2. Thu thập các lớp học môn chuyên môn được chọn
+    const checkedClassList = [];
+    let isDutySubject = false;
+    let dutySubObj = null;
+
+    if (subjectName) {
+        dutySubObj = state.subjects.find(s => s.name === subjectName && s.grade === 'Kiêm nhiệm');
+        if (dutySubObj) {
+            isDutySubject = true;
+        } else {
+            const checkedCbs = Array.from(document.querySelectorAll('.batch-class-cb:checked'));
+            if (checkedCbs.length > 0 || editingAssignmentState) {
+                if (editingAssignmentState) {
+                    const checkedClassNames = checkedCbs.map(cb => cb.value);
+                    state.classes.forEach(clsObj => {
+                        const clsName = clsObj.name;
+                        const subObj = getSubjectForClass(clsName, subjectName);
+                        if (subObj && checkedClassNames.includes(clsName)) {
+                            const pToAssign = customPeriods > 0 ? customPeriods : subObj.periods;
+                            checkedClassList.push({
+                                clsName: clsName,
+                                subId: subObj.id,
+                                subName: subObj.name,
+                                periods: pToAssign
+                            });
+                        }
+                    });
+                } else {
+                    checkedCbs.forEach(cb => {
+                        const clsName = cb.value;
+                        const subObj = getSubjectForClass(clsName, subjectName);
+                        if (subObj) {
+                            const pToAssign = customPeriods > 0 ? customPeriods : subObj.periods;
+                            checkedClassList.push({
+                                clsName: clsName,
+                                subId: subObj.id,
+                                subName: subObj.name,
+                                periods: pToAssign
+                            });
+                        }
+                    });
+                }
+            } else {
+                if (checkedDutyList.length === 0) {
+                    showToast('Vui lòng tích chọn ít nhất một lớp học!', 'warning');
+                    return;
+                }
+            }
+        }
+    } else {
+        if (checkedDutyList.length === 0) {
+            showToast('Vui lòng chọn môn học hoặc tích chọn nhiệm vụ kiêm nhiệm!', 'warning');
+            return;
+        }
+    }
+
+    // Tính tổng số tiết hiện tại của giáo viên
+    let currentTotalPeriods = 0;
+    if (state.assignments) {
+        Object.keys(state.assignments).forEach(k => {
+            const assign = state.assignments[k];
+            if (assign && assign.teacher === teacher) {
+                currentTotalPeriods += (assign.periods || 0);
+            }
+        });
+    }
+
+    // Tính số tiết mới sẽ được thêm vào
+    let newlyAddedPeriods = 0;
+    checkedClassList.forEach(item => newlyAddedPeriods += item.periods);
+    checkedDutyList.forEach(item => newlyAddedPeriods += item.periods);
+    if (isDutySubject && dutySubObj) {
+        const dutyP = customPeriods > 0 ? customPeriods : (dutySubObj.periods || 0);
+        newlyAddedPeriods += dutyP;
+    }
+
+    // Lưu dữ liệu vào biến tạm chờ xác nhận
+    pendingBatchAssignmentData = {
+        teacher: teacher,
+        teacherDisplayName: teacherDisplayName,
+        subjectName: subjectName,
+        isDutySubject: isDutySubject,
+        dutySubObj: dutySubObj,
+        customPeriods: customPeriods,
+        checkedDutyList: checkedDutyList,
+        checkedClassList: checkedClassList,
+        isEditing: !!editingAssignmentState
+    };
+
+    // Render HTML hộp thoại xác nhận đẹp mắt, chuyên nghiệp
+    let classesHtml = '';
+    if (checkedClassList.length > 0) {
+        const badgesHtml = checkedClassList.map(item => `
+            <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin: 3px;">
+                <span class="material-icons-round" style="font-size: 1rem; color: var(--primary-light);">school</span>
+                <span style="font-weight: 600; color: #fff;">${item.clsName}</span>
+                <span style="color: var(--primary-light); font-weight: 700; background: rgba(0,0,0,0.25); padding: 1px 6px; border-radius: 4px;">${item.periods}T</span>
+            </div>
+        `).join('');
+
+        classesHtml = `
+            <div style="margin-top: 14px;">
+                <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="font-size: 1.1rem; color: var(--primary-light);">menu_book</span>
+                    Môn giảng dạy: <span style="color: #fff; font-weight: 700;">${subjectName}</span> (${checkedClassList.length} lớp):
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow-y: auto; padding: 4px; background: rgba(15, 23, 42, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    ${badgesHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    let dutiesHtml = '';
+    if (checkedDutyList.length > 0 || (isDutySubject && dutySubObj)) {
+        let dutyItems = [...checkedDutyList];
+        if (isDutySubject && dutySubObj && !dutyItems.some(d => d.id === dutySubObj.id)) {
+            const dutyP = customPeriods > 0 ? customPeriods : (dutySubObj.periods || 0);
+            dutyItems.push({ id: dutySubObj.id, name: dutySubObj.name, periods: dutyP });
+        }
+        const dutyBadges = dutyItems.map(d => `
+            <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin: 3px;">
+                <span class="material-icons-round" style="font-size: 1rem; color: #fbbf24;">stars</span>
+                <span style="font-weight: 600; color: #fde68a;">${d.name}</span>
+                <span style="color: #fbbf24; font-weight: 700; background: rgba(0,0,0,0.25); padding: 1px 6px; border-radius: 4px;">${d.periods}T</span>
+            </div>
+        `).join('');
+
+        dutiesHtml = `
+            <div style="margin-top: 14px;">
+                <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="font-size: 1.1rem; color: #f59e0b;">assignment</span>
+                    Nhiệm vụ kiêm nhiệm (${dutyItems.length} nhiệm vụ):
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; background: rgba(15, 23, 42, 0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    ${dutyBadges}
+                </div>
+            </div>
+        `;
+    }
+
+    const modalBodyHtml = `
+        <div style="font-size: 0.9rem; line-height: 1.5;">
+            <!-- Thẻ giáo viên -->
+            <div style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: rgba(79, 70, 229, 0.12); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                    ${teacher.substring(0, 2).toUpperCase()}
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 1.05rem; color: #fff;">${teacherDisplayName}</div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">
+                        Định mức chuẩn: <b style="color: #fff;">${teacherQuota} tiết/tuần</b>
+                    </div>
+                </div>
+            </div>
+
+            ${classesHtml}
+            ${dutiesHtml}
+
+            <!-- Lời nhắc thân thiện -->
+            <div style="margin-top: 16px; padding: 10px 14px; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.3); border-radius: 8px; color: #fde68a; font-size: 0.82rem; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons-round" style="font-size: 1.15rem; color: #f59e0b;">info</span>
+                <span>Tổ trưởng vui lòng kiểm tra kỹ danh sách. Nếu sai sót, bấm <b>"Hủy & Chọn lại"</b> để giữ nguyên lựa chọn và điều chỉnh.</span>
+            </div>
+        </div>
+    `;
+
+    const modalFooterHtml = `
+        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <button class="btn btn-secondary" onclick="closeModal()" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-icons-round" style="font-size: 1rem;">close</span> Hủy & Chọn lại
+            </button>
+            <button class="btn btn-primary" onclick="confirmExecuteBatchAssignment()" style="display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);">
+                <span class="material-icons-round" style="font-size: 1.05rem;">check_circle</span> Xác nhận phân công
+            </button>
+        </div>
+    `;
+
+    openModal(
+        `<span class="material-icons-round" style="color: var(--primary-light); vertical-align: middle; margin-right: 6px;">fact_check</span> Xác Nhận Phân Công Chuyên Môn`,
+        modalBodyHtml,
+        modalFooterHtml
+    );
+}
+
+function confirmExecuteBatchAssignment() {
+    if (!pendingBatchAssignmentData) {
+        closeModal();
+        return;
+    }
+
+    const { teacher, subjectName, isDutySubject, dutySubObj, customPeriods, checkedDutyList, checkedClassList, isEditing } = pendingBatchAssignmentData;
+    const periodsInput = document.getElementById('batchPeriodsInput');
+
+    // 1. Áp dụng các nhiệm vụ kiêm nhiệm
     const dutyCheckboxes = document.querySelectorAll('.batch-duty-cb');
     dutyCheckboxes.forEach(cb => {
         const dutyId = cb.dataset.dutyId;
@@ -1720,29 +2026,17 @@ function applyBatchAssignment() {
         if (!subObj) return;
 
         if (cb.checked) {
-            // Nếu được tích chọn, gán cho giáo viên này (nếu chưa gán hoặc gán cho người khác)
-            // Cho phép override số tiết nếu nhập ở ô Số tiết dạy
-            const customPeriods = parseInt(periodsInput.value) || 0;
             const dutyPeriods = customPeriods > 0 ? customPeriods : (subObj.periods || 0);
-            
-            state.assignments[newKey] = {
-                teacher: teacher,
-                periods: dutyPeriods
-            };
-            
-            // Clean up old key if it was assigned to this teacher to avoid duplicate data
+            state.assignments[newKey] = { teacher: teacher, periods: dutyPeriods };
             if (state.assignments[oldKey] && state.assignments[oldKey].teacher === teacher) {
                 delete state.assignments[oldKey];
             }
 
-            // Dọn dẹp phân công của giáo viên khác nếu đây là nhiệm vụ duy nhất (global hoặc group)
             const dutyType = getDutyType(subObj.name);
             if (dutyType === 'global_unique') {
                 const dutyAssigns = getDutyAssignments(dutyId);
                 dutyAssigns.forEach(a => {
-                    if (a.teacher !== teacher) {
-                        delete state.assignments[a.key];
-                    }
+                    if (a.teacher !== teacher) delete state.assignments[a.key];
                 });
             } else if (dutyType === 'group_unique') {
                 const selectedTeacherObj = state.teachers.find(t => t.shortName === teacher);
@@ -1751,142 +2045,90 @@ function applyBatchAssignment() {
                 dutyAssigns.forEach(a => {
                     if (a.teacher !== teacher) {
                         const tObj = state.teachers.find(t => t.shortName === a.teacher);
-                        if (tObj && tObj.group === selectedTeacherGroup) {
-                            delete state.assignments[a.key];
-                        }
+                        if (tObj && tObj.group === selectedTeacherGroup) delete state.assignments[a.key];
                     }
                 });
             }
-
-            hasAction = true;
         } else {
-            // Nếu không tích chọn, và trước đó giáo viên này đang phụ trách thì hủy phân công
-            if (state.assignments[newKey]) {
-                delete state.assignments[newKey];
-                hasAction = true;
-            }
-            if (state.assignments[oldKey] && state.assignments[oldKey].teacher === teacher) {
-                delete state.assignments[oldKey];
-                hasAction = true;
-            }
+            if (state.assignments[newKey]) delete state.assignments[newKey];
+            if (state.assignments[oldKey] && state.assignments[oldKey].teacher === teacher) delete state.assignments[oldKey];
         }
     });
 
-    // 2. Phân công môn học chuyên môn (nếu có chọn môn học ở ô môn học)
+    // 2. Áp dụng môn học chuyên môn
     if (subjectName) {
-        // Kiểm tra xem môn học này bản chất có phải nhiệm vụ kiêm nhiệm không
-        const dutySub = state.subjects.find(s => s.name === subjectName && s.grade === 'Kiêm nhiệm');
-        if (dutySub) {
-            const customPeriods = parseInt(periodsInput.value) || 0;
-            const periodsToAssign = customPeriods > 0 ? customPeriods : dutySub.periods;
-            const newKey = `Kiêm nhiệm_${teacher}_${dutySub.id}`;
-            const oldKey = `Kiêm nhiệm_${dutySub.id}`;
+        if (isDutySubject && dutySubObj) {
+            const dutyPeriods = customPeriods > 0 ? customPeriods : (dutySubObj.periods || 0);
+            const newKey = `Kiêm nhiệm_${teacher}_${dutySubObj.id}`;
+            const oldKey = `Kiêm nhiệm_${dutySubObj.id}`;
 
-            state.assignments[newKey] = {
-                teacher: teacher,
-                periods: periodsToAssign
-            };
+            state.assignments[newKey] = { teacher: teacher, periods: dutyPeriods };
             if (state.assignments[oldKey] && state.assignments[oldKey].teacher === teacher) {
                 delete state.assignments[oldKey];
             }
 
-            // Dọn dẹp phân công của giáo viên khác nếu đây là nhiệm vụ duy nhất (global hoặc group)
-            const dutyType = getDutyType(dutySub.name);
+            const dutyType = getDutyType(dutySubObj.name);
             if (dutyType === 'global_unique') {
-                const dutyAssigns = getDutyAssignments(dutySub.id);
+                const dutyAssigns = getDutyAssignments(dutySubObj.id);
                 dutyAssigns.forEach(a => {
-                    if (a.teacher !== teacher) {
-                        delete state.assignments[a.key];
-                    }
+                    if (a.teacher !== teacher) delete state.assignments[a.key];
                 });
             } else if (dutyType === 'group_unique') {
                 const selectedTeacherObj = state.teachers.find(t => t.shortName === teacher);
                 const selectedTeacherGroup = selectedTeacherObj ? selectedTeacherObj.group : null;
-                const dutyAssigns = getDutyAssignments(dutySub.id);
+                const dutyAssigns = getDutyAssignments(dutySubObj.id);
                 dutyAssigns.forEach(a => {
                     if (a.teacher !== teacher) {
                         const tObj = state.teachers.find(t => t.shortName === a.teacher);
-                        if (tObj && tObj.group === selectedTeacherGroup) {
-                            delete state.assignments[a.key];
-                        }
+                        if (tObj && tObj.group === selectedTeacherGroup) delete state.assignments[a.key];
                     }
                 });
             }
-
-            hasAction = true;
         } else {
-            // Môn học chính khóa bình thường
             const checkedCbs = Array.from(document.querySelectorAll('.batch-class-cb:checked'));
-            if (checkedCbs.length > 0 || editingAssignmentState) {
-                const customPeriods = parseInt(periodsInput.value) || 0;
-                const checkedClassNames = checkedCbs.map(cb => cb.value);
-                const wasEditing = !!editingAssignmentState;
+            const checkedClassNames = checkedCbs.map(cb => cb.value);
 
-                if (editingAssignmentState) {
-                    // Chế độ hiệu chỉnh: cập nhật lại toàn bộ phân công môn học này cho giáo viên
-                    state.classes.forEach(clsObj => {
-                        const clsName = clsObj.name;
-                        const subObj = getSubjectForClass(clsName, subjectName);
-                        if (!subObj) return;
+            if (isEditing) {
+                state.classes.forEach(clsObj => {
+                    const clsName = clsObj.name;
+                    const subObj = getSubjectForClass(clsName, subjectName);
+                    if (!subObj) return;
 
-                        const key = `${clsName}_${subObj.id}`;
-                        const isChecked = checkedClassNames.includes(clsName);
+                    const key = `${clsName}_${subObj.id}`;
+                    const isChecked = checkedClassNames.includes(clsName);
 
-                        if (isChecked) {
-                            const periodsToAssign = customPeriods > 0 ? customPeriods : subObj.periods;
-                            state.assignments[key] = {
-                                teacher: teacher,
-                                periods: periodsToAssign
-                            };
-                            syncRelatedHomeroomSubject(clsName, subObj.id, teacher);
-                        } else {
-                            if (state.assignments[key] && state.assignments[key].teacher === teacher) {
-                                state.assignments[key].teacher = '';
-                                state.assignments[key].periods = 0;
-                                syncRelatedHomeroomSubject(clsName, subObj.id, '');
-                            }
-                        }
-                    });
-                    
-                    cancelReassignment(); // Tắt Banner và reset form
-                    hasAction = true;
-                } else {
-                    // Chế độ phân công nhanh thông thường (chỉ gán thêm cho các lớp được tích chọn)
-                    checkedCbs.forEach(cb => {
-                        const clsName = cb.value;
-                        const subObj = getSubjectForClass(clsName, subjectName);
-                        if (!subObj) return;
-
-                        const key = `${clsName}_${subObj.id}`;
+                    if (isChecked) {
                         const periodsToAssign = customPeriods > 0 ? customPeriods : subObj.periods;
-
-                        state.assignments[key] = {
-                            teacher: teacher,
-                            periods: periodsToAssign
-                        };
+                        state.assignments[key] = { teacher: teacher, periods: periodsToAssign };
                         syncRelatedHomeroomSubject(clsName, subObj.id, teacher);
-                    });
-
-                    // Reset tích chọn lớp nhưng giữ lại gv/môn để tiện phân công tiếp
-                    checkedCbs.forEach(cb => cb.checked = false);
-                    hasAction = true;
-                }
+                    } else {
+                        if (state.assignments[key] && state.assignments[key].teacher === teacher) {
+                            state.assignments[key].teacher = '';
+                            state.assignments[key].periods = 0;
+                            syncRelatedHomeroomSubject(clsName, subObj.id, '');
+                        }
+                    }
+                });
+                cancelReassignment();
             } else {
-                // Có chọn môn học nhưng không tích lớp nào và không trong chế độ hiệu chỉnh
-                // Nếu cũng không có thay đổi kiêm nhiệm nào thì báo lỗi
-                if (!hasAction) {
-                    alert('Vui lòng tích chọn ít nhất một lớp học!');
-                    return;
-                }
+                checkedCbs.forEach(cb => {
+                    const clsName = cb.value;
+                    const subObj = getSubjectForClass(clsName, subjectName);
+                    if (!subObj) return;
+
+                    const key = `${clsName}_${subObj.id}`;
+                    const periodsToAssign = customPeriods > 0 ? customPeriods : subObj.periods;
+                    state.assignments[key] = { teacher: teacher, periods: periodsToAssign };
+                    syncRelatedHomeroomSubject(clsName, subObj.id, teacher);
+                });
+
+                checkedCbs.forEach(cb => cb.checked = false);
             }
         }
-    } else {
-        // Không chọn môn học ở dropdown 2, nếu cũng không có kiêm nhiệm nào được tích chọn/bỏ tích thì báo lỗi
-        if (!hasAction) {
-            alert('Vui lòng chọn môn học hoặc tích chọn nhiệm vụ kiêm nhiệm!');
-            return;
-        }
     }
+
+    pendingBatchAssignmentData = null;
+    closeModal();
 
     persistData();
     renderMatrix(state.currentUser);
@@ -1894,7 +2136,7 @@ function applyBatchAssignment() {
     renderUnassignedSubjects(state.currentUser);
     updateClassCheckboxesState();
 
-    alert('Đã cập nhật phân công giảng dạy và kiêm nhiệm thành công!');
+    showToast(`Đã phân công thành công cho giáo viên ${teacher}!`, 'success');
 }
 
 function clearBatchSelections() {
@@ -2177,7 +2419,7 @@ function exportGroupAssignmentExcel() {
         if (typeof showToast === 'function') {
             showToast("Không tìm thấy giáo viên nào trong tổ chuyên môn!", "warning");
         } else {
-            alert("Không tìm thấy giáo viên nào trong tổ chuyên môn!");
+            showToast("Không tìm thấy giáo viên nào trong tổ chuyên môn!", "warning");
         }
         return;
     }
@@ -2814,7 +3056,7 @@ function unassignClass(clsName, subId, teacherShortName = '') {
     const currentTeacher = teacherShortName || (state.assignments[key] ? state.assignments[key].teacher : '');
     const groupId = getGroupIdOfTeacher(currentTeacher) || state.currentUser;
     if (groupId && state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
-        alert("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!");
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!", "warning");
         return;
     }
 
@@ -2853,7 +3095,7 @@ function editClassPeriods(clsName, subId, currentPeriods, teacherShortName = '')
     const currentTeacher = teacherShortName || (state.assignments[key] ? state.assignments[key].teacher : '');
     const groupId = getGroupIdOfTeacher(currentTeacher) || state.currentUser;
     if (groupId && state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
-        alert("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!");
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!", "warning");
         return;
     }
 
@@ -2866,7 +3108,7 @@ function editClassPeriods(clsName, subId, currentPeriods, teacherShortName = '')
     
     const newPeriods = parseInt(promptVal);
     if (isNaN(newPeriods) || newPeriods < 0) {
-        alert('Số tiết nhập vào không hợp lệ!');
+        showToast('Số tiết nhập vào không hợp lệ!', "info");
         return;
     }
     
@@ -2954,7 +3196,7 @@ function renderUnassignedSubjects(groupId) {
 function updateAssignment(cls, subId, value, field) {
     const groupId = state.currentUser;
     if (groupId && state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
-        alert("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!");
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!", "warning");
         return;
     }
 
@@ -3121,7 +3363,7 @@ function addClass() {
 
     if (!name) return;
     if (state.classes.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-        alert("Lớp học này đã tồn tại!");
+        showToast("Lớp học này đã tồn tại!", "warning");
         return;
     }
 
@@ -3258,7 +3500,7 @@ function saveClassEdit(id) {
         const newSession = document.getElementById('editClassSession').value;
         const newGvcn = document.getElementById('editClassGvcn').value;
         if (!newName) {
-            alert("Tên lớp không được để trống!");
+            showToast("Tên lớp không được để trống!", "warning");
             return;
         }
 
@@ -3456,7 +3698,7 @@ function addSubjectGroup() {
     if (!name) return;
 
     if (state.groups.some(g => g.name.toLowerCase() === name.toLowerCase())) {
-        alert("Tổ chuyên môn này đã tồn tại!");
+        showToast("Tổ chuyên môn này đã tồn tại!", "warning");
         return;
     }
 
@@ -3579,7 +3821,7 @@ function saveGroupEdit(id) {
     if (g) {
         const name = document.getElementById('editGroupName').value.trim();
         if (!name) {
-            alert("Tên tổ không được để trống!");
+            showToast("Tên tổ không được để trống!", "warning");
             return;
         }
 
@@ -4122,7 +4364,7 @@ async function addLeaderAccount() {
 
     if (!user || !pass) return;
     if (state.accounts.some(a => a.username === user)) {
-        alert("Tên đăng nhập này đã tồn tại!");
+        showToast("Tên đăng nhập này đã tồn tại!", "warning");
         return;
     }
 
@@ -4212,7 +4454,7 @@ async function saveAccountEdit(username) {
         const newGroup = document.getElementById('editAccGroup').value;
 
         if (!newPass) {
-            alert("Mật khẩu không được để trống!");
+            showToast("Mật khẩu không được để trống!", "warning");
             return;
         }
 
@@ -4259,7 +4501,7 @@ function addGlobalSubject() {
     if (!name) return;
 
     if (state.globalSubjects.some(gs => gs.name.toLowerCase() === name.toLowerCase())) {
-        alert("Môn học/nhiệm vụ này đã tồn tại!");
+        showToast("Môn học/nhiệm vụ này đã tồn tại!", "info");
         return;
     }
 
@@ -4369,7 +4611,7 @@ function saveGlobalSubEdit(id) {
     if (gs) {
         const newName = document.getElementById('editGlobalSubName').value.trim();
         if (!newName) {
-            alert("Tên môn học/nhiệm vụ không được để trống!");
+            showToast("Tên môn học/nhiệm vụ không được để trống!", "warning");
             return;
         }
 
@@ -4504,7 +4746,7 @@ function addDutyConfig() {
     if (!name || periods <= 0) return;
 
     if (state.subjects.some(s => s.name.toLowerCase() === name.toLowerCase() && s.grade === grade)) {
-        alert("Nhiệm vụ kiêm nhiệm này đã được cấu hình số tiết rồi!");
+        showToast("Nhiệm vụ kiêm nhiệm này đã được cấu hình số tiết rồi!", "warning");
         return;
     }
 
@@ -4562,7 +4804,7 @@ function saveDutyConfigEdit(id) {
         const newPeriods = parseInt(document.getElementById('editDutyConfigPeriods').value) || 0;
 
         if (!newName || newPeriods <= 0) {
-            alert("Vui lòng điền đầy đủ thông tin!");
+            showToast("Vui lòng điền đầy đủ thông tin!", "warning");
             return;
         }
 
@@ -4607,12 +4849,12 @@ function addSubjectConfig() {
             }
         });
         if (!addedAny) {
-            alert("Môn học này đã được cấu hình cho tất cả các khối lớp từ trước!");
+            showToast("Môn học này đã được cấu hình cho tất cả các khối lớp từ trước!", "warning");
             return;
         }
     } else {
         if (state.subjects.some(s => s.name.toLowerCase() === name.toLowerCase() && s.grade === grade)) {
-            alert("Môn học này đã được cấu hình cho khối lớp này rồi!");
+            showToast("Môn học này đã được cấu hình cho khối lớp này rồi!", "warning");
             return;
         }
 
@@ -4766,7 +5008,7 @@ function saveSubjectConfigEdit(id) {
         const newPeriods = parseInt(document.getElementById('editSubConfigPeriods').value) || 0;
 
         if (!newName || newPeriods <= 0) {
-            alert("Vui lòng điền đầy đủ thông tin!");
+            showToast("Vui lòng điền đầy đủ thông tin!", "warning");
             return;
         }
 
@@ -4804,7 +5046,7 @@ function handleFilesUpload(event) {
                     refreshActiveViews();
                 }
             } catch(e) {
-                alert("Lỗi đọc file phân công. Vui lòng kiểm tra cấu trúc!");
+                showToast("Lỗi đọc file phân công. Vui lòng kiểm tra cấu trúc!", "danger");
             }
         }
     }
@@ -4891,7 +5133,7 @@ function importClassesExcel(event) {
             const json = XLSX.utils.sheet_to_json(sheet);
 
             if (json.length === 0) {
-                alert("File Excel trống hoặc không đúng định dạng!");
+                showToast("File Excel trống hoặc không đúng định dạng!", "danger");
                 return;
             }
 
@@ -4936,10 +5178,10 @@ function importClassesExcel(event) {
 
             persistData();
             refreshActiveViews();
-            alert(`Đã nhập thành công ${importCount} lớp học từ Excel!`);
+            showToast(`Đã nhập thành công ${importCount} lớp học từ Excel!`, "success");
         } catch(err) {
             console.error(err);
-            alert("Có lỗi xảy ra khi phân tích tệp Excel!");
+            showToast("Có lỗi xảy ra khi phân tích tệp Excel!", "danger");
         }
     };
     event.target.value = '';
@@ -4960,7 +5202,7 @@ function importTeachersExcel(event) {
             const json = XLSX.utils.sheet_to_json(sheet);
 
             if (json.length === 0) {
-                alert("File Excel trống hoặc không đúng định dạng!");
+                showToast("File Excel trống hoặc không đúng định dạng!", "danger");
                 return;
             }
 
@@ -5108,10 +5350,10 @@ function importTeachersExcel(event) {
                     reportMsg += `(Chưa có tổ nào được khai báo ở H1)\n`;
                 }
             }
-            alert(reportMsg);
+            showToast(reportMsg, "info");
         } catch(err) {
             console.error(err);
-            alert("Có lỗi xảy ra khi phân tích tệp Excel!");
+            showToast("Có lỗi xảy ra khi phân tích tệp Excel!", "danger");
         }
     };
     event.target.value = '';
@@ -5132,7 +5374,7 @@ function importSubjectsExcel(event) {
             const json = XLSX.utils.sheet_to_json(sheet);
 
             if (json.length === 0) {
-                alert("File Excel trống hoặc không đúng định dạng!");
+                showToast("File Excel trống hoặc không đúng định dạng!", "danger");
                 return;
             }
 
@@ -5253,10 +5495,10 @@ function importSubjectsExcel(event) {
                     reportMsg += `(Chưa có tổ nào được khai báo ở H1)\n`;
                 }
             }
-            alert(reportMsg);
+            showToast(reportMsg, "info");
         } catch(err) {
             console.error(err);
-            alert("Có lỗi xảy ra khi phân tích tệp Excel!");
+            showToast("Có lỗi xảy ra khi phân tích tệp Excel!", "danger");
         }
     };
     event.target.value = '';
@@ -5823,7 +6065,7 @@ function directConvertFetToExcel(event) {
 
                 const parseResult = parseAnyFetFileDOM(xmlDoc);
                 if (!parseResult.success) {
-                    alert(parseResult.error);
+                    showToast(parseResult.error, "danger");
                     return;
                 }
 
@@ -5872,14 +6114,14 @@ function directConvertFetToExcel(event) {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                alert("Đã chuyển đổi và tải xuống thành công file Excel TKB tổng hợp!");
+                showToast("Đã chuyển đổi và tải xuống thành công file Excel TKB tổng hợp!", "success");
             } catch(e) {
                 console.error(e);
-                alert("Lỗi chuyển đổi dữ liệu file .fet / .xml!");
+                showToast("Lỗi chuyển đổi dữ liệu file .fet / .xml!", "danger");
             }
         };
     } else {
-        alert("Tính năng chuyển đổi trực tiếp chỉ hỗ trợ các tệp .fet hoặc .xml!");
+        showToast("Tính năng chuyển đổi trực tiếp chỉ hỗ trợ các tệp .fet hoặc .xml!", "warning");
     }
     event.target.value = '';
 }
@@ -5908,7 +6150,7 @@ function handleFetConverterUpload(event) {
                 
                 const parseResult = parseAnyFetFileDOM(xmlDoc);
                 if (!parseResult.success) {
-                    alert(parseResult.error);
+                    showToast(parseResult.error, "danger");
                     return;
                 }
 
@@ -5988,11 +6230,11 @@ function handleFetConverterUpload(event) {
                 
             } catch(e) {
                 console.error(e);
-                alert("Lỗi đọc hoặc phân tích tệp FET!");
+                showToast("Lỗi đọc hoặc phân tích tệp FET!", "danger");
             }
         };
     } else {
-        alert("Chỉ chấp nhận tệp tin .fet, .xml hoặc .xlsx!");
+        showToast("Chỉ chấp nhận tệp tin .fet, .xml hoặc .xlsx!", "warning");
     }
     event.target.value = '';
 }
@@ -6002,7 +6244,7 @@ function handleExcelTimetableUpload(file) {
     reader.onload = function(e) {
         try {
             if (typeof XLSX === 'undefined') {
-                alert("Thư viện đọc Excel chưa sẵn sàng. Vui lòng thử lại!");
+                showToast("Thư viện đọc Excel chưa sẵn sàng. Vui lòng thử lại!", "warning");
                 return;
             }
 
@@ -6124,7 +6366,7 @@ function handleExcelTimetableUpload(file) {
             });
 
             if (parsedSlots.length === 0) {
-                alert("Không thể đọc được dữ liệu thời khóa biểu từ file Excel này. Vui lòng kiểm tra lại cấu trúc các Sheet (Buổi sáng / Buổi chiều)!");
+                showToast("Không thể đọc được dữ liệu thời khóa biểu từ file Excel này. Vui lòng kiểm tra lại cấu trúc các Sheet (Buổi sáng / Buổi chiều)!", "danger");
                 return;
             }
 
@@ -6183,7 +6425,7 @@ function handleExcelTimetableUpload(file) {
 
         } catch(err) {
             console.error('Lỗi phân tích file Excel TKB:', err);
-            alert("Lỗi khi đọc file Excel: " + err.message);
+            showToast("Lỗi khi đọc file Excel: " + err.message, "danger");
         }
     };
     reader.readAsArrayBuffer(file);
@@ -6563,7 +6805,7 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable, week
 
 function downloadParsedFetExcel() {
     if (!window.lastParsedFetData) {
-        alert("Không tìm thấy dữ liệu phân tích thời khóa biểu!");
+        showToast("Không tìm thấy dữ liệu phân tích thời khóa biểu!", "warning");
         return;
     }
 
@@ -6649,10 +6891,10 @@ function downloadParsedFetExcel() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        alert("Đã chuyển đổi và tải xuống thành công file Excel TKB tổng hợp!");
+        showToast("Đã chuyển đổi và tải xuống thành công file Excel TKB tổng hợp!", "success");
     } catch(e) {
         console.error(e);
-        alert("Lỗi xuất file Excel!");
+        showToast("Lỗi xuất file Excel!", "danger");
     }
 }
 
@@ -7106,13 +7348,13 @@ function confirmLockGroupAssignment() {
 
         persistData();
         refreshActiveViews();
-        alert("Đã chốt và khóa bản phân công chuyên môn thành công!");
+        showToast("Đã chốt và khóa bản phân công chuyên môn thành công!", "success");
     }
 }
 
 function unlockGroupAssignment(groupId) {
     if (state.currentUser !== 'admin') {
-        alert("Chỉ quản trị viên mới có quyền mở khóa!");
+        showToast("Chỉ quản trị viên mới có quyền mở khóa!", "warning");
         return;
     }
 
@@ -7127,7 +7369,7 @@ function unlockGroupAssignment(groupId) {
 
         persistData();
         refreshActiveViews();
-        alert(`Đã mở khóa thành công cho "${groupName}"!`);
+        showToast(`Đã mở khóa thành công cho "${groupName}"!`, "success");
     }
 }
 
@@ -7176,7 +7418,7 @@ function renderAdminGroupLockStatus() {
 // ================= LOGIC QUẢN LÝ PHIÊN BẢN PHÂN CÔNG CHUYÊN MÔN =================
 function saveAssignmentVersion() {
     if (state.currentUser !== 'admin') {
-        alert("Chỉ quản trị viên mới có quyền lưu phiên bản!");
+        showToast("Chỉ quản trị viên mới có quyền lưu phiên bản!", "warning");
         return;
     }
 
@@ -7184,14 +7426,14 @@ function saveAssignmentVersion() {
     if (!nameInput) return;
     const name = nameInput.value.trim();
     if (!name) {
-        alert("Vui lòng nhập tên đợt phân công!");
+        showToast("Vui lòng nhập tên đợt phân công!", "warning");
         return;
     }
 
     state.assignmentVersions = state.assignmentVersions || [];
     
     if (state.assignmentVersions.some(v => v.name.toLowerCase() === name.toLowerCase())) {
-        alert("Tên đợt phân công này đã tồn tại! Vui lòng đặt tên khác.");
+        showToast("Tên đợt phân công này đã tồn tại! Vui lòng đặt tên khác.", "info");
         return;
     }
 
@@ -7211,7 +7453,7 @@ function saveAssignmentVersion() {
 
 function restoreAssignmentVersion(id) {
     if (state.currentUser !== 'admin') {
-        alert("Chỉ quản trị viên mới có quyền khôi phục!");
+        showToast("Chỉ quản trị viên mới có quyền khôi phục!", "warning");
         return;
     }
 
@@ -7234,7 +7476,7 @@ function restoreAssignmentVersion(id) {
 
 function deleteAssignmentVersion(id) {
     if (state.currentUser !== 'admin') {
-        alert("Chỉ quản trị viên mới có quyền xóa phiên bản!");
+        showToast("Chỉ quản trị viên mới có quyền xóa phiên bản!", "warning");
         return;
     }
 
@@ -7246,13 +7488,13 @@ function deleteAssignmentVersion(id) {
         state.assignmentVersions = state.assignmentVersions.filter(v => v.id !== id);
         persistData();
         refreshActiveViews();
-        alert(`Đã xóa đợt phân công thành công!`);
+        showToast(`Đã xóa đợt phân công thành công!`, "success");
     }
 }
 
 function renameAssignmentVersion(id) {
     if (state.currentUser !== 'admin') {
-        alert("Chỉ quản trị viên mới có quyền đổi tên phiên bản!");
+        showToast("Chỉ quản trị viên mới có quyền đổi tên phiên bản!", "warning");
         return;
     }
 
@@ -7264,19 +7506,19 @@ function renameAssignmentVersion(id) {
     if (newName === null) return;
     const name = newName.trim();
     if (!name) {
-        alert("Tên không được để trống!");
+        showToast("Tên không được để trống!", "info");
         return;
     }
 
     if (state.assignmentVersions.some(v => v.id !== id && v.name.toLowerCase() === name.toLowerCase())) {
-        alert("Tên đợt phân công này đã tồn tại!");
+        showToast("Tên đợt phân công này đã tồn tại!", "info");
         return;
     }
 
     version.name = name;
     persistData();
     refreshActiveViews();
-    alert(`Đã đổi tên đợt phân công thành công!`);
+    showToast(`Đã đổi tên đợt phân công thành công!`, "success");
 }
 
 function renderAssignmentVersions() {
@@ -8713,55 +8955,6 @@ function getDatesListInRange(startDateStr, endDateStr) {
     }
 
     return datesList;
-}
-
-function showToast(message, type = 'info') {
-    let toastContainer = document.getElementById('toastContainer');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toastContainer';
-        toastContainer.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
-        document.body.appendChild(toastContainer);
-    }
-    
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        padding: 12px 20px;
-        border-radius: 8px;
-        background: ${type === 'success' ? 'var(--success)' : type === 'warning' ? 'var(--warning)' : type === 'danger' ? 'var(--danger)' : 'var(--primary)'};
-        color: #fff;
-        font-size: 0.9rem;
-        font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    `;
-    
-    const icon = type === 'success' ? 'check_circle' : type === 'warning' ? 'warning' : type === 'danger' ? 'error' : 'info';
-    toast.innerHTML = `<span class="material-icons-round" style="font-size: 1.2rem; vertical-align: middle;">${icon}</span> <span style="vertical-align: middle;">${message}</span>`;
-    
-    toastContainer.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px)';
-        setTimeout(() => {
-            if (typeof toast.remove === 'function') {
-                toast.remove();
-            } else if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
 }
 
 function normalizeSubjectName(sub) {
@@ -10417,7 +10610,7 @@ function saveTimetableApplyDateOnly() {
     state.timetableApplyDate = val;
     persistData();
     refreshActiveViews();
-    alert("Đã cập nhật ngày áp dụng thời khóa biểu!");
+    showToast("Đã cập nhật ngày áp dụng thời khóa biểu!", "success");
 }
 
 function downloadPublicExcel() {

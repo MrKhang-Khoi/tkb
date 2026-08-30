@@ -59,8 +59,8 @@
                         <span id="toggleLoginPassword" class="material-icons-round" onclick="togglePasswordVisibility('loginPassword', this)" style="position: absolute; right: 12px; cursor: pointer; color: var(--text-muted); user-select: none;">visibility</span>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="login()" style="width: 100%; justify-content: center; margin-top: 10px;">
-                    Đăng nhập <span class="material-icons-round">login</span>
+                <button id="loginBtn" class="btn btn-primary" onclick="login()" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    <span>Đăng nhập</span> <span class="material-icons-round" style="margin-left: 6px;">login</span>
                 </button>
                 <div style="text-align: center; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
                     <a href="#" onclick="showPublicTimetable(); return false;" style="color: var(--primary-light); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
