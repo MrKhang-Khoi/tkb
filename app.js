@@ -1126,14 +1126,28 @@ function isPhuDaoClass(className) {
     return clean.startsWith('PĐ') || clean.startsWith('PD') || clean.includes('PHỤ ĐẠO') || clean.includes('PHU DAO');
 }
 
-// Danh sách các môn mà lớp Phụ đạo theo học (Toán, Văn, Tiếng Anh)
+// Helper nhận diện môn Phụ đạo (PĐ_Toán, PĐ_Văn, PĐ_T.A, PĐ_Tiếng Anh, Phụ đạo Toán...)
 function isPhuDaoSubject(subjectName) {
     if (!subjectName) return false;
-    const clean = subjectName.trim().toLowerCase();
-    return clean === 'toán' || clean === 'toan' ||
-           clean === 'ngữ văn' || clean === 'ngu van' || clean === 'văn' || clean === 'van' ||
-           clean === 'tiếng anh' || clean === 'tieng anh' || clean === 'anh' || clean === 'ngoại ngữ' || clean === 'ngoai ngu' ||
-           clean.startsWith('tiếng anh') || clean.startsWith('tieng anh');
+    const clean = subjectName.trim().toUpperCase();
+    return clean.startsWith('PĐ') || clean.startsWith('PD') || clean.includes('PHỤ ĐẠO') || clean.includes('PHU DAO');
+}
+
+// Kiểm tra xem môn học có áp dụng cho loại lớp học này không
+function isSubjectApplicableForClass(clsName, subName) {
+    const isPdCls = isPhuDaoClass(clsName);
+    const isPdSub = isPhuDaoSubject(subName);
+
+    if (isPdCls) {
+        // Lớp Phụ đạo (PĐ_6, PĐ_7...) CHỈ học các môn Phụ đạo (PĐ_Toán, PĐ_Văn, PĐ_T.A, PĐ_Tiếng Anh...)
+        if (isPdSub) return true;
+        // Tương thích ngược nếu trường dùng tên môn gốc
+        const clean = subName.trim().toLowerCase();
+        return clean === 'toán' || clean === 'ngữ văn' || clean === 'văn' || clean === 'tiếng anh';
+    } else {
+        // Lớp chính khóa (6A1, 7A1...) CHỈ học các môn chính khóa (Toán, Văn, Tin...), KHÔNG học các môn có tiền tố PĐ_
+        return !isPdSub;
+    }
 }
 
 // Số tiết chuẩn cho các môn Phụ đạo (2 tiết/tuần mỗi môn)
@@ -1343,17 +1357,9 @@ function getSubjectForClass(clsName, subName) {
     const sub = state.subjects.find(s => s.name === subName && s.grade === grade);
     if (!sub) return null;
 
-    // Đối với các lớp Phụ đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9)
-    if (isPhuDaoClass(clsName)) {
-        // Nếu không thuộc 3 môn Phụ đạo (Toán, Văn, Tiếng Anh) thì lớp Phụ đạo không học
-        if (!isPhuDaoSubject(subName)) {
-            return null;
-        }
-        // Trả về số tiết chuẩn của lớp Phụ đạo (2 tiết)
-        return {
-            ...sub,
-            periods: getPhuDaoStandardPeriods(subName)
-        };
+    // Kiểm tra xem môn học có áp dụng cho loại lớp học này không
+    if (!isSubjectApplicableForClass(clsName, subName)) {
+        return null;
     }
 
     return sub;
@@ -2539,13 +2545,13 @@ function renderMatrix(groupId) {
 
         groupSubjects.forEach(sub => {
             if (sub.grade === grade) {
-                // Nếu là lớp Phụ đạo nhưng môn này không thuộc 3 môn Phụ đạo (Toán, Văn, Tiếng Anh) thì bỏ qua
-                if (isPd && !isPhuDaoSubject(sub.name)) {
+                // Bỏ qua nếu môn không áp dụng cho loại lớp này (ví dụ môn PĐ_ cho lớp chính khóa hoặc ngược lại)
+                if (!isSubjectApplicableForClass(cls, sub.name)) {
                     return;
                 }
                 const key = `${cls}_${sub.id}`;
                 const val = state.assignments[key];
-                const requiredPeriods = isPd ? getPhuDaoStandardPeriods(sub.name) : sub.periods;
+                const requiredPeriods = sub.periods;
                 if (!val || !val.teacher || val.periods === 0) {
                     unassignedList.push({
                         clsName: cls,
@@ -2828,15 +2834,14 @@ function renderUnassignedSubjects(groupId) {
 
         groupSubjects.forEach(sub => {
             if (sub.grade === grade) {
-                const isPd = isPhuDaoClass(cls);
-                // Nếu là lớp Phụ đạo mà môn này không thuộc 3 môn Phụ đạo (Toán, Văn, Tiếng Anh) thì bỏ qua
-                if (isPd && !isPhuDaoSubject(sub.name)) {
+                // Bỏ qua nếu môn không áp dụng cho loại lớp này
+                if (!isSubjectApplicableForClass(cls, sub.name)) {
                     return;
                 }
 
                 const key = `${cls}_${sub.id}`;
                 const val = state.assignments[key] || { teacher: '', periods: 0 };
-                const requiredPeriods = isPd ? getPhuDaoStandardPeriods(sub.name) : sub.periods;
+                const requiredPeriods = sub.periods;
 
                 if (!val.teacher || val.periods === 0) {
                     issueCount++;
@@ -3142,9 +3147,6 @@ function startClassEdit(id) {
                 <option value="7" ${c.grade === '7' ? 'selected' : ''}>Khối 7</option>
                 <option value="8" ${c.grade === '8' ? 'selected' : ''}>Khối 8</option>
                 <option value="9" ${c.grade === '9' ? 'selected' : ''}>Khối 9</option>
-                <option value="10" ${c.grade === '10' ? 'selected' : ''}>Khối 10</option>
-                <option value="11" ${c.grade === '11' ? 'selected' : ''}>Khối 11</option>
-                <option value="12" ${c.grade === '12' ? 'selected' : ''}>Khối 12</option>
             </select>
         </div>
         <div class="form-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
@@ -4383,8 +4385,12 @@ function renderDutyConfigs() {
     if (selectNewDuty) {
         selectNewDuty.innerHTML = '';
         if (state.globalSubjects.length > 0) {
-            const uniqueNames = [...new Set(state.globalSubjects.map(gs => gs.name))];
-            uniqueNames.forEach(name => {
+            const teachingSubjectNames = new Set(state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm').map(s => s.name.toLowerCase()));
+            const allNames = [...new Set(state.globalSubjects.map(gs => gs.name))];
+            const dutyNames = allNames.filter(name => !teachingSubjectNames.has(name.toLowerCase()));
+            const listToDisplay = dutyNames.length > 0 ? dutyNames : allNames;
+
+            listToDisplay.forEach(name => {
                 selectNewDuty.innerHTML += `<option value="${name}">${name}</option>`;
             });
         } else {
@@ -4507,7 +4513,7 @@ function addSubjectConfig() {
     const ownerGroup = (gs && gs.groupId) ? gs.groupId : 'unassigned';
 
     if (grade === 'all') {
-        const grades = ['6', '7', '8', '9', '10', '11', '12'];
+        const grades = ['6', '7', '8', '9'];
         let addedAny = false;
         grades.forEach((g, index) => {
             if (!state.subjects.some(s => s.name.toLowerCase() === name.toLowerCase() && s.grade === g)) {
@@ -4657,9 +4663,6 @@ function startSubjectConfigEdit(id) {
                 <option value="7" ${s.grade === '7' ? 'selected' : ''}>Khối 7</option>
                 <option value="8" ${s.grade === '8' ? 'selected' : ''}>Khối 8</option>
                 <option value="9" ${s.grade === '9' ? 'selected' : ''}>Khối 9</option>
-                <option value="10" ${s.grade === '10' ? 'selected' : ''}>Khối 10</option>
-                <option value="11" ${s.grade === '11' ? 'selected' : ''}>Khối 11</option>
-                <option value="12" ${s.grade === '12' ? 'selected' : ''}>Khối 12</option>
             </select>
         </div>
         <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
