@@ -2762,18 +2762,21 @@ function exportAllAssignmentsExcel() {
         const teachingAssignments = teacherAssignments.filter(a => a.clsName !== 'Kiêm nhiệm' && !isHomeroomSubject(a.subName));
         const dutyAssignments = teacherAssignments.filter(a => a.clsName === 'Kiêm nhiệm');
 
-        // 1. Gom nhóm phân công giảng dạy theo môn học
+        // 1. Gom nhóm phân công giảng dạy theo môn học kèm tổng số tiết
         const bySub = {};
+        const subPeriodsMap = {};
         teachingAssignments.forEach(a => {
             if (!bySub[a.subName]) {
                 bySub[a.subName] = [];
+                subPeriodsMap[a.subName] = 0;
             }
             bySub[a.subName].push(`${a.clsName} (${a.periods}T)`);
+            subPeriodsMap[a.subName] += (a.periods || 0);
         });
 
         const detailsArray = [];
         Object.keys(bySub).sort().forEach(subName => {
-            detailsArray.push(`${subName}: ${bySub[subName].join(', ')}`);
+            detailsArray.push(`${subName} (${subPeriodsMap[subName]}T): ${bySub[subName].join(', ')}`);
         });
 
         const detailsStr = detailsArray.join('; ') || 'Chưa phân công';
@@ -2980,10 +2983,14 @@ function renderMatrix(groupId) {
             `;
         } else {
             subjectNames.forEach(subName => {
+                const subAssignList = assignmentsBySubject[subName];
+                const subTotalPeriods = subAssignList.reduce((sum, a) => sum + (a.periods || 0), 0);
+
                 cardHtml += `
                 <div style="display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
-                    <div style="display: flex; align-items: center; gap: 8px; min-width: 175px; margin-top: 4px;">
+                    <div style="display: flex; align-items: center; gap: 6px; min-width: 185px; margin-top: 4px; flex-wrap: wrap;">
                         <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-light);">Môn ${subName}:</span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 1px 6px; border-radius: 6px; white-space: nowrap;" title="Tổng số tiết phân công môn ${subName}">${subTotalPeriods}T</span>
                         <button class="btn btn-secondary" onclick="startReassignment('${t.shortName}', '${subName}')" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; line-height: 1; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); cursor: pointer;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                             <span class="material-icons-round" style="font-size: 0.8rem;">edit</span> Phân công lại
                         </button>
