@@ -7265,6 +7265,119 @@ function getGroupIdOfTeacher(teacherShort) {
     return t ? t.group : null;
 }
 
+// ================= ĐỔI MẬT KHẨU (CHANGE PASSWORD) =================
+function openChangePasswordModal() {
+    let currentUsername = 'Tổ trưởng';
+    if (state.currentUser === 'admin') {
+        currentUsername = 'admin';
+    } else if (state.accounts && state.currentUser) {
+        const acc = state.accounts.find(a => a.group === state.currentUser);
+        if (acc) currentUsername = acc.username;
+        else currentUsername = state.currentUser;
+    }
+
+    const bodyHtml = `
+        <div style="font-size: 0.9rem; line-height: 1.6;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: rgba(79, 70, 229, 0.12); border-radius: 10px; border: 1px solid rgba(129, 140, 248, 0.25);">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff;">
+                    <span class="material-icons-round" style="font-size: 1.4rem;">lock</span>
+                </div>
+                <div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Đổi mật khẩu đăng nhập cho tài khoản:</div>
+                    <div style="font-weight: 700; color: #fff; font-size: 1.05rem;">${currentUsername}</div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label for="modalOldPassword" style="font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block;">Mật khẩu hiện tại</label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="modalOldPassword" class="form-control" placeholder="Nhập mật khẩu hiện tại..." style="padding-right: 40px; width: 100%;">
+                    <span class="material-icons-round" onclick="togglePasswordVisibility('modalOldPassword', this)" style="position: absolute; right: 12px; cursor: pointer; color: var(--text-muted); user-select: none;">visibility</span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label for="modalNewPassword" style="font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block;">Mật khẩu mới</label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="modalNewPassword" class="form-control" placeholder="Nhập mật khẩu mới (tối thiểu 4 ký tự)..." style="padding-right: 40px; width: 100%;">
+                    <span class="material-icons-round" onclick="togglePasswordVisibility('modalNewPassword', this)" style="position: absolute; right: 12px; cursor: pointer; color: var(--text-muted); user-select: none;">visibility</span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="modalConfirmNewPassword" style="font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block;">Xác nhận mật khẩu mới</label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="modalConfirmNewPassword" class="form-control" placeholder="Nhập lại mật khẩu mới..." style="padding-right: 40px; width: 100%;">
+                    <span class="material-icons-round" onclick="togglePasswordVisibility('modalConfirmNewPassword', this)" style="position: absolute; right: 12px; cursor: pointer; color: var(--text-muted); user-select: none;">visibility</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const footerHtml = `
+        <button class="btn btn-primary" id="btnSaveNewPass" onclick="saveNewPassword('${currentUsername}')" style="display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);">
+            <span class="material-icons-round" style="font-size: 1.1rem;">save</span> Cập nhật mật khẩu
+        </button>
+        <button class="btn btn-secondary" onclick="closeModal()">Hủy bỏ</button>
+    `;
+
+    openModal(
+        `<span class="material-icons-round" style="color: var(--primary-light); vertical-align: middle; margin-right: 6px;">key</span> Đổi Mật Khẩu Truy Cập`,
+        bodyHtml,
+        footerHtml
+    );
+}
+
+async function saveNewPassword(username) {
+    const oldPass = document.getElementById('modalOldPassword')?.value || '';
+    const newPass = document.getElementById('modalNewPassword')?.value || '';
+    const confirmPass = document.getElementById('modalConfirmNewPassword')?.value || '';
+    const saveBtn = document.getElementById('btnSaveNewPass');
+
+    if (!oldPass || !newPass || !confirmPass) {
+        showToast("Vui lòng điền đầy đủ thông tin vào tất cả các ô!", "warning");
+        return;
+    }
+
+    if (newPass.length < 4) {
+        showToast("Mật khẩu mới phải có ít nhất 4 ký tự!", "warning");
+        return;
+    }
+
+    if (newPass !== confirmPass) {
+        showToast("Mật khẩu xác nhận không trùng khớp với mật khẩu mới!", "warning");
+        return;
+    }
+
+    const acc = state.accounts.find(a => a.username === username);
+    if (!acc) {
+        showToast("Không tìm thấy tài khoản này trong hệ thống!", "danger");
+        return;
+    }
+
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span class="material-icons-round spin-anim" style="font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sync</span> Đang lưu...`;
+    }
+
+    const hashedOld = await sha256(oldPass);
+    if (acc.password !== oldPass && acc.password !== hashedOld) {
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = `<span class="material-icons-round" style="font-size: 1.1rem;">save</span> Cập nhật mật khẩu`;
+        }
+        showToast("Mật khẩu hiện tại không chính xác!", "danger");
+        return;
+    }
+
+    const hashedNew = await sha256(newPass);
+    acc.password = hashedNew;
+
+    persistData();
+    closeModal();
+    showToast("Đổi mật khẩu thành công! Mật khẩu mới đã được lưu an toàn.", "success");
+}
+
 // ================= LOGIC CHỐT & KHÓA PHÂN CÔNG =================
 function updateGroupLockUI(groupId) {
     const banner = document.getElementById('groupLockStatusBanner');
@@ -7274,24 +7387,51 @@ function updateGroupLockUI(groupId) {
     if (!banner || !textEl || !iconEl || !btn) return;
 
     state.groupLocks = state.groupLocks || {};
-    const isLocked = state.groupLocks[groupId] && state.groupLocks[groupId].locked;
+    const lockInfo = state.groupLocks[groupId];
+    const isLocked = lockInfo && lockInfo.locked;
+    const isUnlockRequested = lockInfo && lockInfo.unlockRequested;
 
     banner.style.display = 'flex';
     if (isLocked) {
-        banner.style.background = 'rgba(16, 185, 129, 0.15)';
-        banner.style.border = '1px solid var(--success)';
-        banner.style.color = '#34d399';
-        iconEl.textContent = 'lock';
-        iconEl.style.color = '#34d399';
-        
-        const lockedAtStr = new Date(state.groupLocks[groupId].lockedAt).toLocaleString('vi-VN');
-        const lockedBy = state.groupLocks[groupId].lockedBy || 'Tổ trưởng';
-        textEl.innerHTML = `<b>ĐÃ CHỐT & KHÓA PHÂN CÔNG</b> (Thời gian: ${lockedAtStr} - Người chốt: ${lockedBy})`;
-        
-        btn.innerHTML = `<span class="material-icons-round" style="font-size: 1rem;">verified</span> Đã chốt`;
-        btn.className = 'btn btn-success';
-        btn.disabled = true;
-        
+        if (isUnlockRequested) {
+            // Trạng thái: Đang yêu cầu Admin mở chốt
+            banner.style.background = 'rgba(245, 158, 11, 0.18)';
+            banner.style.border = '1px solid #f59e0b';
+            banner.style.color = '#fde68a';
+            iconEl.textContent = 'pending_actions';
+            iconEl.style.color = '#fbbf24';
+
+            const reqTimeStr = lockInfo.unlockRequestedAt ? new Date(lockInfo.unlockRequestedAt).toLocaleString('vi-VN') : '';
+            textEl.innerHTML = `<b>⏳ ĐANG YÊU CẦU MỞ KHÓA</b> (Yêu cầu gửi lúc: ${reqTimeStr} - Đang chờ Admin duyệt)`;
+
+            btn.innerHTML = `<span class="material-icons-round" style="font-size: 1rem;">close</span> Hủy yêu cầu`;
+            btn.className = 'btn btn-secondary';
+            btn.style.background = 'rgba(255,255,255,0.12)';
+            btn.style.color = '#fff';
+            btn.style.fontWeight = '500';
+            btn.disabled = false;
+            btn.onclick = () => cancelUnlockRequest(groupId);
+        } else {
+            // Trạng thái: Đã chốt & Khóa
+            banner.style.background = 'rgba(16, 185, 129, 0.15)';
+            banner.style.border = '1px solid var(--success)';
+            banner.style.color = '#34d399';
+            iconEl.textContent = 'lock';
+            iconEl.style.color = '#34d399';
+
+            const lockedAtStr = new Date(lockInfo.lockedAt).toLocaleString('vi-VN');
+            const lockedBy = lockInfo.lockedBy || 'Tổ trưởng';
+            textEl.innerHTML = `<b>ĐÃ CHỐT & KHÓA PHÂN CÔNG</b> (Thời gian: ${lockedAtStr} - Người chốt: ${lockedBy})`;
+
+            btn.innerHTML = `<span class="material-icons-round" style="font-size: 1rem;">lock_open</span> Yêu cầu mở khóa`;
+            btn.className = 'btn btn-warning';
+            btn.style.background = '#f59e0b';
+            btn.style.color = '#000';
+            btn.style.fontWeight = '700';
+            btn.disabled = false;
+            btn.onclick = () => requestUnlockGroupAssignment(groupId);
+        }
+
         disableBatchAssignInputs(true);
     } else {
         banner.style.background = 'rgba(245, 158, 11, 0.15)';
@@ -7300,12 +7440,58 @@ function updateGroupLockUI(groupId) {
         iconEl.textContent = 'lock_open';
         iconEl.style.color = '#fbbf24';
         textEl.innerHTML = `<b>Bản phân công chưa chốt</b>. Vui lòng kiểm tra kỹ và chốt với nhà trường khi hoàn thành.`;
-        
+
         btn.innerHTML = `<span class="material-icons-round" style="font-size: 1rem;">lock</span> Chốt & Khóa phân công`;
         btn.className = 'btn btn-danger';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.fontWeight = '';
         btn.disabled = false;
-        
+        btn.onclick = () => confirmLockGroupAssignment();
+
         disableBatchAssignInputs(false);
+    }
+}
+
+function requestUnlockGroupAssignment(groupId) {
+    const groupObj = state.groups.find(g => g.id === groupId);
+    const groupName = groupObj ? groupObj.name : 'Tổ';
+
+    let currentUsername = 'Tổ trưởng';
+    if (state.accounts && state.currentUser) {
+        const acc = state.accounts.find(a => a.group === state.currentUser);
+        if (acc) currentUsername = acc.username;
+    }
+
+    showConfirmModal(
+        "Xác Nhận Yêu Cầu Mở Khóa",
+        `<p>Bạn có chắc chắn muốn gửi yêu cầu đến <b>Quản trị viên (Admin)</b> để mở khóa phân công chuyên môn cho tổ <b>"${groupName}"</b>?</p>
+         <p style="color: #fde68a; font-size: 0.82rem; margin-top: 6px;">Sau khi Admin chấp nhận, bạn sẽ có quyền chỉnh sửa lại bảng phân công.</p>`,
+        () => {
+            state.groupLocks = state.groupLocks || {};
+            if (!state.groupLocks[groupId]) {
+                state.groupLocks[groupId] = { locked: true };
+            }
+            state.groupLocks[groupId].unlockRequested = true;
+            state.groupLocks[groupId].unlockRequestedAt = Date.now();
+            state.groupLocks[groupId].unlockRequestedBy = currentUsername;
+
+            persistData();
+            updateGroupLockUI(groupId);
+            showToast("Đã gửi yêu cầu mở khóa đến Quản trị viên (Admin) thành công!", "success");
+        },
+        "Gửi yêu cầu",
+        "btn-warning",
+        "lock_open"
+    );
+}
+
+function cancelUnlockRequest(groupId) {
+    if (state.groupLocks && state.groupLocks[groupId]) {
+        state.groupLocks[groupId].unlockRequested = false;
+        persistData();
+        updateGroupLockUI(groupId);
+        showToast("Đã hủy yêu cầu mở khóa.", "info");
     }
 }
 
@@ -7347,25 +7533,34 @@ function confirmLockGroupAssignment() {
     const groupObj = state.groups.find(g => g.id === groupId);
     const groupName = groupObj ? groupObj.name : 'Tổ chuyên môn';
 
-    if (confirm(`Bạn có chắc chắn muốn CHỐT & KHÓA bản phân công chuyên môn của "${groupName}"?\n\nSau khi chốt, tổ trưởng không thể thay đổi phân công nữa. Nhà trường sẽ nhận được thông tin để duyệt.`)) {
-        state.groupLocks = state.groupLocks || {};
-        
-        let currentUsername = 'Tổ trưởng';
-        if (state.accounts && state.currentUser) {
-            const acc = state.accounts.find(a => a.group === state.currentUser);
-            if (acc) currentUsername = acc.username;
-        }
+    showConfirmModal(
+        "Xác Nhận Chốt & Khóa Phân Công",
+        `<p>Bạn có chắc chắn muốn <b>CHỐT & KHÓA</b> bản phân công chuyên môn của tổ <b>"${groupName}"</b>?</p>
+         <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">Sau khi chốt, tổ trưởng sẽ không thể thay đổi phân công cho đến khi gửi yêu cầu và được Admin mở khóa.</p>`,
+        () => {
+            state.groupLocks = state.groupLocks || {};
+            
+            let currentUsername = 'Tổ trưởng';
+            if (state.accounts && state.currentUser) {
+                const acc = state.accounts.find(a => a.group === state.currentUser);
+                if (acc) currentUsername = acc.username;
+            }
 
-        state.groupLocks[groupId] = {
-            locked: true,
-            lockedAt: Date.now(),
-            lockedBy: currentUsername
-        };
+            state.groupLocks[groupId] = {
+                locked: true,
+                lockedAt: Date.now(),
+                lockedBy: currentUsername,
+                unlockRequested: false
+            };
 
-        persistData();
-        refreshActiveViews();
-        showToast("Đã chốt và khóa bản phân công chuyên môn thành công!", "success");
-    }
+            persistData();
+            refreshActiveViews();
+            showToast("Đã chốt và khóa bản phân công chuyên môn thành công!", "success");
+        },
+        "Chốt & Khóa ngay",
+        "btn-danger",
+        "lock"
+    );
 }
 
 function unlockGroupAssignment(groupId) {
@@ -7377,16 +7572,25 @@ function unlockGroupAssignment(groupId) {
     const groupObj = state.groups.find(g => g.id === groupId);
     const groupName = groupObj ? groupObj.name : 'Tổ chuyên môn';
 
-    if (confirm(`Bạn có chắc chắn muốn MỞ KHÓA phân công cho "${groupName}"?\n\nTổ trưởng sẽ có quyền chỉnh sửa lại.`)) {
-        state.groupLocks = state.groupLocks || {};
-        if (state.groupLocks[groupId]) {
-            state.groupLocks[groupId].locked = false;
-        }
+    showConfirmModal(
+        "Xác Nhận Mở Khóa Phân Công",
+        `<p>Bạn có chắc chắn muốn <b>MỞ KHÓA</b> phân công cho tổ <b>"${groupName}"</b>?</p>
+         <p style="color: #34d399; font-size: 0.82rem; margin-top: 6px;">Tổ trưởng sẽ nhận được quyền chỉnh sửa lại bảng phân công ngay lập tức.</p>`,
+        () => {
+            state.groupLocks = state.groupLocks || {};
+            if (state.groupLocks[groupId]) {
+                state.groupLocks[groupId].locked = false;
+                state.groupLocks[groupId].unlockRequested = false;
+            }
 
-        persistData();
-        refreshActiveViews();
-        showToast(`Đã mở khóa thành công cho "${groupName}"!`, "success");
-    }
+            persistData();
+            refreshActiveViews();
+            showToast(`Đã mở khóa thành công cho tổ "${groupName}"!`, "success");
+        },
+        "Xác nhận mở khóa",
+        "btn-primary",
+        "lock_open"
+    );
 }
 
 function renderAdminGroupLockStatus() {
@@ -7396,9 +7600,12 @@ function renderAdminGroupLockStatus() {
     tbody.innerHTML = '';
     state.groupLocks = state.groupLocks || {};
 
+    let totalUnlockRequests = 0;
+
     state.groups.forEach(g => {
         const lockInfo = state.groupLocks[g.id];
         const isLocked = lockInfo && lockInfo.locked;
+        const isUnlockRequested = lockInfo && lockInfo.unlockRequested;
         
         let statusHtml = '';
         let timeStr = '-';
@@ -7406,12 +7613,29 @@ function renderAdminGroupLockStatus() {
         let actionBtn = '';
 
         if (isLocked) {
-            statusHtml = `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid var(--success); padding: 4px 8px; border-radius: 4px;">Đã chốt & Khóa</span>`;
             timeStr = new Date(lockInfo.lockedAt).toLocaleString('vi-VN');
             userStr = lockInfo.lockedBy || 'Tổ trưởng';
-            actionBtn = `<button class="btn btn-secondary" onclick="unlockGroupAssignment('${g.id}')" style="padding: 4px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 4px; margin: auto;">
-                            <span class="material-icons-round" style="font-size: 0.9rem;">lock_open</span> Mở khóa
-                         </button>`;
+
+            if (isUnlockRequested) {
+                totalUnlockRequests++;
+                const reqTime = lockInfo.unlockRequestedAt ? new Date(lockInfo.unlockRequestedAt).toLocaleTimeString('vi-VN') : '';
+                statusHtml = `
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid #f59e0b; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);">
+                            <span class="material-icons-round" style="font-size: 1rem; color: #fbbf24;">notification_important</span> Đang yêu cầu mở chốt
+                        </span>
+                        <span style="font-size: 0.75rem; color: #fde68a;">Lúc: ${reqTime} (${lockInfo.unlockRequestedBy || 'Tổ trưởng'})</span>
+                    </div>
+                `;
+                actionBtn = `<button class="btn btn-warning" onclick="unlockGroupAssignment('${g.id}')" style="padding: 5px 12px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 5px; margin: auto; background: #f59e0b; color: #000; font-weight: 700; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);">
+                                <span class="material-icons-round" style="font-size: 1rem;">lock_open</span> Mở khóa ngay
+                             </button>`;
+            } else {
+                statusHtml = `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid var(--success); padding: 4px 8px; border-radius: 4px;">Đã chốt & Khóa</span>`;
+                actionBtn = `<button class="btn btn-secondary" onclick="unlockGroupAssignment('${g.id}')" style="padding: 4px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 4px; margin: auto;">
+                                <span class="material-icons-round" style="font-size: 0.9rem;">lock_open</span> Mở khóa
+                             </button>`;
+            }
         } else {
             statusHtml = `<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid var(--warning); padding: 4px 8px; border-radius: 4px;">Chưa chốt</span>`;
             actionBtn = `<button class="btn btn-secondary" disabled style="padding: 4px 8px; font-size: 0.75rem; opacity: 0.5; display: flex; align-items: center; gap: 4px; margin: auto;">
@@ -7419,16 +7643,26 @@ function renderAdminGroupLockStatus() {
                          </button>`;
         }
 
-        tbody.innerHTML += `
-            <tr>
-                <td style="font-weight: 600;">${g.name}</td>
-                <td style="text-align: center;">${statusHtml}</td>
-                <td style="text-align: center;">${timeStr}</td>
-                <td style="text-align: center;">${userStr}</td>
-                <td style="text-align: center;">${actionBtn}</td>
-            </tr>
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${g.name}</td>
+            <td style="text-align: center;">${statusHtml}</td>
+            <td style="text-align: center; font-size: 0.82rem; color: var(--text-muted);">${timeStr}</td>
+            <td style="text-align: center; font-size: 0.82rem;">${userStr}</td>
+            <td style="text-align: center;">${actionBtn}</td>
         `;
+        tbody.appendChild(tr);
     });
+
+    // Cập nhật huy hiệu thông báo trên tab 4 của Admin nếu có tổ đang yêu cầu mở khóa
+    const tab4Btn = document.querySelector('button[onclick*="mergeTab"]');
+    if (tab4Btn) {
+        if (totalUnlockRequests > 0) {
+            tab4Btn.innerHTML = `4. Gộp Phân Công & FET CSV <span style="background: #f59e0b; color: #000; font-weight: 800; font-size: 0.72rem; padding: 2px 7px; border-radius: 12px; margin-left: 6px; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);">🔔 ${totalUnlockRequests}</span>`;
+        } else {
+            tab4Btn.innerHTML = `4. Gộp Phân Công & FET CSV`;
+        }
+    }
 }
 
 // ================= LOGIC QUẢN LÝ PHIÊN BẢN PHÂN CÔNG CHUYÊN MÔN =================

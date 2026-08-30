@@ -29,9 +29,12 @@
                 <span id="syncDot" class="dot dot-grey"></span>
                 <span id="syncStatusText" style="color: var(--text-muted);">Đang dùng Offline</span>
             </div>
-            <div class="user-info" id="headerUserInfo" style="display: none;">
+            <div class="user-info" id="headerUserInfo" style="display: none; align-items: center; gap: 8px;">
                 <span class="badge" id="userRoleBadge">Đang đăng nhập...</span>
-                <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="padding: 6px 12px; font-size: 0.8rem;">
+                <button class="btn btn-secondary" onclick="openChangePasswordModal()" id="changePasswordBtn" style="padding: 6px 12px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;" title="Đổi mật khẩu truy cập">
+                    <span class="material-icons-round" style="font-size: 1rem;">key</span> Đổi mật khẩu
+                </button>
+                <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="padding: 6px 12px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
                     <span class="material-icons-round" style="font-size: 1rem;">logout</span> Đăng xuất
                 </button>
             </div>
