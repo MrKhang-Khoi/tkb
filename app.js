@@ -2332,7 +2332,37 @@ function clearBatchSelections() {
     document.getElementById('batchPeriodsInput').value = '';
     document.getElementById('batchPeriodsInput').placeholder = 'Chuẩn';
     toggleBatchClasses('none');
+
+    const banner = document.getElementById('batchEditBanner');
+    if (banner) banner.style.display = 'none';
+    editingAssignmentState = null;
+
+    const applyBtn = document.getElementById('batchApplyBtn');
+    const editBtn = document.getElementById('batchEditBtn');
+    if (applyBtn) {
+        applyBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">done_all</span> Áp dụng';
+    }
+    if (editBtn) {
+        editBtn.style.display = 'none';
+    }
+
     updateClassCheckboxesState();
+}
+
+function toggleBatchEditMode() {
+    const teacher = getSelectedTeacher();
+    const subject = getSelectedSubject();
+    if (!teacher || !subject) {
+        showToast("Vui lòng chọn giáo viên và môn học trước khi điều chỉnh!", "warning");
+        return;
+    }
+    if (editingAssignmentState) {
+        cancelReassignment();
+        showToast("Đã thoát chế độ điều chỉnh phân công.", "info");
+    } else {
+        startReassignment(teacher, subject);
+        showToast(`Đã bật chế độ điều chỉnh môn ${subject} cho GV ${teacher}!`, "info");
+    }
 }
 
 function startReassignment(teacherShort, subjectName) {
@@ -2360,8 +2390,23 @@ function startReassignment(teacherShort, subjectName) {
     if (banner && bannerText) {
         const teacher = state.teachers.find(t => t.shortName === teacherShort);
         const fullName = teacher ? teacher.fullName : teacherShort;
-        bannerText.innerHTML = `Đang hiệu chỉnh phân công cho giáo viên <b>${fullName} (${teacherShort})</b> - Môn <b>${subjectName}</b>. Chọn lại các lớp học và nhấn Áp dụng để cập nhật.`;
+        bannerText.innerHTML = `Đang hiệu chỉnh phân công cho giáo viên <b>${fullName} (${teacherShort})</b> - Môn <b>${subjectName}</b>. Chọn/bỏ chọn các lớp học và nhấn "Lưu điều chỉnh" để hoàn tất.`;
         banner.style.display = 'flex';
+    }
+
+    // Cập nhật trạng thái các nút bấm trên thanh công cụ
+    const applyBtn = document.getElementById('batchApplyBtn');
+    const editBtn = document.getElementById('batchEditBtn');
+    if (applyBtn) {
+        applyBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">save</span> Lưu điều chỉnh';
+    }
+    if (editBtn) {
+        editBtn.style.display = 'inline-flex';
+        editBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">close</span> Hủy điều chỉnh';
+        editBtn.className = 'btn btn-secondary';
+        editBtn.style.background = 'rgba(255, 255, 255, 0.08)';
+        editBtn.style.color = '#fff';
+        editBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
 
     // Reset các checkbox và chỉ tích chọn những lớp giáo viên này đang dạy môn học này
@@ -2384,7 +2429,6 @@ function startReassignment(teacherShort, subjectName) {
     const panel = document.getElementById('batchAssignPanel');
     if (panel) {
         panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Nháy sáng viền nhẹ để gây chú ý
         panel.style.transition = 'box-shadow 0.3s ease';
         panel.style.boxShadow = '0 0 20px rgba(129, 140, 248, 0.6)';
         setTimeout(() => {
@@ -2399,7 +2443,11 @@ function cancelReassignment() {
     const banner = document.getElementById('batchEditBanner');
     if (banner) banner.style.display = 'none';
     
-    clearBatchSelections();
+    const applyBtn = document.getElementById('batchApplyBtn');
+    if (applyBtn) {
+        applyBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">done_all</span> Áp dụng';
+    }
+    
     updateClassCheckboxesState();
 }
 
@@ -2568,13 +2616,15 @@ function updateClassCheckboxesState() {
                 cb.checked = true;
                 if (editingAssignmentState) {
                     cb.disabled = false;
-                    titleStr = `Môn ${selectedSubject} của lớp ${clsName} đang phân công cho bạn (${getTeacherFullName(selectedTeacher)}) - Click để bỏ chọn`;
+                    label.style.opacity = '1';
+                    label.style.cursor = 'pointer';
+                    titleStr = `Môn ${selectedSubject} của lớp ${clsName} đang phân công cho ${getTeacherFullName(selectedTeacher)} - Bấm để bỏ chọn lớp`;
                 } else {
-                    cb.disabled = true;
-                    label.style.opacity = '0.7';
-                    label.style.cursor = 'not-allowed';
+                    cb.disabled = false;
+                    label.style.opacity = '0.9';
+                    label.style.cursor = 'pointer';
                     label.appendChild(document.createTextNode(' (Đang dạy)'));
-                    titleStr = `Môn ${selectedSubject} của lớp ${clsName} đang được dạy bởi bạn (${getTeacherFullName(selectedTeacher)})`;
+                    titleStr = `Môn ${selectedSubject} của lớp ${clsName} đang được dạy bởi ${getTeacherFullName(selectedTeacher)} - Bấm nút "Điều chỉnh" hoặc click để chỉnh sửa`;
                 }
             }
         } else {
@@ -2585,6 +2635,62 @@ function updateClassCheckboxesState() {
         label.title = titleStr;
         cb.title = titleStr;
     });
+
+    // 3. Cập nhật hiển thị và trạng thái của nút "Điều chỉnh" (batchEditBtn)
+    const applyBtn = document.getElementById('batchApplyBtn');
+    const editBtn = document.getElementById('batchEditBtn');
+
+    let teacherHasThisSubject = false;
+    if (selectedTeacher && selectedSubject) {
+        const isDuty = state.subjects.some(s => s && s.name === selectedSubject && s.grade === 'Kiêm nhiệm');
+        if (isDuty) {
+            const dutySub = state.subjects.find(s => s && s.name === selectedSubject && s.grade === 'Kiêm nhiệm');
+            if (dutySub) {
+                const dutyAssigns = getDutyAssignments(dutySub.id);
+                teacherHasThisSubject = dutyAssigns.some(a => a.teacher === selectedTeacher);
+            }
+        } else {
+            state.classes.forEach(clsObj => {
+                const subObj = getSubjectForClass(clsObj.name, selectedSubject);
+                if (subObj) {
+                    const key = `${clsObj.name}_${subObj.id}`;
+                    const assign = state.assignments[key];
+                    if (assign && assign.teacher === selectedTeacher && assign.periods > 0) {
+                        teacherHasThisSubject = true;
+                    }
+                }
+            });
+        }
+    }
+
+    if (editBtn) {
+        if (editingAssignmentState) {
+            editBtn.style.display = 'inline-flex';
+            editBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">close</span> Hủy điều chỉnh';
+            editBtn.className = 'btn btn-secondary';
+            editBtn.style.background = 'rgba(255, 255, 255, 0.08)';
+            editBtn.style.color = '#fff';
+            editBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            if (applyBtn) {
+                applyBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">save</span> Lưu điều chỉnh';
+            }
+        } else if (teacherHasThisSubject) {
+            editBtn.style.display = 'inline-flex';
+            editBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">edit_note</span> Điều chỉnh';
+            editBtn.className = 'btn btn-warning';
+            editBtn.style.background = 'rgba(245, 158, 11, 0.18)';
+            editBtn.style.color = '#fbbf24';
+            editBtn.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            if (applyBtn) {
+                applyBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">done_all</span> Áp dụng';
+            }
+        } else {
+            editBtn.style.display = 'none';
+            if (applyBtn) {
+                applyBtn.innerHTML = '<span class="material-icons-round" style="font-size: 1.1rem;">done_all</span> Áp dụng';
+            }
+        }
+    }
 }
 
 function exportGroupAssignmentExcel() {
