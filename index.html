@@ -930,6 +930,43 @@
                 <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
                     Dữ liệu phân công từ các tổ trưởng được tự động đồng bộ qua hệ thống thời gian thực. Tại đây, Admin phê duyệt, thiết lập quy tắc chia tiết và tải file CSV để import vào phần mềm xếp thời khóa biểu tự động FET.
                 </p>
+
+                <!-- Smart PCCM Excel Import & Reconciliation Hub -->
+                <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 14px; padding: 22px; margin-bottom: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.8rem; background: rgba(99, 102, 241, 0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(99,102,241,0.25);">health_and_safety</span>
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    Trung Tâm Nhập Excel PCCM & Đối Soát Bất Thường
+                                    <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; background: rgba(99,102,241,0.2); color: var(--primary-light); border: 1px solid rgba(99,102,241,0.3);">AI Smart Auditor</span>
+                                </h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 0 0;">
+                                    Tự động bóc tách 92 GV từ Excel BGH, tự động nạp tổ chưa phân công, đối soát 3 chiều với Tổ trưởng và phát hiện mọi bất thường.
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="file" id="pccmExcelFileInput" accept=".xls, .xlsx" style="display: none;" onchange="handlePCCMExcelUpload(event)">
+                            <button class="btn btn-primary" onclick="document.getElementById('pccmExcelFileInput').click()" style="display: flex; align-items: center; gap: 6px; padding: 9px 18px; font-weight: 600; background: linear-gradient(135deg, #4f46e5, #6366f1); border: none; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35); cursor: pointer;">
+                                <span class="material-icons-round">upload_file</span> Nạp File Excel PCCM (.xls, .xlsx)
+                            </button>
+                            <button class="btn btn-secondary" onclick="runAssignmentHealthAuditOnly()" style="display: flex; align-items: center; gap: 6px; padding: 9px 16px; cursor: pointer;">
+                                <span class="material-icons-round" style="color: #facc15;">troubleshoot</span> 🩺 Chẩn Đoán Phân Công
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pccmAuditBanner" style="display: none; padding: 14px 18px; border-radius: 10px; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;" id="pccmAuditSummaryText">
+                            <!-- Dynamic summary -->
+                        </div>
+                        <button class="btn btn-warning" id="btnOpenReconciliationModal" onclick="openReconciliationModal()" style="padding: 7px 16px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <span class="material-icons-round">compare_arrows</span> Mở Bảng Đối Soát Chi Tiết
+                        </button>
+                    </div>
+                </div>
+
                 <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click();">
                     <span class="material-icons-round icon">cloud_upload</span>
                     <p>Tải lên tệp phân công ngoại tuyến (.json) từ các tổ (nếu không có kết nối Internet)</p>
@@ -1308,6 +1345,195 @@
             </div>
             <div class="modal-footer" id="modalFooter">
                 <!-- Action buttons injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SMART PCCM RECONCILIATION & ANOMALY AUDITOR MODAL ================= -->
+    <div id="pccmReconciliationModal" class="modal-overlay" style="display: none; z-index: 1100;">
+        <div class="modal-card modal-card-xl" style="height: 90vh; max-height: 900px; display: flex; flex-direction: column; padding: 20px;">
+            <!-- Modal Header -->
+            <div class="modal-header" style="margin-bottom: 12px; padding-bottom: 10px; flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.6rem; background: rgba(99, 102, 241, 0.15); padding: 8px; border-radius: 10px;">health_and_safety</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            Trung Tâm Đối Soát & Kiểm Soát Bất Thường Phân Công
+                            <span class="diff-badge autofill" id="reconAuditBadge">AI Auditor Ready</span>
+                        </h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-muted);" id="reconModalSubtitle">
+                            Đối soát chéo dữ liệu Excel BGH với phân công Tổ trưởng & kiểm tra tính toàn vẹn 5 cấp độ.
+                        </p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeReconciliationModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+
+            <!-- Top Summary Stats Grid -->
+            <div style="display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; flex-shrink: 0;" id="reconStatsContainer">
+                <div class="reconciliation-stat-card">
+                    <span class="material-icons-round" style="color: #ef4444; font-size: 2rem;">error</span>
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #ef4444;" id="reconCountCritical">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Lỗi nghiêm trọng (Sót/Trùng)</div>
+                    </div>
+                </div>
+                <div class="reconciliation-stat-card">
+                    <span class="material-icons-round" style="color: #f59e0b; font-size: 2rem;">warning</span>
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;" id="reconCountWarning">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Cảnh báo lệch tiết / Quota</div>
+                    </div>
+                </div>
+                <div class="reconciliation-stat-card">
+                    <span class="material-icons-round" style="color: #3b82f6; font-size: 2rem;">auto_fix_high</span>
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #60a5fa;" id="reconCountAutofill">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Tổ sẵn sàng nạp tự động</div>
+                    </div>
+                </div>
+                <div class="reconciliation-stat-card">
+                    <span class="material-icons-round" style="color: #10b981; font-size: 2rem;">task_alt</span>
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #34d399;" id="reconCountMatches">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Phân công khớp 100%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Nav Tabs -->
+            <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border); margin-bottom: 14px; flex-shrink: 0;">
+                <button type="button" class="tab-btn active" id="btnReconTabDiagnostics" onclick="switchReconTab('diagnostics')" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="font-size: 1.1rem;">troubleshoot</span> 1. Chẩn Đoán Bất Thường (<span id="tabCountDiagnostics">0</span>)
+                </button>
+                <button type="button" class="tab-btn" id="btnReconTabDiff" onclick="switchReconTab('diff')" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="font-size: 1.1rem;">compare_arrows</span> 2. Bảng Đối Chiếu 3 Chiều (<span id="tabCountDiff">0</span>)
+                </button>
+                <button type="button" class="tab-btn" id="btnReconTabExcel" onclick="switchReconTab('excel')" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="font-size: 1.1rem;">view_list</span> 3. Toàn Bộ 92 GV Excel (<span id="tabCountExcel">0</span>)
+                </button>
+            </div>
+
+            <!-- Modal Body Scrollable Content -->
+            <div class="modal-body" style="flex: 1 1 auto; overflow-y: auto; max-height: none; padding-right: 4px; margin-bottom: 14px;">
+                <!-- Subtab 1: Diagnostics -->
+                <div id="reconSubtabDiagnostics" style="display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Danh Sách Phát Hiện & Đề Xuất Sửa Nhanh</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-secondary" onclick="filterAuditItems('all')" style="padding: 3px 8px; font-size: 0.75rem;">Tất cả</button>
+                            <button class="btn btn-secondary" onclick="filterAuditItems('critical')" style="padding: 3px 8px; font-size: 0.75rem; color: #f87171;">Chỉ lỗi đỏ</button>
+                            <button class="btn btn-secondary" onclick="filterAuditItems('warning')" style="padding: 3px 8px; font-size: 0.75rem; color: #fbbf24;">Cảnh báo</button>
+                        </div>
+                    </div>
+                    <div id="reconAuditItemsList">
+                        <!-- Dynamic audit cards -->
+                    </div>
+                </div>
+
+                <!-- Subtab 2: Diff Matrix -->
+                <div id="reconSubtabDiff" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label for="reconGroupFilter" style="font-size: 0.8rem; color: var(--text-muted);">Lọc theo tổ:</label>
+                            <select id="reconGroupFilter" class="form-control" style="width: 180px; padding: 4px 8px; font-size: 0.8rem; height: 32px;" onchange="renderReconciliationDiffTable()">
+                                <option value="all">Tất cả các tổ</option>
+                            </select>
+                            <select id="reconStatusFilter" class="form-control" style="width: 180px; padding: 4px 8px; font-size: 0.8rem; height: 32px;" onchange="renderReconciliationDiffTable()">
+                                <option value="all">Tất cả trạng thái</option>
+                                <option value="autofill">Tổ chưa phân (Nạp tự động)</option>
+                                <option value="conflict">Lệch giáo viên</option>
+                                <option value="match">Khớp hoàn toàn</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-secondary" onclick="setAllReconChoices('excel')" style="padding: 4px 10px; font-size: 0.75rem;">✔ Chọn tất cả theo Excel</button>
+                            <button class="btn btn-secondary" onclick="setAllReconChoices('system')" style="padding: 4px 10px; font-size: 0.75rem;">✔ Giữ tất cả của Tổ</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: rgba(15, 23, 42, 0.4);">
+                        <table class="matrix-table" style="font-size: 0.82rem; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">STT</th>
+                                    <th>Lớp & Khối</th>
+                                    <th>Môn học</th>
+                                    <th>Tổ chuyên môn</th>
+                                    <th>Phân công trong Excel (BGH)</th>
+                                    <th>Phân công trên Hệ thống (Tổ)</th>
+                                    <th style="width: 130px; text-align: center;">Đánh giá</th>
+                                    <th style="width: 170px; text-align: center;">Hành động lựa chọn</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reconDiffTableBody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Subtab 3: Full 92 Teachers from Excel -->
+                <div id="reconSubtabExcel" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <input type="text" id="reconExcelSearchInput" class="form-control" placeholder="Tìm theo tên giáo viên, môn, chức vụ..." style="max-width: 320px; padding: 6px 12px; font-size: 0.85rem;" oninput="renderReconExcelTable()">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);" id="reconExcelCountText">92 giáo viên bóc tách từ Excel</span>
+                    </div>
+                    <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: rgba(15, 23, 42, 0.4);">
+                        <table class="matrix-table" style="font-size: 0.82rem; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px;">STT</th>
+                                    <th>Họ và tên</th>
+                                    <th>Chức vụ / Chuyên môn</th>
+                                    <th>Tổ dự kiến</th>
+                                    <th>Nhiệm vụ giảng dạy (Lớp & Tiết)</th>
+                                    <th>Kiêm nhiệm</th>
+                                    <th>Bồi dưỡng / Phụ đạo</th>
+                                    <th style="width: 70px; text-align: center;">Tổng tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reconExcelTableBody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer Controls -->
+            <div class="modal-footer" style="flex-shrink: 0; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+                    <span class="material-icons-round" style="color: #34d399; font-size: 1.1rem;">security</span>
+                    Hệ thống sẽ tự động tạo bản sao lưu an toàn (Snapshot) trước khi đồng bộ.
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="closeReconciliationModal()" style="padding: 8px 16px;">Đóng</button>
+                    <button class="btn btn-primary" onclick="applyReconciliationData('autofill_only')" style="padding: 8px 16px; background: #3b82f6; border-color: #2563eb; display: flex; align-items: center; gap: 6px;" title="Chỉ nạp phân công cho các tổ chưa làm, giữ nguyên các tổ đã phân công">
+                        <span class="material-icons-round" style="font-size: 1.1rem;">playlist_add_check</span> Nạp Cho Các Tổ Chưa Làm
+                    </button>
+                    <button class="btn btn-success" onclick="applyReconciliationData('custom')" style="padding: 8px 20px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons-round" style="font-size: 1.1rem;">done_all</span> Xác Nhận & Cập Nhật Hệ Thống
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated AI PCCM Processing & Loading Overlay -->
+    <div id="pccmLoadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-card">
+            <div class="loading-spinner-ring"></div>
+            <h3 id="pccmLoadingTitle" style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 8px 0;">Đang Bóc Tách File PCCM...</h3>
+            <p id="pccmLoadingStatus" style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                Hệ thống đang giải mã cú pháp lớp, môn và đối soát 3 chiều...
+            </p>
+            <div class="loading-progress-bar">
+                <div id="pccmLoadingProgressFill" class="loading-progress-fill"></div>
+            </div>
+            <div id="pccmLoadingStepText" style="font-size: 0.75rem; color: var(--primary-light); margin-top: 10px; font-weight: 600;">
+                Bước 1/4: Đọc dữ liệu Excel nhị phân
             </div>
         </div>
     </div>
