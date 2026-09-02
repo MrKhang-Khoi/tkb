@@ -400,7 +400,9 @@ function showConfirmModal(title, messageHtml, onConfirm, confirmText = 'Xác nh�
                 btn.innerHTML = `<span class="material-icons-round spin-anim" style="font-size: 1.1rem; vertical-align: middle; margin-right: 6px;">sync</span> Đang thực hiện...`;
                 if (cancelBtn) cancelBtn.disabled = true;
 
+                // Đóng modal sớm và thực thi tác vụ trên microtask để UI không bị đơ
                 setTimeout(async () => {
+                    closeModal();
                     try {
                         if (typeof onConfirm === 'function') {
                             await onConfirm();
@@ -408,10 +410,8 @@ function showConfirmModal(title, messageHtml, onConfirm, confirmText = 'Xác nh�
                     } catch (err) {
                         console.error("Lỗi khi thực hiện xác nhận:", err);
                         showToast("Có lỗi xảy ra: " + (err.message || err), "danger");
-                    } finally {
-                        closeModal();
                     }
-                }, 180);
+                }, 80);
             };
         }
     }, 50);
@@ -749,7 +749,29 @@ function persistData() {
     }
 }
 
+// Tự động dọn dẹp các môn học và tổ rác cũ để dữ liệu luôn khớp 100% với Admin
+function cleanupMasterData() {
+    if (!state.globalSubjects) state.globalSubjects = [];
+    if (!state.subjects) state.subjects = [];
+    if (!state.groups) state.groups = [];
+
+    // 1. Dọn dẹp các tổ rác tự sinh (chỉ giữ tổ Admin tạo)
+    state.groups = state.groups.filter(g => g && g.id && !g.isPlaceholder && g.id !== 'g_vtm_gdtc');
+
+    // 2. Lọc sạch danh mục môn trong các tổ (g.subjects) nếu có globalSubjects
+    if (state.globalSubjects.length > 0) {
+        const validGlobalNames = new Set(state.globalSubjects.map(gs => gs.name.trim().toLowerCase()));
+        
+        state.groups.forEach(g => {
+            if (g.subjects && Array.isArray(g.subjects)) {
+                g.subjects = g.subjects.filter(sName => sName && validGlobalNames.has(sName.trim().toLowerCase()));
+            }
+        });
+    }
+}
+
 function refreshActiveViews() {
+    cleanupMasterData(); // Dọn dẹp dữ liệu rác trước khi render
     syncGvcnAndHomeroom(); // Tự động đồng bộ GVCN và định mức trước khi render các view
     if (state.currentUser === 'admin') {
         renderClasses();
@@ -761,7 +783,13 @@ function refreshActiveViews() {
         updateTeacherSubjectsCheckboxes();
         renderSubjectConfigs();
         renderDutyConfigs();
-        renderMergedAssignments();
+        
+        // Lazy rendering: Chỉ render bảng phân công tổng hợp nếu tab 4 đang hiển thị
+        const mergeTab = document.getElementById('mergeTab');
+        if (mergeTab && mergeTab.classList.contains('active')) {
+            renderMergedAssignments();
+        }
+        
         renderAdminGroupLockStatus();
         renderAssignmentVersions();
         renderWeeklyTimetablesTable();
@@ -4207,10 +4235,15 @@ function openAssignSubjectsToGroupModal(groupId) {
     const g = state.groups.find(group => group.id === groupId);
     if (!g) return;
 
-    // Lấy toàn bộ môn học duy nhất trong trường (loại trừ kiêm nhiệm thuần túy nếu muốn, hoặc cho phép chọn cả HĐTN/GDĐP)
-    const subjectNamesFromGlobal = state.globalSubjects.filter(gs => gs).map(gs => gs.name);
-    const subjectNamesFromSubjects = state.subjects.filter(s => s).map(s => s.name);
-    const allUniqueSubjects = [...new Set([...subjectNamesFromGlobal, ...subjectNamesFromSubjects])]
+    // Lấy danh mục môn học CHUẨN do Admin khai báo tại Mục 1.1 (state.globalSubjects)
+    let subjectNames = [];
+    if (state.globalSubjects && state.globalSubjects.length > 0) {
+        subjectNames = state.globalSubjects.filter(gs => gs && gs.name).map(gs => gs.name.trim());
+    } else if (state.subjects && state.subjects.length > 0) {
+        subjectNames = state.subjects.filter(s => s && s.name).map(s => s.name.trim());
+    }
+
+    const allUniqueSubjects = [...new Set(subjectNames)]
         .filter(Boolean)
         .sort((a, b) => a.localeCompare(b, 'vi'));
 
@@ -4219,7 +4252,7 @@ function openAssignSubjectsToGroupModal(groupId) {
     if (g.subjects && Array.isArray(g.subjects)) {
         g.subjects.forEach(s => s && currentlyAssigned.add(s.toLowerCase().trim()));
     }
-    state.globalSubjects.forEach(gs => {
+    (state.globalSubjects || []).forEach(gs => {
         if (gs && (gs.groupId === g.id || gs.group === g.id || gs.group === g.name)) {
             currentlyAssigned.add(gs.name.toLowerCase().trim());
         }
@@ -4785,12 +4818,12 @@ function deleteAllTeachers() {
         "Xác Nhận Xóa Tất Cả Giáo Viên",
         `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ ${state.teachers.length}</b> giáo viên trong hệ thống?</p>
          <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Thao tác này sẽ xóa toàn bộ danh sách giáo viên, liên kết chủ nhiệm và phân công giảng dạy liên quan. Hành động này KHÔNG THỂ hoàn tác!</p>`,
-        () => {
+        async () => {
             const count = state.teachers.length;
-            const teacherShortNames = state.teachers.map(t => t.shortName);
+            const teacherShortNames = new Set(state.teachers.map(t => t.shortName));
             if (state.assignments) {
                 Object.keys(state.assignments).forEach(key => {
-                    if (state.assignments[key] && teacherShortNames.includes(state.assignments[key].teacher)) {
+                    if (state.assignments[key] && teacherShortNames.has(state.assignments[key].teacher)) {
                         if (key.startsWith('Kiêm nhiệm_')) {
                             delete state.assignments[key];
                         } else {
@@ -4806,8 +4839,12 @@ function deleteAllTeachers() {
                 });
             }
             persistData();
-            refreshActiveViews();
-            showToast(`Đã xóa tất cả ${count} giáo viên thành công!`, "success");
+            
+            // Trả lại luồng UI cho trình duyệt trước khi render
+            setTimeout(() => {
+                refreshActiveViews();
+                showToast(`Đã xóa tất cả ${count} giáo viên thành công!`, "success");
+            }, 50);
         },
         "Xác nhận xóa tất cả",
         "btn-danger",
@@ -6497,6 +6534,54 @@ function runAssignmentHealthAudit(excelData) {
         }
     });
 
+    // SCANNER 8: Kiểm tra Môn Học Chưa Khai Báo Trong Admin (Subject Registry Auditor)
+    const declaredSubjectsSet = new Set();
+    (state.globalSubjects || []).forEach(gs => gs && gs.name && declaredSubjectsSet.add(gs.name.trim().toLowerCase()));
+    (state.subjects || []).forEach(s => s && s.name && declaredSubjectsSet.add(s.name.trim().toLowerCase()));
+
+    const missingSubjects = new Set();
+    Object.keys(excelClassSubjectMap).forEach(key => {
+        const [clsName, subName] = key.split('_');
+        const normSub = subName.trim().toLowerCase();
+        const isMatched = Array.from(declaredSubjectsSet).some(ds => ds === normSub || normalizePCCMSubjectName(ds).toLowerCase() === normalizePCCMSubjectName(normSub).toLowerCase());
+        if (!isMatched && declaredSubjectsSet.size > 0) {
+            missingSubjects.add(subName.trim());
+        }
+    });
+
+    missingSubjects.forEach(subName => {
+        warnings.push({
+            id: `unmatched_sub_${subName}`,
+            type: 'warning',
+            category: 'Môn Chưa Khai Báo Trong Admin',
+            title: `Môn "${subName}" chưa được khai báo tại Mục 1.1`,
+            desc: `Môn "${subName}" có trong file Excel nhưng chưa được khai báo trong Danh Mục Môn Học của Admin. Hệ thống CẤM TUYỆT ĐỐI tự sinh môn mới. Vui lòng vào Mục 1.1 để khai báo môn này.`,
+            actionText: `Khai báo môn vào Admin`
+        });
+    });
+
+    // SCANNER 9: Kiểm tra Lớp Học Chưa Khai Báo Trong Admin (Class Registry Auditor)
+    const declaredClassesSet = new Set((state.classes || []).map(c => c.name.trim().toUpperCase()));
+    const missingClasses = new Set();
+    Object.keys(excelClassSubjectMap).forEach(key => {
+        const [clsName] = key.split('_');
+        if (clsName === 'Kiêm nhiệm') return;
+        if (!declaredClassesSet.has(clsName.trim().toUpperCase()) && declaredClassesSet.size > 0) {
+            missingClasses.add(clsName.trim());
+        }
+    });
+
+    missingClasses.forEach(clsName => {
+        warnings.push({
+            id: `unmatched_cls_${clsName}`,
+            type: 'warning',
+            category: 'Lớp Chưa Khai Báo Trong Admin',
+            title: `Lớp "${clsName}" chưa có trong danh sách Lớp (Mục 1.3)`,
+            desc: `Lớp "${clsName}" có trong file Excel nhưng chưa được tạo tại Mục 1.3 của Admin. Vui lòng tạo lớp này trong Admin trước khi đồng bộ.`,
+            actionText: `Tạo lớp trong Admin`
+        });
+    });
+
     lastAuditResults = {
         critical: critical,
         warnings: warnings,
@@ -7145,21 +7230,14 @@ async function applyReconciliationData(mode) {
         }
 
         if (choice === 'excel') {
-            const subObj = state.subjects.find(s => s.name.toLowerCase() === item.subName.toLowerCase());
-            const subId = subObj ? subObj.id : ('sub_' + item.subName);
-
-            // Đảm bảo môn học tồn tại trong state.subjects
-            if (!subObj) {
-                const gradeMatch = item.clsName.match(/^[6789]/);
-                const grade = gradeMatch ? gradeMatch[0] : '6';
-                state.subjects.push({
-                    id: subId,
-                    name: item.subName,
-                    grade: grade,
-                    periods: item.excelPeriods || 2,
-                    group: item.groupId
-                });
+            let subObj = state.subjects.find(s => s.name.toLowerCase() === item.subName.toLowerCase());
+            if (!subObj && state.globalSubjects) {
+                const gsMatch = state.globalSubjects.find(gs => gs.name.toLowerCase() === item.subName.toLowerCase() || normalizePCCMSubjectName(gs.name).toLowerCase() === normalizePCCMSubjectName(item.subName).toLowerCase());
+                if (gsMatch) {
+                    subObj = { id: gsMatch.id || ('sub_' + gsMatch.name), name: gsMatch.name, periods: 2, group: gsMatch.groupId || item.groupId };
+                }
             }
+            const subId = subObj ? subObj.id : ('sub_' + item.subName);
 
             const matchedTeacher = matchTeacherWithAdmin(item.excelTeacher);
             const teacherKey = matchedTeacher ? matchedTeacher.shortName : (item.excelTeacherShort || item.excelTeacher);
