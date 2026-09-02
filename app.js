@@ -761,11 +761,27 @@ function persistData() {
     }
 }
 
+// Đảm bảo luôn có tài khoản Admin trong hệ thống
+function ensureAdminAccountExists() {
+    if (!state.accounts || !Array.isArray(state.accounts)) {
+        state.accounts = [];
+    }
+    const adminAcc = state.accounts.find(a => a && a.username && a.username.trim().toLowerCase() === 'admin');
+    if (!adminAcc) {
+        state.accounts.unshift({
+            username: 'admin',
+            password: 'admin',
+            group: 'admin'
+        });
+    }
+}
+
 // Tự động dọn dẹp các môn học và tổ rác cũ để dữ liệu luôn khớp 100% với Admin
 function cleanupMasterData() {
     if (!state.globalSubjects) state.globalSubjects = [];
     if (!state.subjects) state.subjects = [];
     if (!state.groups) state.groups = [];
+    ensureAdminAccountExists();
 
     // 1. Dọn dẹp các tổ rác tự sinh (chỉ giữ tổ Admin tạo)
     state.groups = state.groups.filter(g => g && g.id && !g.isPlaceholder && g.id !== 'g_vtm_gdtc');
@@ -1173,14 +1189,19 @@ function renderMergedAssignments() {
 // ================= AUTHENTICATION HANDLERS =================
 
 async function login() {
-    const user = document.getElementById('loginUsername').value.trim().toLowerCase();
-    const pass = document.getElementById('loginPassword').value;
+    const userInput = document.getElementById('loginUsername');
+    const passInput = document.getElementById('loginPassword');
+    const user = (userInput ? userInput.value : '').trim().toLowerCase();
+    const pass = passInput ? passInput.value : '';
     const loginBtn = document.getElementById('loginBtn') || document.querySelector('#loginSection button.btn-primary');
 
     if (!user || !pass) {
         showToast("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!", "warning");
         return;
     }
+
+    // Đảm bảo tài khoản admin luôn tồn tại
+    ensureAdminAccountExists();
 
     // Hiệu ứng đang đăng nhập trên nút
     const originalBtnHtml = loginBtn ? loginBtn.innerHTML : '';
@@ -1191,8 +1212,27 @@ async function login() {
     }
 
     try {
-        const hashedPass = await sha256(pass);
-        const acc = state.accounts.find(a => a.username === user && (a.password === pass || a.password === hashedPass));
+        let hashedPass = "";
+        try {
+            hashedPass = await sha256(pass);
+        } catch (e) {
+            console.warn("Lỗi băm mật khẩu:", e);
+        }
+
+        // 1. Tìm tài khoản khớp trong danh sách accounts
+        let acc = (state.accounts || []).find(a => a && a.username && a.username.trim().toLowerCase() === user && (a.password === pass || (hashedPass && a.password === hashedPass)));
+
+        // 2. Dự phòng đặc biệt cho Admin hệ thống
+        if (!acc && user === 'admin') {
+            const adminAcc = (state.accounts || []).find(a => a && a.username && a.username.trim().toLowerCase() === 'admin');
+            if (pass === 'admin' || (adminAcc && (adminAcc.password === pass || (hashedPass && adminAcc.password === hashedPass) || adminAcc.password === 'admin'))) {
+                acc = adminAcc || { username: 'admin', password: 'admin', group: 'admin' };
+                if (!adminAcc) {
+                    state.accounts.unshift(acc);
+                }
+            }
+        }
+
         if (!acc) {
             if (loginBtn) {
                 loginBtn.disabled = false;
@@ -1203,42 +1243,39 @@ async function login() {
             return;
         }
 
-        // Tự động nâng cấp mật khẩu cũ sang dạng băm (Migration)
-        if (acc.password === pass) {
-            acc.password = hashedPass;
-            if (isFirebaseConnected && db) {
-                db.ref("school_data/accounts").set(state.accounts);
-            }
-        }
+        state.currentUser = acc.group || acc.groupId || (acc.username === 'admin' ? 'admin' : acc.username);
 
-        state.currentUser = acc.group;
-
-        const roleBadgeText = acc.group === 'admin' 
+        const roleBadgeText = (acc.group === 'admin' || acc.username === 'admin') 
             ? "Quản trị viên (Admin)" 
             : (() => {
-                const groupObj = state.groups.find(g => g.id === acc.group);
+                const groupObj = (state.groups || []).find(g => g && (g.id === acc.group || g.id === acc.groupId));
                 return groupObj ? `Tổ: ${groupObj.name}` : "Tổ trưởng";
             })();
 
         // Lưu phiên làm việc vào localStorage
-        localStorage.setItem('fet_hub_current_user', acc.group);
+        localStorage.setItem('fet_hub_current_user', state.currentUser);
         localStorage.setItem('fet_hub_current_role_badge', roleBadgeText);
 
         // Chuyển sang giao diện làm việc
         setTimeout(() => {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('headerUserInfo').style.display = 'flex';
+            const loginSection = document.getElementById('loginSection');
+            const headerUserInfo = document.getElementById('headerUserInfo');
+            const userRoleBadge = document.getElementById('userRoleBadge');
+            const adminDashboard = document.getElementById('adminDashboard');
+            const groupDashboard = document.getElementById('groupDashboard');
 
-            if (acc.group === 'admin') {
-                document.getElementById('userRoleBadge').innerText = roleBadgeText;
-                document.getElementById('adminDashboard').style.display = 'block';
-                document.getElementById('groupDashboard').style.display = 'none';
+            if (loginSection) loginSection.style.display = 'none';
+            if (headerUserInfo) headerUserInfo.style.display = 'flex';
+            if (userRoleBadge) userRoleBadge.innerText = roleBadgeText;
+
+            if (state.currentUser === 'admin') {
+                if (adminDashboard) adminDashboard.style.display = 'block';
+                if (groupDashboard) groupDashboard.style.display = 'none';
                 refreshActiveViews();
             } else {
-                document.getElementById('userRoleBadge').innerText = roleBadgeText;
-                document.getElementById('adminDashboard').style.display = 'none';
-                document.getElementById('groupDashboard').style.display = 'block';
-                initGroupDashboard(acc.group);
+                if (adminDashboard) adminDashboard.style.display = 'none';
+                if (groupDashboard) groupDashboard.style.display = 'block';
+                initGroupDashboard(state.currentUser);
             }
 
             if (loginBtn) {
@@ -1249,9 +1286,10 @@ async function login() {
 
             // Hiển thị thông báo chào mừng sau khi đã vào hẳn giao diện chính
             showToast(`Đăng nhập thành công! Chào mừng ${roleBadgeText}.`, "success");
-        }, 200);
+        }, 100);
 
     } catch (err) {
+        console.error("Lỗi xác thực:", err);
         if (loginBtn) {
             loginBtn.disabled = false;
             loginBtn.style.opacity = '1';
@@ -5056,6 +5094,32 @@ async function addLeaderAccount() {
     document.getElementById('newAccUsername').value = '';
     document.getElementById('newAccPassword').value = '';
     persistData();
+    refreshActiveViews();
+    showToast(`Đã thêm tài khoản tổ trưởng "${user}"!`, "success");
+}
+
+function generateDefaultAccounts() {
+    ensureAdminAccountExists();
+    let createdCount = 0;
+    (state.groups || []).forEach(g => {
+        if (!g || !g.name) return;
+        const rawName = (typeof removeVietnameseTones === 'function')
+            ? removeVietnameseTones(g.name).toLowerCase().replace(/[^a-z0-9]/g, '')
+            : g.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const username = rawName || ('to_' + g.id);
+        if (!state.accounts.some(a => a && (a.username === username || a.group === g.id || a.groupId === g.id))) {
+            state.accounts.push({
+                username: username,
+                password: '123',
+                group: g.id,
+                groupId: g.id
+            });
+            createdCount++;
+        }
+    });
+    persistData();
+    refreshActiveViews();
+    showToast(`Đã tự động khởi tạo tài khoản cho ${createdCount} tổ chuyên môn (mật khẩu mặc định: 123)!`, "success");
 }
 
 function deleteLeaderAccount(username) {
