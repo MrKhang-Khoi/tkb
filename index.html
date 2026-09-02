@@ -603,9 +603,14 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; flex-wrap: wrap; gap: 8px;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Mục Môn Học & Nhiệm Vụ</h3>
-                            <button class="btn btn-danger" onclick="deleteAllGlobalSubjects()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
-                                <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
-                            </button>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button class="btn btn-success" onclick="exportGlobalSubjectsExcel()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">file_download</span> Tải Excel
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteAllGlobalSubjects()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
+                                </button>
+                            </div>
                         </div>
                         <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
                             <table class="matrix-table">
@@ -635,9 +640,14 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; flex-wrap: wrap; gap: 8px;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Sách Tổ Chuyên Môn</h3>
-                            <button class="btn btn-danger" onclick="deleteAllGroups()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
-                                <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
-                            </button>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button class="btn btn-success" onclick="exportGroupsExcel()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">file_download</span> Tải Excel
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteAllGroups()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
+                                </button>
+                            </div>
                         </div>
                         <div style="overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
                             <table class="matrix-table">
@@ -691,8 +701,11 @@
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; gap: 12px; flex-wrap: wrap;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Sách Lớp Học</h3>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <input type="text" id="searchClassListName" class="form-control" placeholder="Tìm kiếm lớp..." style="width: 130px; padding: 4px 8px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" oninput="renderClasses()">
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <input type="text" id="searchClassListName" class="form-control" placeholder="Tìm kiếm lớp..." style="width: 120px; padding: 4px 8px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" oninput="renderClasses()">
+                                <button class="btn btn-success" onclick="exportClassesExcel()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">file_download</span> Tải Excel
+                                </button>
                                 <button class="btn btn-danger" onclick="deleteAllClasses()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
                                     <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
                                 </button>
@@ -753,12 +766,15 @@
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; gap: 12px; flex-wrap: wrap;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Sách Giáo Viên</h3>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <input type="text" id="searchTeacherListName" class="form-control" placeholder="Tìm kiếm GV..." style="width: 130px; padding: 4px 8px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" oninput="renderTeachers()">
-                                <select id="filterTeacherGroup" class="form-control" style="width: 130px; padding: 2px 6px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" onchange="renderTeachers()">
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="searchTeacherListName" class="form-control" placeholder="Tìm GV..." style="width: 100px; padding: 4px 8px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" oninput="renderTeachers()">
+                                <select id="filterTeacherGroup" class="form-control" style="width: 110px; padding: 2px 6px; height: 28px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);" onchange="renderTeachers()">
                                     <option value="all">Tất cả tổ</option>
                                     <!-- Dynamic -->
                                 </select>
+                                <button class="btn btn-success" onclick="exportTeachersExcel()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">file_download</span> Tải Excel
+                                </button>
                                 <button class="btn btn-danger" onclick="deleteAllTeachers()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
                                     <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
                                 </button>
@@ -770,9 +786,9 @@
                                     <tr>
                                         <th style="width: 50px;">STT</th>
                                         <th>Họ và tên</th>
-                                        <th>Tên viết tắt</th>
-                                        <th>Tổ chuyên môn</th>
-                                        <th>Định mức</th>
+                                        <th style="width: 100px;">Tên tắt</th>
+                                        <th>Tổ bộ môn</th>
+                                        <th style="width: 80px;">Định mức</th>
                                         <th style="width: 140px;">Hành động</th>
                                     </tr>
                                 </thead>
@@ -783,26 +799,19 @@
                         </div>
                     </div>
 
-                    <!-- Column Right: Accounts -->
-                    <div class="glass-card flex-col-50">
-                        <h2>2.2. Cấp Tài Khoản Cho Tổ Trưởng</h2>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Cung cấp quyền truy cập riêng cho từng tổ trưởng để phân công nội bộ tổ.</p>
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" id="newAccUsername" class="form-control" placeholder="Tên đăng nhập..." style="flex:1;">
-                                <input type="password" id="newAccPassword" class="form-control" placeholder="Mật khẩu..." style="flex:1;">
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <select id="newAccGroup" class="form-control" style="flex:2;">
-                                    <!-- Dynamic -->
-                                </select>
-                                <button class="btn btn-primary" onclick="addLeaderAccount()" style="flex: 1;">Cấp tài khoản</button>
-                            </div>
+                    <!-- Column Right: Accounts (2.2) -->
+                    <div class="glass-card flex-col-50" style="flex: 1 1 40%; min-width: 300px;">
+                        <h2>2.2. Phân Quyền & Tài Khoản Tổ Trưởng</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Hệ thống tự động cấp tài khoản đăng nhập cho Tổ trưởng chuyên môn.</p>
+                        <div style="margin-bottom: 16px;">
+                            <button class="btn btn-secondary" onclick="generateDefaultAccounts()" style="width: 100%;">
+                                <span class="material-icons-round" style="font-size: 1.1rem;">refresh</span> Tự động tạo lại danh sách tài khoản
+                            </button>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; gap: 8px; flex-wrap: wrap;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Sách Tài Khoản Tổ Trưởng</h3>
-                            <button class="btn btn-danger" onclick="deleteAllAccounts()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
-                                <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
+                            <button class="btn btn-success" onclick="exportAccountsExcel()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                <span class="material-icons-round" style="font-size: 0.95rem;">file_download</span> Tải Excel
                             </button>
                         </div>
                         <div style="overflow-x: auto; max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
@@ -861,9 +870,14 @@
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; flex-wrap: wrap; gap: 8px;">
                             <h3 style="margin: 0; font-size: 1rem;">Bảng Phân Phối Số Tiết Đã Thiết Lập</h3>
-                            <button class="btn btn-danger" onclick="deleteAllSubjectPeriods()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
-                                <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
-                            </button>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button class="btn btn-success" onclick="exportCurriculumExcel()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">file_download</span> Tải Excel
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteAllSubjectPeriods()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
+                                </button>
+                            </div>
                         </div>
                         <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
                             <table class="matrix-table">
@@ -901,9 +915,14 @@
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; flex-wrap: wrap; gap: 8px;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Sách Hoạt Động Kiêm Nhiệm</h3>
-                            <button class="btn btn-danger" onclick="deleteAllDutySubjects()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
-                                <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
-                            </button>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button class="btn btn-success" onclick="exportDutiesExcel()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">file_download</span> Tải Excel
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteAllDutySubjects()" style="padding: 3px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);">
+                                    <span class="material-icons-round" style="font-size: 0.95rem;">delete_sweep</span> Xóa tất cả
+                                </button>
+                            </div>
                         </div>
                         <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
                             <table class="matrix-table">

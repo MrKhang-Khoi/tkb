@@ -7854,81 +7854,42 @@ function downloadSubjectsExcelTemplate() {
 
 // ================= FET TIMETABLE XML & CSV IMPORT PARSER =================
 
+let newlyCreatedClassesThisImport = [];
+
 function ensureClassExists(className, session) {
     if (!className) return '';
     let matchedClass = state.classes.find(c => (c.name || '').toLowerCase() === className.toLowerCase());
     if (!matchedClass) {
-        const matchGrade = className.match(/^\d+/);
-        const grade = matchGrade ? matchGrade[0] : '6';
-        matchedClass = {
-            id: 'c_' + Date.now() + Math.random().toString(36).substr(2, 4),
-            name: className,
-            grade: grade,
-            session: session || ((grade === '6' || grade === '8' || grade === '10' || grade === '12') ? 'chiều' : 'sáng')
-        };
-        state.classes.push(matchedClass);
-    } else if (session && (!matchedClass.session || matchedClass.session !== session)) {
-        matchedClass.session = session;
+        if (!newlyCreatedClassesThisImport.includes(className)) {
+            newlyCreatedClassesThisImport.push(className);
+        }
+        return className;
     }
     return matchedClass.name;
 }
 
 function ensureTeacherExists(shortName, subjectName) {
     if (!shortName) return '';
-    let teacher = state.teachers.find(t => (t.shortName || '').toLowerCase() === shortName.toLowerCase() || (t.fullName || '').toLowerCase() === shortName.toLowerCase());
-    if (!teacher) {
-        let matchedGroup = state.groups.find(g => g.subjects && g.subjects.includes(subjectName));
-        if (!matchedGroup && state.groups.length > 0) {
-            matchedGroup = state.groups[0];
-        } else if (!matchedGroup) {
-            const groupId = 'g_' + Date.now() + Math.random().toString(36).substr(2, 4);
-            matchedGroup = { id: groupId, name: 'Tổ Tự Nhiên/Xã Hội', subjects: [subjectName] };
-            state.groups.push(matchedGroup);
+    const matched = matchTeacherWithAdmin(shortName);
+    if (!matched) {
+        if (!newlyCreatedTeachersThisImport.includes(shortName)) {
+            newlyCreatedTeachersThisImport.push(shortName);
         }
-        
-        teacher = {
-            id: 't_' + Date.now() + Math.random().toString(36).substr(2, 4),
-            fullName: shortName,
-            shortName: shortName,
-            group: matchedGroup.id,
-            subjects: [subjectName],
-            position: 'Giáo viên',
-            quota: 19
-        };
-        state.teachers.push(teacher);
-        
-        // Ghi lại tên giáo viên được tạo tự động để thông báo sau đó
-        newlyCreatedTeachersThisImport.push(shortName);
-    } else {
-        if (subjectName && teacher.subjects && !teacher.subjects.includes(subjectName)) {
-            teacher.subjects.push(subjectName);
-        }
+        return shortName;
     }
-    return teacher.shortName;
+    return matched.shortName;
 }
 
 function ensureSubjectExists(subjectName) {
-    if (!subjectName) return;
-    if (!state.globalSubjects.some(gs => (gs.name || '').toLowerCase() === subjectName.toLowerCase())) {
-        let matchedGroup = state.groups[0];
-        if (!matchedGroup) {
-            const groupId = 'g_' + Date.now() + Math.random().toString(36).substr(2, 4);
-            matchedGroup = { id: groupId, name: 'Tổ Bộ Môn', subjects: [subjectName] };
-            state.groups.push(matchedGroup);
-        } else {
-            if (matchedGroup.subjects && !matchedGroup.subjects.includes(subjectName)) {
-                matchedGroup.subjects.push(subjectName);
-            }
+    if (!subjectName) return '';
+    const matched = (state.globalSubjects || []).find(gs => (gs.name || '').toLowerCase() === subjectName.toLowerCase() || normalizePCCMSubjectName(gs.name).toLowerCase() === normalizePCCMSubjectName(subjectName).toLowerCase());
+    if (!matched) {
+        if (!newlyCreatedSubjectsThisImport.includes(subjectName)) {
+            newlyCreatedSubjectsThisImport.push(subjectName);
         }
-        state.globalSubjects.push({
-            id: 'gs_' + Date.now() + Math.random().toString(36).substr(2, 4),
-            name: subjectName,
-            groupId: matchedGroup.id
-        });
-        
-        // Ghi lại tên môn học được tạo tự động để thông báo sau đó
-        newlyCreatedSubjectsThisImport.push(subjectName);
+        return subjectName;
     }
+    return matched.name;
 }
 
 function parseAnyFetFileDOM(xmlDoc) {
@@ -13777,6 +13738,174 @@ window.downloadPublicExcel = downloadPublicExcel;
 window.printPublicPDF = printPublicPDF;
 window.switchGroupTab = switchGroupTab;
 window.analyzeSubstituteSlots = analyzeSubstituteSlots;
+// ================= HỆ THỐNG XUẤT FILE EXCEL LƯU TRỮ CHO TẤT CẢ CÁC TAB ADMIN =================
+
+function exportDataToExcelFile(fileName, sheetName, headers, dataRows, colWidths) {
+    if (typeof XLSX === 'undefined') {
+        showToast("Thư viện Excel đang tải, vui lòng thử lại sau giây lát!", "warning");
+        return;
+    }
+    const aoa = [headers, ...dataRows];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    if (colWidths && colWidths.length > 0) {
+        ws['!cols'] = colWidths.map(w => ({ wch: w }));
+    }
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName || "Dữ liệu");
+    XLSX.writeFile(wb, fileName.endsWith('.xlsx') ? fileName : (fileName + '.xlsx'));
+    showToast(`Đã tải xuống file Excel: ${fileName}`, "success");
+}
+
+// 1.1. Xuất Excel Danh Mục Môn Học & Kiêm Nhiệm
+function exportGlobalSubjectsExcel() {
+    const list = state.globalSubjects || [];
+    if (list.length === 0) {
+        showToast("Danh mục môn học đang trống!", "warning");
+        return;
+    }
+    const headers = ['STT', 'Tên Môn Học / Nhiệm Vụ Kiêm Nhiệm', 'Mã Định Danh (ID)', 'Tổ Chuyên Môn Phụ Trách'];
+    const rows = list.map((gs, idx) => {
+        const groupObj = state.groups.find(g => g.id === (gs.groupId || gs.group));
+        const groupName = groupObj ? groupObj.name : (gs.groupId || gs.group || '-');
+        return [idx + 1, gs.name || '', gs.id || '', groupName];
+    });
+    exportDataToExcelFile("1.1_Danh_Muc_Mon_Hoc_Kiem_Nhiem.xlsx", "Môn Học", headers, rows, [8, 35, 20, 25]);
+}
+
+// 1.2. Xuất Excel Danh Sách Tổ Chuyên Môn
+function exportGroupsExcel() {
+    const list = state.groups || [];
+    if (list.length === 0) {
+        showToast("Danh sách tổ chuyên môn đang trống!", "warning");
+        return;
+    }
+    const headers = ['STT', 'Tên Tổ Chuyên Môn', 'Mã Tổ (ID)', 'Số Lượng Môn Phụ Trách', 'Danh Sách Môn Học'];
+    const rows = list.map((g, idx) => {
+        const subList = (g.subjects && Array.isArray(g.subjects)) ? g.subjects.join(', ') : '';
+        const subCount = (g.subjects && Array.isArray(g.subjects)) ? g.subjects.length : 0;
+        return [idx + 1, g.name || '', g.id || '', subCount, subList];
+    });
+    exportDataToExcelFile("1.2_Danh_Sach_To_Chuyen_Mon.xlsx", "Tổ Chuyên Môn", headers, rows, [8, 28, 18, 22, 45]);
+}
+
+// 1.3. Xuất Excel Danh Sách Lớp Học
+function exportClassesExcel() {
+    const list = state.classes || [];
+    if (list.length === 0) {
+        showToast("Danh sách lớp học đang trống!", "warning");
+        return;
+    }
+    const headers = ['STT', 'Tên Lớp', 'Khối Lớp', 'Buổi Học', 'Giáo Viên Chủ Nhiệm (GVCN)'];
+    const rows = list.map((c, idx) => {
+        return [idx + 1, c.name || '', c.grade || '', c.session || 'Tự động', c.gvcn || '-'];
+    });
+    exportDataToExcelFile("1.3_Danh_Sach_Lop_Hoc.xlsx", "Lớp Học", headers, rows, [8, 15, 12, 16, 25]);
+}
+
+// 2.1. Xuất Excel Danh Sách Nhân Sự Giáo Viên
+function exportTeachersExcel() {
+    const list = state.teachers || [];
+    if (list.length === 0) {
+        showToast("Danh sách giáo viên đang trống!", "warning");
+        return;
+    }
+    const headers = ['STT', 'Họ Và Tên Giáo Viên', 'Tên Viết Tắt', 'Tổ Chuyên Môn', 'Định Mức Tiết Dạy', 'Lớp Chủ Nhiệm', 'Môn Phụ Trách'];
+    const rows = list.map((t, idx) => {
+        const groupObj = state.groups.find(g => g.id === t.group);
+        const groupName = groupObj ? groupObj.name : (t.group || '-');
+        const subjectsStr = (t.subjects && Array.isArray(t.subjects)) ? t.subjects.join(', ') : '';
+        return [idx + 1, t.fullName || '', t.shortName || '', groupName, t.quota || 19, t.homeroomClass || '-', subjectsStr];
+    });
+    exportDataToExcelFile("2.1_Danh_Sach_Giao_Vien.xlsx", "Giáo Viên", headers, rows, [8, 28, 15, 25, 18, 18, 35]);
+}
+
+// 2.2. Xuất Excel Danh Sách Tài Khoản Tổ Trưởng
+function exportAccountsExcel() {
+    const list = state.accounts || [];
+    if (list.length === 0) {
+        showToast("Danh sách tài khoản đang trống!", "warning");
+        return;
+    }
+    const headers = ['STT', 'Tên Đăng Nhập (Username)', 'Tổ Chuyên Môn Quản Lý', 'Mật Khẩu Mặc Định / Trạng Thái'];
+    const rows = list.map((acc, idx) => {
+        const groupObj = state.groups.find(g => g.id === acc.groupId);
+        const groupName = groupObj ? groupObj.name : (acc.groupId || '-');
+        return [idx + 1, acc.username || '', groupName, acc.password || '******'];
+    });
+    exportDataToExcelFile("2.2_Danh_Sach_Tai_Khoan_To_Truong.xlsx", "Tài Khoản", headers, rows, [8, 25, 30, 25]);
+}
+
+// 3.1. Xuất Excel Phân Phối Số Tiết Theo Khối
+function exportCurriculumExcel() {
+    const list = state.subjects || [];
+    if (list.length === 0) {
+        showToast("Bảng phân phối số tiết đang trống!", "warning");
+        return;
+    }
+    const headers = ['STT', 'Tên Môn Học', 'Khối Lớp', 'Số Tiết / Tuần', 'Tổ Chuyên Môn Phụ Trách'];
+    const rows = list.map((s, idx) => {
+        const groupObj = state.groups.find(g => g.id === s.group);
+        const groupName = groupObj ? groupObj.name : (s.group || '-');
+        return [idx + 1, s.name || '', s.grade === 'all' ? 'Tất cả' : ('Khối ' + s.grade), s.periods || 2, groupName];
+    });
+    exportDataToExcelFile("3.1_Phan_Phoi_So_Tiet_Mon_Hoc.xlsx", "Số Tiết Môn", headers, rows, [8, 25, 15, 16, 28]);
+}
+
+// 3.2. Xuất Excel Số Tiết Hoạt Động Kiêm Nhiệm
+function exportDutiesExcel() {
+    const duties = [];
+    Object.keys(state.assignments || {}).forEach(k => {
+        if (k.startsWith('Kiêm nhiệm_')) {
+            const parsed = parseAssignmentKey(k);
+            const assign = state.assignments[k];
+            duties.push({
+                name: parsed.subId,
+                teacher: assign.teacher || '',
+                periods: assign.periods || 0
+            });
+        }
+    });
+    const headers = ['STT', 'Tên Hoạt Động / Nhiệm Vụ Kiêm Nhiệm', 'Số Tiết Quy Đổi', 'Giáo Viên Đảm Nhận'];
+    const rows = duties.map((d, idx) => [idx + 1, d.name, d.periods, d.teacher || '-']);
+    exportDataToExcelFile("3.2_Hoat_Dong_Kiem_Nhiem.xlsx", "Kiêm Nhiệm", headers, rows, [8, 35, 18, 25]);
+}
+
+// 4. Xuất Excel Bảng Phân Công Toàn Trường
+function exportMergedAssignmentsExcel() {
+    if (typeof exportAllAssignmentsExcel === 'function') {
+        exportAllAssignmentsExcel();
+    }
+}
+
+// 4. Xuất Excel Bảng Cân Bằng Tiết Các Lớp (FET)
+function exportClassBalanceExcel() {
+    const list = calculateClassBalanceStats();
+    if (!list || list.length === 0) {
+        showToast("Bảng cân bằng tiết đang trống!", "warning");
+        return;
+    }
+    const headers = ['STT', 'Tên Lớp', 'Khối', 'Tổng Tiết Cả Tuần', 'Tiết Thể Dục (GDTC)', 'Tiết Văn Hóa FET', 'Chuẩn Khối (FET)', 'Đánh Giá FET', 'Chi Tiết Môn & GV'];
+    const rows = list.map((c, idx) => {
+        const isUnder = c.fetPeriods < c.targetFetPeriods;
+        const isOver = c.fetPeriods > c.targetFetPeriods;
+        const status = (c.fetPeriods === c.targetFetPeriods) ? 'ĐỦ TIẾT (CHUẨN FET)' : (isUnder ? `THIẾU ${c.targetFetPeriods - c.fetPeriods}T` : `THỪA ${c.fetPeriods - c.targetFetPeriods}T`);
+        const subDetail = (c.subjectsList || []).map(s => `${s.name}(${s.periods}T-${s.teacher})`).join('; ');
+        return [idx + 1, c.clsName, 'Khối ' + c.grade, c.totalPeriods, c.gdtcPeriods, c.fetPeriods, c.targetFetPeriods, status, subDetail];
+    });
+    exportDataToExcelFile("4_Bang_Can_Bang_Tiet_Cac_Lop_FET.xlsx", "Cân Bằng Tiết", headers, rows, [8, 14, 12, 18, 18, 18, 18, 24, 60]);
+}
+
+window.exportDataToExcelFile = exportDataToExcelFile;
+window.exportGlobalSubjectsExcel = exportGlobalSubjectsExcel;
+window.exportGroupsExcel = exportGroupsExcel;
+window.exportClassesExcel = exportClassesExcel;
+window.exportTeachersExcel = exportTeachersExcel;
+window.exportAccountsExcel = exportAccountsExcel;
+window.exportCurriculumExcel = exportCurriculumExcel;
+window.exportDutiesExcel = exportDutiesExcel;
+window.exportMergedAssignmentsExcel = exportMergedAssignmentsExcel;
+window.exportClassBalanceExcel = exportClassBalanceExcel;
+
 window.syncEndDateAndAnalyze = syncEndDateAndAnalyze;
 window.selectSubstituteCandidate = selectSubstituteCandidate;
 window.expandOutsideGroupCandidates = expandOutsideGroupCandidates;
