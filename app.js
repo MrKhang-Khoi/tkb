@@ -9243,6 +9243,176 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable, week
     return xml;
 }
 
+// Xuất Thời khóa biểu thành tệp Microsoft Excel (.xlsx) chuẩn thực sự 3 trang tính (Buổi sáng, Buổi chiều, Giáo viên)
+function exportTimetableToNativeXlsx(localClasses, localTeachers, localTimetable, filename = 'ThoiKhoaBieu_TongHop.xlsx', weekName = '', applyDate = '') {
+    if (typeof XLSX === 'undefined' || !XLSX.utils || !XLSX.writeFile) {
+        showToast("Thư viện xuất Excel chưa sẵn sàng!", "danger");
+        return;
+    }
+
+    const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const weekdayLabels = { 'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7' };
+    const periods = [1, 2, 3, 4, 5];
+
+    const wb = XLSX.utils.book_new();
+
+    const morningTitle = `THỜI KHÓA BIỂU BUỔI SÁNG${weekName ? ' - ' + weekName.toUpperCase() : ''}`;
+    const afternoonTitle = `THỜI KHÓA BIỂU BUỔI CHIỀU${weekName ? ' - ' + weekName.toUpperCase() : ''}`;
+    const subtitleText = applyDate ? `Thời gian áp dụng: ${applyDate}` : (weekName ? `Thời khóa biểu ${weekName}` : 'Thời khóa biểu chính thức');
+
+    // Helper tạo Sheet cho Buổi sáng hoặc Buổi chiều
+    function createSessionSheet(sessionName, titleText) {
+        const sessionClasses = (localClasses || [])
+            .filter(c => (c.session || '').toLowerCase() === sessionName.toLowerCase())
+            .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true }));
+
+        const rowsData = [];
+        const merges = [];
+
+        const totalCols = Math.max(2 + sessionClasses.length, 2);
+
+        // Row 0: Title
+        const titleRow = new Array(totalCols).fill('');
+        titleRow[0] = titleText;
+        rowsData.push(titleRow);
+        merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } });
+
+        // Row 1: Subtitle
+        const subtitleRow = new Array(totalCols).fill('');
+        subtitleRow[0] = subtitleText;
+        rowsData.push(subtitleRow);
+        merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } });
+
+        // Row 2: Blank separator
+        rowsData.push(new Array(totalCols).fill(''));
+
+        // Row 3: Header
+        const headerRow = ['Thứ', 'Tiết'];
+        sessionClasses.forEach(c => headerRow.push(c.name));
+        rowsData.push(headerRow);
+
+        // Data rows: Thứ 2 -> Thứ 7, Tiết 1 -> 5
+        let currentRowIdx = 4;
+        weekdays.forEach(day => {
+            const startDayRow = currentRowIdx;
+            periods.forEach((p) => {
+                const row = [weekdayLabels[day] || day, `Tiết ${p}`];
+                sessionClasses.forEach(c => {
+                    let cellVal = '';
+                    if (localTimetable && localTimetable[c.name] && localTimetable[c.name][day] && localTimetable[c.name][day][p]) {
+                        const act = localTimetable[c.name][day][p];
+                        if (act && act.subject) {
+                            cellVal = act.teacher ? `${act.subject}-${act.teacher}` : act.subject;
+                        }
+                    }
+                    row.push(cellVal);
+                });
+                rowsData.push(row);
+                currentRowIdx++;
+            });
+            // Merge cột 'Thứ' dọc theo 5 tiết
+            merges.push({ s: { r: startDayRow, c: 0 }, e: { r: startDayRow + 4, c: 0 } });
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(rowsData);
+        ws['!merges'] = merges;
+
+        // Cấu hình độ rộng cột
+        const colWidths = [{ wch: 10 }, { wch: 9 }];
+        sessionClasses.forEach(() => colWidths.push({ wch: 18 }));
+        ws['!cols'] = colWidths;
+
+        return ws;
+    }
+
+    // 1. Thêm Sheet Buổi sáng
+    const wsMorning = createSessionSheet('sáng', morningTitle);
+    XLSX.utils.book_append_sheet(wb, wsMorning, "Buổi sáng");
+
+    // 2. Thêm Sheet Buổi chiều
+    const wsAfternoon = createSessionSheet('chiều', afternoonTitle);
+    XLSX.utils.book_append_sheet(wb, wsAfternoon, "Buổi chiều");
+
+    // 3. Thêm Sheet Giáo viên
+    const teacherColsList = [];
+    weekdays.forEach(day => {
+        teacherColsList.push({ day, sess: 'sáng', label: `${weekdayLabels[day]} (Sáng)` });
+        teacherColsList.push({ day, sess: 'chiều', label: `${weekdayLabels[day]} (Chiều)` });
+    });
+
+    const teacherRowsData = [];
+    const teacherMerges = [];
+    let tRowIdx = 0;
+
+    // Header Sheet Giáo viên
+    const tTitleRow = new Array(13).fill('');
+    tTitleRow[0] = `THỜI KHÓA BIỂU TOÀN BỘ GIÁO VIÊN${weekName ? ' - ' + weekName.toUpperCase() : ''}`;
+    teacherRowsData.push(tTitleRow);
+    teacherMerges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 12 } });
+    tRowIdx++;
+
+    const tSubtitleRow = new Array(13).fill('');
+    tSubtitleRow[0] = subtitleText;
+    teacherRowsData.push(tSubtitleRow);
+    teacherMerges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 12 } });
+    tRowIdx++;
+
+    teacherRowsData.push(new Array(13).fill(''));
+    tRowIdx++;
+
+    const sortedTeachers = (localTeachers || []).slice().sort((a, b) => (a.fullName || a.shortName || '').localeCompare(b.fullName || b.shortName || '', 'vi'));
+
+    sortedTeachers.forEach(t => {
+        const teacherHeaderRow = new Array(13).fill('');
+        const subStr = (t.subjects && t.subjects.length > 0) ? ` - Môn: ${t.subjects.join(', ')}` : '';
+        teacherHeaderRow[0] = `Giáo viên: ${t.fullName || t.shortName} (${t.shortName})${subStr}`;
+        teacherRowsData.push(teacherHeaderRow);
+        teacherMerges.push({ s: { r: tRowIdx, c: 0 }, e: { r: tRowIdx, c: 12 } });
+        tRowIdx++;
+
+        const subHeaderRow = ['Tiết'];
+        teacherColsList.forEach(col => subHeaderRow.push(col.label));
+        teacherRowsData.push(subHeaderRow);
+        tRowIdx++;
+
+        periods.forEach(p => {
+            const pRow = [`Tiết ${p}`];
+            teacherColsList.forEach(col => {
+                const matchedSlots = [];
+                (localClasses || []).forEach(c => {
+                    if ((c.session || '').toLowerCase() === col.sess) {
+                        if (localTimetable && localTimetable[c.name] && localTimetable[c.name][col.day] && localTimetable[c.name][col.day][p]) {
+                            const act = localTimetable[c.name][col.day][p];
+                            if (act && act.teacher && act.teacher.trim().toLowerCase() === (t.shortName || '').trim().toLowerCase() && act.subject) {
+                                matchedSlots.push(`${c.name}-${act.subject}`);
+                            }
+                        }
+                    }
+                });
+                pRow.push(matchedSlots.join(', '));
+            });
+            teacherRowsData.push(pRow);
+            tRowIdx++;
+        });
+
+        // Blank separator
+        teacherRowsData.push(new Array(13).fill(''));
+        tRowIdx++;
+    });
+
+    const wsTeacher = XLSX.utils.aoa_to_sheet(teacherRowsData);
+    wsTeacher['!merges'] = teacherMerges;
+    const tColWidths = [{ wch: 9 }];
+    teacherColsList.forEach(() => tColWidths.push({ wch: 17 }));
+    wsTeacher['!cols'] = tColWidths;
+
+    XLSX.utils.book_append_sheet(wb, wsTeacher, "Giáo viên");
+
+    // Xuất file .xlsx chuẩn thực sự
+    const finalFilename = filename.endsWith('.xlsx') ? filename : (filename.replace(/\.xls$/i, '') + '.xlsx');
+    XLSX.writeFile(wb, finalFilename);
+}
+
 function downloadParsedFetExcel() {
     if (!window.lastParsedFetData) {
         showToast("Không tìm thấy dữ liệu phân tích thời khóa biểu!", "warning");
@@ -9250,7 +9420,7 @@ function downloadParsedFetExcel() {
     }
 
     try {
-        const { slots, classes, teachers } = window.lastParsedFetData;
+        const { slots, classes, teachers, institution, applyDate, weekName } = window.lastParsedFetData;
         
         // Cấu trúc local state phục vụ riêng cho export
         const localClasses = [];
@@ -9294,7 +9464,7 @@ function downloadParsedFetExcel() {
         }
 
         // Đổ dữ liệu vào local state
-        slots.forEach(slot => {
+        (slots || []).forEach(slot => {
             exportEnsureTeacherExists(slot.teacher, slot.subject);
             exportEnsureClassExists(slot.className, slot.session);
         });
@@ -9311,7 +9481,7 @@ function downloadParsedFetExcel() {
         });
 
         // Điền thông tin tiết dạy
-        slots.forEach(slot => {
+        (slots || []).forEach(slot => {
             if (localTimetable[slot.className] && localTimetable[slot.className][slot.dayKey]) {
                 localTimetable[slot.className][slot.dayKey][slot.hourKey] = {
                     subject: slot.subject,
@@ -9320,21 +9490,14 @@ function downloadParsedFetExcel() {
             }
         });
 
-        // Tạo Excel XML
-        const xmlContent = generateSpreadsheetML(localClasses, localTeachers, localTimetable);
-        const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", "ThoiKhoaBieu_Fet_Direct_Export.xls");
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Đã chuyển đổi và tải xuống thành công file Excel TKB tổng hợp!", "success");
+        const activeWeekName = weekName || (document.getElementById('fetWeekNameInput') ? document.getElementById('fetWeekNameInput').value.trim() : '') || 'Toàn Trường';
+        const activeApplyDate = applyDate || (document.getElementById('timetableApplyDateInput') ? document.getElementById('timetableApplyDateInput').value.trim() : '') || '';
+
+        exportTimetableToNativeXlsx(localClasses, localTeachers, localTimetable, 'ThoiKhoaBieu_Fet_TongHop.xlsx', activeWeekName, activeApplyDate);
+        showToast("Đã tải xuống thành công file Excel (.xlsx) Thời khóa biểu tổng hợp 3 trang tính!", "success");
     } catch(e) {
-        console.error(e);
-        showToast("Lỗi xuất file Excel!", "danger");
+        console.error("Lỗi xuất file Excel TKB FET:", e);
+        showToast("Lỗi xuất file Excel TKB: " + e.message, "danger");
     }
 }
 
@@ -10882,20 +11045,11 @@ function downloadWeeklyExcel(id) {
         return;
     }
     try {
-        const xmlContent = generateSpreadsheetML(state.classes, state.teachers, wt.timetable, wt.weekName, wt.applyDate);
-        const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
         const safeName = (wt.weekName || 'TKB').replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]+/g, '_');
-        link.setAttribute("download", `ThoiKhoaBieu_${safeName}.xls`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast(`Đã tải xuống file Excel TKB ${wt.weekName}!`, "success");
+        exportTimetableToNativeXlsx(state.classes, state.teachers, wt.timetable, `ThoiKhoaBieu_${safeName}.xlsx`, wt.weekName, wt.applyDate);
+        showToast(`Đã tải xuống file Excel (.xlsx) TKB ${wt.weekName}!`, "success");
     } catch(e) {
-        console.error(e);
+        console.error("Lỗi xuất Excel TKB đợt:", e);
         showToast("Lỗi khi xuất file Excel!", "danger");
     }
 }
