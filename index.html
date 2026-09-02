@@ -599,9 +599,21 @@
                         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
                             <div style="display: flex; gap: 8px;">
                                 <input type="text" id="newGlobalSubName" class="form-control" placeholder="Tên môn học/nhiệm vụ (Toán, Lý, Chủ nhiệm, Tổ trưởng...)" style="flex:1;">
-                                <button class="btn btn-primary" onclick="addGlobalSubject()" style="width: 110px; font-size: 0.85rem; padding: 8px;">Khai báo</button>
+                            </div>
+                            <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 4px;">
+                                <button class="btn btn-primary" onclick="addGlobalSubject()" style="flex: 1;">Khai báo môn</button>
+                                <button class="btn btn-secondary" onclick="downloadGlobalSubjectsTemplate()">
+                                    <span class="material-icons-round" style="font-size:1.1rem;">download</span> Tải file mẫu
+                                </button>
                             </div>
                         </div>
+
+                        <div class="dropzone" onclick="document.getElementById('globalSubjectsExcelFileInput').click();">
+                            <span class="material-icons-round icon">grid_on</span>
+                            <p>Nhập danh mục môn học / nhiệm vụ từ Excel (.xlsx)</p>
+                            <input type="file" id="globalSubjectsExcelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importGlobalSubjectsExcel(event)">
+                        </div>
+
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; flex-wrap: wrap; gap: 8px;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Mục Môn Học & Nhiệm Vụ</h3>
                             <div style="display: flex; gap: 6px; align-items: center;">
@@ -636,9 +648,21 @@
                         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
                             <div style="display: flex; gap: 8px;">
                                 <input type="text" id="newGroupName" class="form-control" placeholder="Tên tổ chuyên môn (Ví dụ: Tổ Toán - Tin)..." style="flex:1;">
-                                <button class="btn btn-primary" onclick="addSubjectGroup()" style="width: 120px;">Thêm tổ</button>
+                            </div>
+                            <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 4px;">
+                                <button class="btn btn-primary" onclick="addSubjectGroup()" style="flex: 1;">Thêm tổ</button>
+                                <button class="btn btn-secondary" onclick="downloadGroupsTemplate()">
+                                    <span class="material-icons-round" style="font-size:1.1rem;">download</span> Tải file mẫu
+                                </button>
                             </div>
                         </div>
+
+                        <div class="dropzone" onclick="document.getElementById('groupsExcelFileInput').click();">
+                            <span class="material-icons-round icon">grid_on</span>
+                            <p>Nhập danh sách tổ chuyên môn từ Excel (.xlsx)</p>
+                            <input type="file" id="groupsExcelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importGroupsExcel(event)">
+                        </div>
+
                         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0; flex-wrap: wrap; gap: 8px;">
                             <h3 style="margin: 0; font-size: 1rem;">Danh Sách Tổ Chuyên Môn</h3>
                             <div style="display: flex; gap: 6px; align-items: center;">

@@ -7599,6 +7599,163 @@ function exportFETCSV() {
 
 // ================= EXCEL DATA IMPORT SYSTEM (STRICT VALIDATION) =================
 
+// 1.1. Nhập danh mục môn học & nhiệm vụ từ Excel
+function importGlobalSubjectsExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsBinaryString(file);
+    reader.onload = function(e) {
+        try {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(sheet);
+
+            if (json.length === 0) {
+                showToast("File Excel trống hoặc không đúng định dạng!", "danger");
+                return;
+            }
+
+            if (!state.globalSubjects) state.globalSubjects = [];
+
+            let importCount = 0;
+            let skipCount = 0;
+
+            json.forEach(row => {
+                const keys = Object.keys(row);
+                const nameKey = keys.find(k => ['tên môn', 'môn học', 'môn', 'nhiệm vụ', 'subject', 'name'].some(h => k.toLowerCase().includes(h)));
+                const name = nameKey ? String(row[nameKey] || '').trim() : String(Object.values(row)[0] || '').trim();
+
+                if (!name || name.toLowerCase() === 'stt' || name.toLowerCase().includes('tên môn') || name.toLowerCase().includes('nhiệm vụ')) return;
+
+                // Kiểm tra trùng lặp (không phân biệt hoa thường)
+                const exists = state.globalSubjects.some(gs => (gs.name || '').trim().toLowerCase() === name.toLowerCase());
+                if (exists) {
+                    skipCount++;
+                    return;
+                }
+
+                state.globalSubjects.push({
+                    id: 'gs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    name: name
+                });
+                importCount++;
+            });
+
+            persistData();
+            refreshActiveViews();
+
+            if (importCount > 0) {
+                showToast(`Đã nhập thành công ${importCount} môn học/nhiệm vụ từ Excel!${skipCount > 0 ? ` (Bỏ qua ${skipCount} môn đã tồn tại)` : ''}`, "success");
+            } else {
+                showToast(`Không có môn học mới nào được thêm (Đã tồn tại ${skipCount} môn).`, "warning");
+            }
+        } catch(err) {
+            console.error(err);
+            showToast("Lỗi khi đọc file Excel môn học: " + err.message, "danger");
+        }
+    };
+    event.target.value = '';
+}
+
+// 1.2. Nhập danh sách tổ chuyên môn từ Excel
+function importGroupsExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsBinaryString(file);
+    reader.onload = function(e) {
+        try {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(sheet);
+
+            if (json.length === 0) {
+                showToast("File Excel trống hoặc không đúng định dạng!", "danger");
+                return;
+            }
+
+            if (!state.groups) state.groups = [];
+
+            let importCount = 0;
+            let updatedCount = 0;
+            let unmappedSubjectsWarning = [];
+
+            json.forEach(row => {
+                const keys = Object.keys(row);
+                const nameKey = keys.find(k => ['tên tổ', 'tổ chuyên môn', 'tổ', 'group', 'name'].some(h => k.toLowerCase().includes(h)));
+                const subsKey = keys.find(k => ['môn phụ trách', 'môn', 'môn học', 'subjects'].some(h => k.toLowerCase().includes(h)));
+
+                const groupName = nameKey ? String(row[nameKey] || '').trim() : String(Object.values(row)[0] || '').trim();
+                if (!groupName || groupName.toLowerCase() === 'stt' || groupName.toLowerCase().includes('tên tổ')) return;
+
+                // Xử lý danh sách môn phụ trách nếu có
+                let assignedSubs = [];
+                if (subsKey && row[subsKey]) {
+                    const rawSubs = String(row[subsKey]).split(/[,;\n]/).map(s => s.trim()).filter(Boolean);
+                    
+                    rawSubs.forEach(sName => {
+                        // Tìm môn khớp trong state.globalSubjects
+                        const matchedGlobal = state.globalSubjects.find(gs => (gs.name || '').trim().toLowerCase() === sName.toLowerCase());
+                        if (matchedGlobal) {
+                            if (!assignedSubs.includes(matchedGlobal.name)) {
+                                assignedSubs.push(matchedGlobal.name);
+                            }
+                        } else {
+                            if (!unmappedSubjectsWarning.includes(sName)) {
+                                unmappedSubjectsWarning.push(sName);
+                            }
+                        }
+                    });
+                }
+
+                // Kiểm tra tổ đã tồn tại chưa
+                let existingGroup = state.groups.find(g => (g.name || '').trim().toLowerCase() === groupName.toLowerCase());
+                if (existingGroup) {
+                    if (assignedSubs.length > 0) {
+                        if (!existingGroup.subjects) existingGroup.subjects = [];
+                        assignedSubs.forEach(s => {
+                            if (!existingGroup.subjects.includes(s)) {
+                                existingGroup.subjects.push(s);
+                            }
+                        });
+                        updatedCount++;
+                    }
+                } else {
+                    const newGroup = {
+                        id: 'g_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        name: groupName,
+                        subjects: assignedSubs
+                    };
+                    state.groups.push(newGroup);
+                    importCount++;
+                }
+            });
+
+            persistData();
+            refreshActiveViews();
+
+            let msg = `Đã nhập thành công ${importCount} tổ mới${updatedCount > 0 ? `, cập nhật ${updatedCount} tổ` : ''}!`;
+            if (unmappedSubjectsWarning.length > 0) {
+                msg += ` (Lưu ý: Môn [${unmappedSubjectsWarning.join(', ')}] chưa được gán do chưa khai báo ở Mục 1.1)`;
+                showToast(msg, "warning");
+            } else {
+                showToast(msg, "success");
+            }
+        } catch(err) {
+            console.error(err);
+            showToast("Lỗi khi đọc file Excel tổ chuyên môn: " + err.message, "danger");
+        }
+    };
+    event.target.value = '';
+}
+
 function importClassesExcel(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -8084,6 +8241,59 @@ function importSubjectsExcel(event) {
 }
 
 // ================= EXCEL BLANK TEMPLATE GENERATORS =================
+
+// 1.1. Tải mẫu Excel Danh mục môn học / Nhiệm vụ kiêm nhiệm
+function downloadGlobalSubjectsTemplate() {
+    const wb = XLSX.utils.book_new();
+    const wsData = [
+        ["Tên môn học / Nhiệm vụ kiêm nhiệm", "Ghi chú phân loại"],
+        ["Toán", "Môn văn hóa"],
+        ["Ngữ văn", "Môn văn hóa"],
+        ["Tiếng Anh", "Môn văn hóa"],
+        ["Khoa học tự nhiên", "Môn tích hợp"],
+        ["Lịch sử và Địa lý", "Môn tích hợp"],
+        ["Tin học", "Môn văn hóa"],
+        ["Giáo dục công dân", "Môn văn hóa"],
+        ["Công nghệ", "Môn văn hóa"],
+        ["Giáo dục thể chất", "Môn năng khiếu"],
+        ["Nghệ thuật (Âm nhạc, Mỹ thuật)", "Môn năng khiếu"],
+        ["Hoạt động trải nghiệm, hướng nghiệp", "Hoạt động GD"],
+        ["Giáo dục địa phương", "Nội dung GD"],
+        ["Chủ nhiệm", "Nhiệm vụ kiêm nhiệm"],
+        ["Tổ trưởng chuyên môn", "Nhiệm vụ kiêm nhiệm"]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh muc Mon hoc");
+    XLSX.writeFile(wb, "Template_Danh_Muc_Mon_Hoc.xlsx");
+}
+
+// 1.2. Tải mẫu Excel Danh sách Tổ chuyên môn
+function downloadGroupsTemplate() {
+    const wb = XLSX.utils.book_new();
+    const wsData = [
+        ["Tên tổ chuyên môn", "Môn phụ trách (Cách nhau bởi dấu phẩy)"],
+        ["Tổ Toán - Tin", "Toán, Tin học"],
+        ["Tổ Văn - Sử - GDCD", "Ngữ văn, Lịch sử và Địa lý, Giáo dục công dân"],
+        ["Tổ Khoa Học Tự Nhiên", "Khoa học tự nhiên, Công nghệ"],
+        ["Tổ Ngoại Ngữ - Nghệ Thuật - GDTC", "Tiếng Anh, Nghệ thuật (Âm nhạc, Mỹ thuật), Giáo dục thể chất"]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sach To");
+
+    // Thêm sheet phụ hiển thị danh mục môn hợp lệ đã khai báo ở 1.1
+    const globalSubsData = [["Danh mục Môn học đã khai báo ở Mục 1.1 (Để tham khảo)"]];
+    if (state.globalSubjects && state.globalSubjects.length > 0) {
+        state.globalSubjects.forEach(gs => {
+            globalSubsData.push([gs.name]);
+        });
+    } else {
+        globalSubsData.push(["(Chưa có môn nào được khai báo ở Mục 1.1)"]);
+    }
+    const globalSubsWs = XLSX.utils.aoa_to_sheet(globalSubsData);
+    XLSX.utils.book_append_sheet(wb, globalSubsWs, "Mon hop le o Muc 1.1");
+
+    XLSX.writeFile(wb, "Template_To_Chuyen_Mon.xlsx");
+}
 
 function downloadClassesExcelTemplate() {
     const wb = XLSX.utils.book_new();
@@ -15125,6 +15335,10 @@ function restoreSystemDataJson(event) {
 }
 
 // Window export definitions
+window.downloadGlobalSubjectsTemplate = downloadGlobalSubjectsTemplate;
+window.importGlobalSubjectsExcel = importGlobalSubjectsExcel;
+window.downloadGroupsTemplate = downloadGroupsTemplate;
+window.importGroupsExcel = importGroupsExcel;
 window.backupSystemDataJson = backupSystemDataJson;
 window.restoreSystemDataJson = restoreSystemDataJson;
 window.renderAnalyticsDashboard = renderAnalyticsDashboard;
