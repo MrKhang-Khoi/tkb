@@ -7582,7 +7582,7 @@ function exportFETCSV() {
     showToast(`Đã xuất tệp CSV FET thành công với ${exportedCount} hoạt động${extraMsg}!`, 'success');
 }
 
-// ================= EXCEL DATA IMPORT SYSTEM =================
+// ================= EXCEL DATA IMPORT SYSTEM (STRICT VALIDATION) =================
 
 function importClassesExcel(event) {
     const file = event.target.files[0];
@@ -7647,7 +7647,7 @@ function importClassesExcel(event) {
             showToast(`Đã nhập thành công ${importCount} lớp học từ Excel!`, "success");
         } catch(err) {
             console.error(err);
-            showToast("Có lỗi xảy ra khi phân tích tệp Excel!", "danger");
+            showToast("Có lỗi xảy ra khi phân tích tệp Excel lớp học!", "danger");
         }
     };
     event.target.value = '';
@@ -7656,6 +7656,25 @@ function importClassesExcel(event) {
 function importTeachersExcel(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    // KIỂM TRA TIỀN ĐIỀU KIỆN: Bắt buộc Admin phải khai báo Tổ chuyên môn tại Mục 1.2 trước
+    if (!state.groups || state.groups.length === 0) {
+        showConfirmModal(
+            "Chưa Khai Báo Tổ Chuyên Môn (Mục 1.2)",
+            `<div style="text-align: left; line-height: 1.6;">
+                <p style="color: #f87171; font-weight: 600; font-size: 1rem;">❌ KHÔNG THỂ NẠP DANH SÁCH GIÁO VIÊN!</p>
+                <p>Danh sách tổ chuyên môn tại <b>Mục 1.2</b> hiện đang trống.</p>
+                <p>Theo quy trình chuẩn của hệ thống, Admin phải khai báo Tổ chuyên môn tại <b>Mục 1.2</b> trước, sau đó mới nạp danh sách Giáo viên (Mục 2.1) để phân bổ nhân sự chính xác.</p>
+                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">👉 Vui lòng chuyển về <b>Mục 1.2</b> để khai báo các tổ chuyên môn trước.</p>
+            </div>`,
+            null,
+            "Đã hiểu",
+            "btn-primary",
+            "info"
+        );
+        event.target.value = '';
+        return;
+    }
 
     const reader = new FileReader();
     reader.readAsBinaryString(file);
@@ -7676,6 +7695,7 @@ function importTeachersExcel(event) {
             let duplicateCount = 0;
             const skippedRows = [];
             const importedShortNames = [];
+            const validGlobalSubjectNames = new Set((state.globalSubjects || []).map(gs => gs && gs.name ? gs.name.trim().toLowerCase() : ''));
 
             json.forEach((row, idx) => {
                 const fullName = row['Họ và tên'] || row['Họ tên'] || row['Full Name'];
@@ -7720,7 +7740,31 @@ function importTeachersExcel(event) {
                         row: rowNum,
                         fullName: cleanFullName,
                         groupName: cleanGroupStr,
-                        reason: 'Tổ chuyên môn không tồn tại trong danh mục Tổ khai báo ở H1'
+                        reason: `Tổ "${cleanGroupStr}" chưa được khai báo tại Mục 1.2`
+                    });
+                    return;
+                }
+
+                // Lọc danh sách môn chỉ lấy các môn ĐÃ KHAI BÁO tại Mục 1.1 (CẤM TỰ ĐỘNG THÊM MÔN RÁC VÀO 1.1)
+                const rawSubjects = subjectsStr ? subjectsStr.toString().split(/[,;]+/).map(s => s.trim()).filter(s => s.length > 0) : [];
+                const validSubjects = [];
+                const invalidSubjects = [];
+
+                rawSubjects.forEach(subName => {
+                    const matchedGs = (state.globalSubjects || []).find(gs => gs && gs.name && gs.name.trim().toLowerCase() === subName.toLowerCase());
+                    if (matchedGs) {
+                        validSubjects.push(matchedGs.name);
+                    } else {
+                        invalidSubjects.push(subName);
+                    }
+                });
+
+                if (invalidSubjects.length > 0 && validSubjects.length === 0 && rawSubjects.length > 0) {
+                    skippedRows.push({
+                        row: rowNum,
+                        fullName: cleanFullName,
+                        groupName: cleanGroupStr,
+                        reason: `Các môn [${invalidSubjects.join(', ')}] chưa được khai báo tại Mục 1.1`
                     });
                     return;
                 }
@@ -7736,19 +7780,7 @@ function importTeachersExcel(event) {
 
                 if (existingTeacher) {
                     if (isOverwrite) {
-                        const subjects = subjectsStr ? subjectsStr.toString().split(/[,;]+/).map(s => s.trim()).filter(s => s.length > 0) : [];
-
-                        // Đăng ký môn học vào danh mục môn học nếu chưa có
-                        subjects.forEach(subName => {
-                            if (!state.globalSubjects.some(gs => gs.name.toLowerCase() === subName.toLowerCase())) {
-                                state.globalSubjects.push({
-                                    id: 'gs_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                                    name: subName
-                                });
-                            }
-                        });
-
-                        existingTeacher.subjects = subjects;
+                        existingTeacher.subjects = validSubjects;
                         existingTeacher.position = position;
                         existingTeacher.quota = quota;
                         importCount++;
@@ -7762,24 +7794,12 @@ function importTeachersExcel(event) {
                 const finalShortName = getAutoShortName(cleanFullName, importedShortNames);
                 importedShortNames.push(finalShortName.toLowerCase());
 
-                const subjects = subjectsStr ? subjectsStr.toString().split(/[,;]+/).map(s => s.trim()).filter(s => s.length > 0) : [];
-
-                // Đăng ký môn học vào danh mục môn học nếu chưa có
-                subjects.forEach(subName => {
-                    if (!state.globalSubjects.some(gs => gs.name.toLowerCase() === subName.toLowerCase())) {
-                        state.globalSubjects.push({
-                            id: 'gs_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                            name: subName
-                        });
-                    }
-                });
-
                 state.teachers.push({
                     id: 't_' + Date.now() + Math.random().toString(36).substr(2, 4),
                     fullName: cleanFullName,
                     shortName: finalShortName,
                     group: matchedGroup.id,
-                    subjects: subjects,
+                    subjects: validSubjects,
                     position: position,
                     quota: quota
                 });
@@ -7790,36 +7810,55 @@ function importTeachersExcel(event) {
             persistData();
             refreshActiveViews();
 
-            let reportMsg = `KẾT QUẢ IMPORT GIÁO VIÊN:\n`;
-            reportMsg += `==========================\n`;
-            reportMsg += `✔ Thành công: ${importCount} giáo viên\n`;
-            if (duplicateCount > 0) {
-                reportMsg += `⚠ Bị bỏ qua (đã tồn tại): ${duplicateCount} giáo viên\n`;
+            if (skippedRows.length === 0) {
+                showToast(`Đã nhập thành công ${importCount} giáo viên từ Excel!`, "success");
+            } else {
+                let errorDetailsHtml = `
+                    <div style="text-align: left; max-height: 320px; overflow-y: auto;">
+                        <p style="font-weight: 600; color: ${importCount > 0 ? '#fbbf24' : '#f87171'}; margin-bottom: 8px;">
+                            ${importCount > 0 ? `✔ Nhập thành công: <b>${importCount}</b> giáo viên.` : '❌ Không có dòng nào hợp lệ để nhập.'}
+                            ${duplicateCount > 0 ? `<br>⚠ Đã tồn tại: <b>${duplicateCount}</b> giáo viên.` : ''}
+                            <br>⚠️ Bị từ chối (chưa khai báo Tổ ở 1.2 hoặc Môn ở 1.1): <b>${skippedRows.length}</b> dòng.
+                        </p>
+                        <table class="table" style="width: 100%; font-size: 0.83rem; margin-top: 8px; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.06); text-align: left;">
+                                    <th style="padding: 6px 10px;">Dòng</th>
+                                    <th style="padding: 6px 10px;">Họ và Tên</th>
+                                    <th style="padding: 6px 10px;">Tổ</th>
+                                    <th style="padding: 6px 10px;">Lý do từ chối</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${skippedRows.slice(0, 15).map(item => `
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <td style="padding: 6px 10px; font-weight: bold;">${item.row}</td>
+                                        <td style="padding: 6px 10px; color: #38bdf8;">${item.fullName}</td>
+                                        <td style="padding: 6px 10px;">${item.groupName || '-'}</td>
+                                        <td style="padding: 6px 10px; color: #f87171;">${item.reason}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ${skippedRows.length > 15 ? `<p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 6px;">... và ${skippedRows.length - 15} dòng khác bị lỗi tương tự.</p>` : ''}
+                        <p style="margin-top: 12px; color: #38bdf8; font-size: 0.85rem; font-weight: 500;">
+                            💡 Hướng dẫn xử lý: Vui lòng vào <b>Mục 1.2</b> khai báo Tổ chuyên môn và <b>Mục 1.1</b> khai báo Môn học trước khi nạp lại.
+                        </p>
+                    </div>
+                `;
+
+                showConfirmModal(
+                    "Kết Quả Đối Soát Nhập Giáo Viên",
+                    errorDetailsHtml,
+                    null,
+                    "Đã hiểu & Điều chỉnh",
+                    "btn-primary",
+                    "error"
+                );
             }
-            if (skippedRows.length > 0) {
-                reportMsg += `❌ Bị bỏ qua (lỗi dữ liệu): ${skippedRows.length} dòng\n\n`;
-                reportMsg += `Chi tiết các dòng bị lỗi:\n`;
-                const limit = 10;
-                skippedRows.slice(0, limit).forEach(item => {
-                    reportMsg += `• Dòng ${item.row}: "${item.fullName}" - Tổ "${item.groupName}"\n  -> Lỗi: ${item.reason}\n`;
-                });
-                if (skippedRows.length > limit) {
-                    reportMsg += `• ... và ${skippedRows.length - limit} dòng khác.\n`;
-                }
-                
-                reportMsg += `\nCác tổ chuyên môn hợp lệ đã khai báo ở H1:\n`;
-                if (state.groups.length > 0) {
-                    state.groups.forEach(g => {
-                        reportMsg += `- ${g.name}\n`;
-                    });
-                } else {
-                    reportMsg += `(Chưa có tổ nào được khai báo ở H1)\n`;
-                }
-            }
-            showToast(reportMsg, "info");
         } catch(err) {
             console.error(err);
-            showToast("Có lỗi xảy ra khi phân tích tệp Excel!", "danger");
+            showToast("Có lỗi xảy ra khi phân tích tệp Excel giáo viên!", "danger");
         }
     };
     event.target.value = '';
@@ -7828,6 +7867,25 @@ function importTeachersExcel(event) {
 function importSubjectsExcel(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    // KIỂM TRA TIỀN ĐIỀU KIỆN: Bắt buộc Admin phải khai báo Danh mục môn học tại Mục 1.1 trước
+    if (!state.globalSubjects || state.globalSubjects.length === 0) {
+        showConfirmModal(
+            "Chưa Khai Báo Danh Mục Môn Học (Mục 1.1)",
+            `<div style="text-align: left; line-height: 1.6;">
+                <p style="color: #f87171; font-weight: 600; font-size: 1rem;">❌ KHÔNG THỂ NẠP PHÂN PHỐI SỐ TIẾT!</p>
+                <p>Danh mục môn học & nhiệm vụ tại <b>Mục 1.1</b> hiện đang trống.</p>
+                <p>Theo quy trình chuẩn của hệ thống, Admin phải khai báo Danh mục môn học tại <b>Mục 1.1</b> trước, sau đó mới nạp số tiết theo từng khối (Mục 3.1) để tránh sinh dữ liệu rác.</p>
+                <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">👉 Vui lòng chuyển về <b>Mục 1.1</b> để nhập hoặc tải danh mục môn học của trường lên trước.</p>
+            </div>`,
+            null,
+            "Đã hiểu",
+            "btn-primary",
+            "info"
+        );
+        event.target.value = '';
+        return;
+    }
 
     const reader = new FileReader();
     reader.readAsBinaryString(file);
@@ -7887,9 +7945,21 @@ function importSubjectsExcel(event) {
 
                 const nameStr = subName.toString().trim();
                 const gradeStr = grade.toString().trim();
-                
-                let groupId = 'unassigned';
 
+                // 1. KIỂM TRA ĐỐI SOÁT NGHIÊM NGẶT VỚI MỤC 1.1: CẤM TỰ SINH MÔN HỌC MỚI VÀO 1.1
+                const nameLower = nameStr.toLowerCase();
+                const gs = state.globalSubjects.find(item => item && item.name && item.name.trim().toLowerCase() === nameLower);
+                if (!gs) {
+                    skippedRows.push({
+                        row: rowNum,
+                        subName: nameStr,
+                        groupName: groupStr || '',
+                        reason: `Môn "${nameStr}" chưa được khai báo trong Danh mục môn học (Mục 1.1)`
+                    });
+                    return;
+                }
+
+                let groupId = 'unassigned';
                 if (groupStr) {
                     const cleanGroupStr = groupStr.toString().trim();
                     const matchedGroup = state.groups.find(g => 
@@ -7902,24 +7972,20 @@ function importSubjectsExcel(event) {
                             row: rowNum,
                             subName: nameStr,
                             groupName: cleanGroupStr,
-                            reason: 'Tổ chuyên môn không tồn tại trong danh mục Tổ khai báo ở H1'
+                            reason: `Tổ "${cleanGroupStr}" chưa được khai báo tại Mục 1.2`
                         });
                         return;
                     }
                     groupId = matchedGroup.id;
+                } else if (gs.groupId || gs.group) {
+                    groupId = gs.groupId || gs.group;
                 }
 
-                let gs = state.globalSubjects.find(item => item.name.toLowerCase() === nameStr.toLowerCase());
-                if (!gs) {
-                    gs = {
-                        id: 'gs_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                        name: nameStr
-                    };
-                    state.globalSubjects.push(gs);
-                }
+                const canonicalName = gs.name; // Dùng đúng tên chuẩn từ Mục 1.1
 
-                const existingSub = state.subjects.find(s => s.name.toLowerCase() === nameStr.toLowerCase() && s.grade === gradeStr);
+                const existingSub = state.subjects.find(s => s.name.toLowerCase() === canonicalName.toLowerCase() && s.grade === gradeStr);
                 if (existingSub) {
+                    existingSub.name = canonicalName;
                     existingSub.periods = periods;
                     existingSub.group = groupId;
 
@@ -7937,7 +8003,7 @@ function importSubjectsExcel(event) {
                 } else {
                     state.subjects.push({
                         id: 's_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                        name: nameStr,
+                        name: canonicalName,
                         grade: gradeStr,
                         periods: periods,
                         group: groupId
@@ -7949,33 +8015,54 @@ function importSubjectsExcel(event) {
             persistData();
             refreshActiveViews();
 
-            let reportMsg = `KẾT QUẢ IMPORT MÔN HỌC:\n`;
-            reportMsg += `==========================\n`;
-            reportMsg += `✔ Thành công: ${importCount} môn học\n`;
-            if (skippedRows.length > 0) {
-                reportMsg += `❌ Bị bỏ qua (lỗi dữ liệu): ${skippedRows.length} dòng\n\n`;
-                reportMsg += `Chi tiết các dòng bị lỗi:\n`;
-                const limit = 10;
-                skippedRows.slice(0, limit).forEach(item => {
-                    reportMsg += `• Dòng ${item.row}: "${item.subName}" - Tổ "${item.groupName}"\n  -> Lỗi: ${item.reason}\n`;
-                });
-                if (skippedRows.length > limit) {
-                    reportMsg += `• ... và ${skippedRows.length - limit} dòng khác.\n`;
-                }
-                
-                reportMsg += `\nCác tổ chuyên môn hợp lệ đã khai báo ở H1:\n`;
-                if (state.groups.length > 0) {
-                    state.groups.forEach(g => {
-                        reportMsg += `- ${g.name}\n`;
-                    });
-                } else {
-                    reportMsg += `(Chưa có tổ nào được khai báo ở H1)\n`;
-                }
+            if (skippedRows.length === 0) {
+                showToast(`Đã nhập thành công ${importCount} cấu hình số tiết theo khối từ Excel!`, "success");
+            } else {
+                let errorDetailsHtml = `
+                    <div style="text-align: left; max-height: 320px; overflow-y: auto;">
+                        <p style="font-weight: 600; color: ${importCount > 0 ? '#fbbf24' : '#f87171'}; margin-bottom: 8px;">
+                            ${importCount > 0 ? `✔ Nhập thành công: <b>${importCount}</b> môn.` : '❌ Không có dòng nào hợp lệ để nhập.'}
+                            <br>⚠️ Bị từ chối (chưa khai báo ở Mục 1.1 / 1.2): <b>${skippedRows.length}</b> dòng.
+                        </p>
+                        <table class="table" style="width: 100%; font-size: 0.83rem; margin-top: 8px; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.06); text-align: left;">
+                                    <th style="padding: 6px 10px;">Dòng</th>
+                                    <th style="padding: 6px 10px;">Tên Môn</th>
+                                    <th style="padding: 6px 10px;">Tổ</th>
+                                    <th style="padding: 6px 10px;">Lý do từ chối</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${skippedRows.slice(0, 15).map(item => `
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <td style="padding: 6px 10px; font-weight: bold;">${item.row}</td>
+                                        <td style="padding: 6px 10px; color: #38bdf8;">${item.subName}</td>
+                                        <td style="padding: 6px 10px;">${item.groupName || '-'}</td>
+                                        <td style="padding: 6px 10px; color: #f87171;">${item.reason}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ${skippedRows.length > 15 ? `<p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 6px;">... và ${skippedRows.length - 15} dòng khác bị lỗi tương tự.</p>` : ''}
+                        <p style="margin-top: 12px; color: #38bdf8; font-size: 0.85rem; font-weight: 500;">
+                            💡 Hướng dẫn xử lý: Vui lòng vào <b>Mục 1.1</b> để khai báo các môn học bị thiếu trên trước khi nạp lại file.
+                        </p>
+                    </div>
+                `;
+
+                showConfirmModal(
+                    "Kết Quả Đối Soát Nhập Phân Phối Tiết",
+                    errorDetailsHtml,
+                    null,
+                    "Đã hiểu & Điều chỉnh",
+                    "btn-primary",
+                    "error"
+                );
             }
-            showToast(reportMsg, "info");
         } catch(err) {
             console.error(err);
-            showToast("Có lỗi xảy ra khi phân tích tệp Excel!", "danger");
+            showToast("Có lỗi xảy ra khi phân tích tệp Excel môn học!", "danger");
         }
     };
     event.target.value = '';
