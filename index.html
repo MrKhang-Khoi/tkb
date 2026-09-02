@@ -1376,6 +1376,13 @@
                         </p>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <button class="btn btn-primary" onclick="backupSystemDataJson()" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-weight: 600; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);" title="Tải tệp JSON chứa toàn bộ dữ liệu cấu hình, nhân sự và TKB để lưu trữ hoặc chuyển giao">
+                            <span class="material-icons-round" style="font-size: 1.15rem;">save_alt</span> 💾 Sao Lưu Toàn Bộ (.json)
+                        </button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('restoreJsonFileInput').click()" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;" title="Nạp file sao lưu .json để khôi phục toàn bộ hệ thống">
+                            <span class="material-icons-round" style="font-size: 1.15rem;">settings_backup_restore</span> 📂 Phục Hồi (.json)
+                        </button>
+                        <input type="file" id="restoreJsonFileInput" accept=".json" style="display: none;" onchange="restoreSystemDataJson(event)">
                         <button class="btn btn-success" onclick="exportAnalyticsReportExcel()" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-weight: 600;">
                             <span class="material-icons-round" style="font-size: 1.15rem;">file_download</span> Tải Báo Cáo Excel (.xlsx)
                         </button>

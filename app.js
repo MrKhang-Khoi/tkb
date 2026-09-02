@@ -14999,7 +14999,134 @@ function confirmCleanDatabaseReset() {
     );
 }
 
+// ================= BACKUP & RESTORE SYSTEM (JSON FULL SNAPSHOT) =================
+
+function backupSystemDataJson() {
+    try {
+        const now = new Date();
+        const dateStr = now.getFullYear() + 
+            String(now.getMonth() + 1).padStart(2, '0') + 
+            String(now.getDate()).padStart(2, '0') + '_' +
+            String(now.getHours()).padStart(2, '0') + 
+            String(now.getMinutes()).padStart(2, '0');
+
+        const backupData = {
+            app: "FET Timetable Hub",
+            schemaVersion: "3.6",
+            exportedAt: now.toISOString(),
+            institution: state.institution || '',
+            globalSubjects: state.globalSubjects || [],
+            groups: state.groups || [],
+            classes: state.classes || [],
+            teachers: state.teachers || [],
+            subjects: state.subjects || [],
+            assignments: state.assignments || {},
+            groupLocks: state.groupLocks || {},
+            accounts: state.accounts || [],
+            timetable: state.timetable || {},
+            weeklyTimetables: state.weeklyTimetables || [],
+            timetableApplyDate: state.timetableApplyDate || ''
+        };
+
+        const jsonString = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Backup_HeThong_TKB_${dateStr}.json`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast("Đã tải xuống thành công tệp sao lưu toàn bộ hệ thống (.json)!", "success");
+    } catch(e) {
+        console.error("Lỗi khi sao lưu JSON:", e);
+        showToast("Lỗi khi tạo tệp sao lưu: " + e.message, "danger");
+    }
+}
+
+function restoreSystemDataJson(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsText(file, 'UTF-8');
+    reader.onload = function(e) {
+        try {
+            const content = JSON.parse(e.target.result);
+            if (!content || typeof content !== 'object') {
+                throw new Error("Tệp JSON không hợp lệ!");
+            }
+
+            const classCount = (content.classes && Array.isArray(content.classes)) ? content.classes.length : 0;
+            const teacherCount = (content.teachers && Array.isArray(content.teachers)) ? content.teachers.length : 0;
+            const groupCount = (content.groups && Array.isArray(content.groups)) ? content.groups.length : 0;
+            const globalSubCount = (content.globalSubjects && Array.isArray(content.globalSubjects)) ? content.globalSubjects.length : 0;
+            const assignmentCount = (content.assignments && typeof content.assignments === 'object') ? Object.keys(content.assignments).length : 0;
+            const weeklyCount = (content.weeklyTimetables && Array.isArray(content.weeklyTimetables)) ? content.weeklyTimetables.length : 0;
+
+            const timeStr = content.exportedAt ? new Date(content.exportedAt).toLocaleString('vi-VN') : 'Không rõ';
+
+            const summaryHtml = `
+                <div style="text-align: left; line-height: 1.6;">
+                    <p style="color: #38bdf8; font-weight: 600; font-size: 1rem;">📦 XÁC NHẬN PHỤC HỒI DỮ LIỆU HỆ THỐNG</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Thời gian tạo bản sao lưu: <b>${timeStr}</b></p>
+                    <div style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin: 12px 0;">
+                        <p style="margin: 0 0 6px 0; font-weight: 600; color: var(--text-main);">Dữ liệu sẽ được phục hồi:</p>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 0.85rem; color: var(--text-muted);">
+                            <li>Danh mục môn học (Mục 1.1): <b style="color: #c084fc;">${globalSubCount}</b> môn</li>
+                            <li>Tổ chuyên môn (Mục 1.2): <b style="color: #c084fc;">${groupCount}</b> tổ</li>
+                            <li>Lớp học (Mục 1.3): <b style="color: #38bdf8;">${classCount}</b> lớp</li>
+                            <li>Giáo viên (Mục 2.1): <b style="color: #f43f5e;">${teacherCount}</b> giáo viên</li>
+                            <li>Phân công chuyên môn: <b style="color: #34d399;">${assignmentCount}</b> phân công</li>
+                            <li>Đợt thời khóa biểu: <b style="color: #facc15;">${weeklyCount}</b> đợt TKB</li>
+                        </ul>
+                    </div>
+                    <p style="color: #f87171; font-size: 0.83rem;">⚠️ Lưu ý: Thao tác này sẽ thay thế toàn bộ dữ liệu hiện tại bằng dữ liệu từ tệp sao lưu.</p>
+                </div>
+            `;
+
+            showConfirmModal(
+                "Phục Hồi Dữ Liệu Toàn Trường",
+                summaryHtml,
+                () => {
+                    if (content.globalSubjects) state.globalSubjects = content.globalSubjects;
+                    if (content.groups) state.groups = content.groups;
+                    if (content.classes) state.classes = content.classes;
+                    if (content.teachers) state.teachers = content.teachers;
+                    if (content.subjects) state.subjects = content.subjects;
+                    if (content.assignments) state.assignments = content.assignments;
+                    if (content.groupLocks) state.groupLocks = content.groupLocks;
+                    if (content.timetable) state.timetable = content.timetable;
+                    if (content.weeklyTimetables) state.weeklyTimetables = content.weeklyTimetables;
+                    if (content.timetableApplyDate) state.timetableApplyDate = content.timetableApplyDate;
+                    if (content.institution) state.institution = content.institution;
+                    if (content.accounts && Array.isArray(content.accounts)) state.accounts = content.accounts;
+
+                    ensureAdminAccountExists();
+                    persistData();
+                    refreshActiveViews();
+                    renderAnalyticsDashboard();
+
+                    showToast("Đã phục hồi toàn bộ dữ liệu hệ thống từ tệp sao lưu thành công 100%!", "success");
+                },
+                "Xác nhận Phục hồi",
+                "btn-primary",
+                "restore"
+            );
+        } catch(err) {
+            console.error(err);
+            showToast("Lỗi phân tích tệp sao lưu JSON: " + err.message, "danger");
+        }
+    };
+    event.target.value = '';
+}
+
 // Window export definitions
+window.backupSystemDataJson = backupSystemDataJson;
+window.restoreSystemDataJson = restoreSystemDataJson;
 window.renderAnalyticsDashboard = renderAnalyticsDashboard;
 window.renderAnalyticsTeacherTable = renderAnalyticsTeacherTable;
 window.filterAnalyticsTeacherTable = filterAnalyticsTeacherTable;
