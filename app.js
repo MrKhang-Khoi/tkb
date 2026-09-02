@@ -5887,39 +5887,104 @@ function parsePCCMFullTeaching(teachingStr) {
     return assignments;
 }
 
-// Tự động suy luận Tổ chuyên môn cho giáo viên dựa trên chuyên môn/chức vụ/môn dạy
+// Đảm bảo hệ thống có đầy đủ các tổ chuyên môn chuẩn của trường THCS
+function ensureStandardSchoolGroups() {
+    const standardGroups = [
+        { id: 'g_toan_tin', name: 'Tổ Toán - Tin', subjects: ['Toán', 'Tin học', 'Tin'] },
+        { id: 'g_khtn', name: 'Tổ Khoa Học Tự Nhiên (KHTN)', subjects: ['KHTN', 'Khoa học tự nhiên', 'Vật lí', 'Hóa học', 'Sinh học', 'Công nghệ', 'CN'] },
+        { id: 'g_van_su_dia', name: 'Tổ Văn - Sử - Địa', subjects: ['Ngữ văn', 'Văn', 'Lịch sử & Địa lí', 'Lịch sử', 'Địa lí', 'GDCD', 'GDĐP', 'HĐTN'] },
+        { id: 'g_tieng_anh', name: 'Tổ Tiếng Anh', subjects: ['Tiếng Anh', 'T.Anh', 'Ngoại ngữ'] },
+        { id: 'g_vtm_gdtc', name: 'Tổ Thể Dục - Nghệ Thuật (VTM)', subjects: ['GDTC', 'Thể dục', 'Âm nhạc', 'Mĩ thuật', 'Nghệ thuật'] }
+    ];
+
+    if (!state.groups) state.groups = [];
+
+    standardGroups.forEach(sg => {
+        let existing = state.groups.find(g => 
+            g.name.toLowerCase().includes(sg.name.toLowerCase()) ||
+            (sg.id === 'g_khtn' && (g.name.toLowerCase().includes('khtn') || g.name.toLowerCase().includes('tự nhiên'))) ||
+            (sg.id === 'g_vtm_gdtc' && (g.name.toLowerCase().includes('vtm') || g.name.toLowerCase().includes('thể dục') || g.name.toLowerCase().includes('nghệ thuật')))
+        );
+
+        if (!existing) {
+            state.groups.push(sg);
+        } else {
+            sg.subjects.forEach(sub => {
+                if (!existing.subjects) existing.subjects = [];
+                if (!existing.subjects.some(s => s.toLowerCase() === sub.toLowerCase())) {
+                    existing.subjects.push(sub);
+                }
+            });
+        }
+    });
+}
+
+// Tự động suy luận Tổ chuyên môn cho giáo viên dựa trên 4 cấp độ ưu tiên chuẩn xác
 function inferPCCMTeacherGroup(t) {
+    ensureStandardSchoolGroups();
+
     const cm = (t.cm || '').toLowerCase();
     const role = (t.role || '').toLowerCase();
     const duty = (t.duty || '').toLowerCase();
+    const teaching = (t.teaching || '').toLowerCase();
 
-    // 1. Dựa trên Tổ trưởng / Tổ phó
-    if (role.includes('toán') || role.includes('tin') || cm.includes('toán') || cm.includes('tin')) {
-        const g = state.groups.find(x => x.name.toLowerCase().includes('toán') || x.name.toLowerCase().includes('tin'));
+    const findGroupByName = (keywords) => {
+        return state.groups.find(g => keywords.some(k => g.name.toLowerCase().includes(k)));
+    };
+
+    // CẤP ĐỘ 1: Ưu tiên tuyệt đối theo Chức vụ Tổ trưởng / Tổ phó
+    if (role.includes('khtn') || role.includes('tự nhiên')) {
+        const g = findGroupByName(['khtn', 'tự nhiên']);
         if (g) return g.id;
     }
-    if (role.includes('khtn') || cm.includes('hóa') || cm.includes('sinh') || cm.includes('lý') || cm.includes('lí') || cm.includes('khtn')) {
-        const g = state.groups.find(x => x.name.toLowerCase().includes('khtn') || x.name.toLowerCase().includes('tự nhiên') || x.name.toLowerCase().includes('sinh') || x.name.toLowerCase().includes('hóa'));
+    if (role.includes('toán') || role.includes('tin')) {
+        const g = findGroupByName(['toán', 'tin']);
         if (g) return g.id;
     }
-    if (role.includes('văn') || cm.includes('văn')) {
-        const g = state.groups.find(x => x.name.toLowerCase().includes('văn'));
+    if (role.includes('văn') || role.includes('ngữ văn')) {
+        const g = findGroupByName(['văn']);
         if (g) return g.id;
     }
-    if (role.includes('sử') || role.includes('địa') || cm.includes('sử') || cm.includes('địa') || cm.includes('gdcd')) {
-        const g = state.groups.find(x => x.name.toLowerCase().includes('sử') || x.name.toLowerCase().includes('địa') || x.name.toLowerCase().includes('xã hội'));
+    if (role.includes('tiếng anh') || role.includes('ngoại ngữ') || role.includes('ta') || role.includes('anh')) {
+        const g = findGroupByName(['anh', 'ngoại ngữ']);
         if (g) return g.id;
     }
-    if (role.includes('tiếng anh') || role.includes('ngoại ngữ') || cm.includes('nn') || cm.includes('tiếng anh') || cm.includes('anh')) {
-        const g = state.groups.find(x => x.name.toLowerCase().includes('anh') || x.name.toLowerCase().includes('ngoại ngữ'));
+    if (role.includes('sử') || role.includes('địa')) {
+        const g = findGroupByName(['sử', 'địa', 'văn']);
         if (g) return g.id;
     }
-    if (role.includes('vtm') || cm.includes('nhạc') || cm.includes('họa') || cm.includes('mt') || cm.includes('mỹ thuật') || cm.includes('tdtt') || cm.includes('td')) {
-        const g = state.groups.find(x => x.name.toLowerCase().includes('vtm') || x.name.toLowerCase().includes('thể') || x.name.toLowerCase().includes('mỹ thuật') || x.name.toLowerCase().includes('nghệ thuật'));
+    if (role.includes('vtm') || role.includes('thể') || role.includes('nhạc') || role.includes('họa') || role.includes('nghệ thuật')) {
+        const g = findGroupByName(['vtm', 'thể', 'nghệ thuật']);
         if (g) return g.id;
     }
 
-    // 2. Dựa trên các môn dạy được phân công
+    // CẤP ĐỘ 2: Ưu tiên theo Môn học thực tế được phân công giảng dạy
+    if (teaching.includes('khtn') || teaching.includes('hóa') || teaching.includes('sinh') || teaching.includes('lý') || teaching.includes('lí') || teaching.includes('công nghệ') || teaching.includes('cn')) {
+        const g = findGroupByName(['khtn', 'tự nhiên']);
+        if (g) return g.id;
+    }
+    if (teaching.includes('toán') || teaching.includes('tin')) {
+        const g = findGroupByName(['toán', 'tin']);
+        if (g) return g.id;
+    }
+    if (teaching.includes('văn') || teaching.includes('ngữ văn')) {
+        const g = findGroupByName(['văn']);
+        if (g) return g.id;
+    }
+    if (teaching.includes('tiếng anh') || teaching.includes('anh') || teaching.includes('t.anh')) {
+        const g = findGroupByName(['anh', 'ngoại ngữ']);
+        if (g) return g.id;
+    }
+    if (teaching.includes('sử') || teaching.includes('địa') || teaching.includes('gdcd') || teaching.includes('lịch sử') || teaching.includes('địa lí') || teaching.includes('gdđp') || teaching.includes('hđtn')) {
+        const g = findGroupByName(['sử', 'địa', 'văn']);
+        if (g) return g.id;
+    }
+    if (teaching.includes('thể dục') || teaching.includes('gdtc') || teaching.includes('td') || teaching.includes('âm nhạc') || teaching.includes('mĩ thuật') || teaching.includes('nhạc') || teaching.includes('mt')) {
+        const g = findGroupByName(['vtm', 'thể', 'nghệ thuật']);
+        if (g) return g.id;
+    }
+
+    // CẤP ĐỘ 3: Dựa trên các token phân công (teachingAssigns)
     if (t.teachingAssigns && t.teachingAssigns.length > 0) {
         for (const assign of t.teachingAssigns) {
             const matchedGroup = state.groups.find(g => {
@@ -5930,8 +5995,34 @@ function inferPCCMTeacherGroup(t) {
         }
     }
 
-    // Mặc định trả về tổ đầu tiên hoặc g1
-    return state.groups[0] ? state.groups[0].id : 'g1';
+    // CẤP ĐỘ 4: Dựa trên Chuyên môn đào tạo (cho BGH, TPT Đội, người không có môn dạy)
+    if (cm.includes('hóa') || cm.includes('sinh') || cm.includes('lý') || cm.includes('lí') || cm.includes('khtn') || cm.includes('ktcn')) {
+        const g = findGroupByName(['khtn', 'tự nhiên']);
+        if (g) return g.id;
+    }
+    if (cm.includes('toán') || cm.includes('tin')) {
+        const g = findGroupByName(['toán', 'tin']);
+        if (g) return g.id;
+    }
+    if (cm.includes('văn')) {
+        const g = findGroupByName(['văn']);
+        if (g) return g.id;
+    }
+    if (cm.includes('tiếng anh') || cm.includes('ngoại ngữ') || cm.includes('nn') || cm.includes('anh')) {
+        const g = findGroupByName(['anh', 'ngoại ngữ']);
+        if (g) return g.id;
+    }
+    if (cm.includes('sử') || cm.includes('địa') || cm.includes('gdcd')) {
+        const g = findGroupByName(['sử', 'địa', 'văn']);
+        if (g) return g.id;
+    }
+    if (cm.includes('td') || cm.includes('nhạc') || cm.includes('họa') || cm.includes('mt') || cm.includes('thể')) {
+        const g = findGroupByName(['vtm', 'thể', 'nghệ thuật']);
+        if (g) return g.id;
+    }
+
+    // Mặc định
+    return state.groups[0] ? state.groups[0].id : 'g_toan_tin';
 }
 
 // ================= LOADING & VISUAL PROGRESS OVERLAY CONTROLLERS =================
