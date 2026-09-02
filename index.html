@@ -1434,12 +1434,21 @@
             <div class="modal-body" style="flex: 1 1 auto; overflow-y: auto; max-height: none; padding-right: 4px; margin-bottom: 14px;">
                 <!-- Subtab 1: Diagnostics -->
                 <div id="reconSubtabDiagnostics" style="display: block;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Danh Sách Phát Hiện & Đề Xuất Sửa Nhanh</span>
-                        <div style="display: flex; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Danh Sách Phát Hiện & Đề Xuất Sửa Nhanh</span>
+                            <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #38bdf8; cursor: pointer; margin-bottom: 0;">
+                                <input type="checkbox" id="ignoreBGHAndGDTCInAudit" checked onchange="toggleAuditIgnoreBGHAndGDTC()" style="width: 15px; height: 15px; accent-color: var(--primary);">
+                                Loại bỏ BGH (HT, Phó HT) & GV Thể dục khỏi cảnh báo
+                            </label>
+                        </div>
+                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                             <button class="btn btn-secondary" onclick="filterAuditItems('all')" style="padding: 3px 8px; font-size: 0.75rem;">Tất cả</button>
                             <button class="btn btn-secondary" onclick="filterAuditItems('critical')" style="padding: 3px 8px; font-size: 0.75rem; color: #f87171;">Chỉ lỗi đỏ</button>
                             <button class="btn btn-secondary" onclick="filterAuditItems('warning')" style="padding: 3px 8px; font-size: 0.75rem; color: #fbbf24;">Cảnh báo</button>
+                            <button class="btn btn-success" onclick="exportPCCMAuditReportExcel()" style="padding: 4px 12px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; background: #059669; border-color: #047857;" title="Tải toàn bộ kết quả chẩn đoán và đối soát ra file Excel (.xlsx)">
+                                <span class="material-icons-round" style="font-size: 1rem;">file_download</span> Tải Báo Cáo Excel (.xlsx)
+                            </button>
                         </div>
                     </div>
                     <div id="reconAuditItemsList">

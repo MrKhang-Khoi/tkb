@@ -6244,10 +6244,19 @@ function runAssignmentHealthAudit(excelData) {
         };
     });
 
+    const ignoreBGHAndGDTC = (document.getElementById('ignoreBGHAndGDTCInAudit') ? document.getElementById('ignoreBGHAndGDTCInAudit').checked : true);
+
     // SCANNER 1: Kiểm tra bỏ sót lớp so với danh mục lớp của trường
     if (state.classes && state.classes.length > 0 && state.subjects && state.subjects.length > 0) {
         state.subjects.forEach(sub => {
             if (sub.grade === 'Kiêm nhiệm') return;
+
+            // Bỏ qua các môn sinh hoạt lớp/chào cờ/HĐTN hoặc Thể dục nếu đang bật chế độ loại bỏ
+            if (ignoreBGHAndGDTC) {
+                if (typeof isHomeroomSubject === 'function' && isHomeroomSubject(sub.name)) return;
+                if (/^(hđtn|shl|shdc|chào cờ|sinh hoạt|gdtc|thể dục|td)$/i.test(sub.name.trim())) return;
+            }
+
             const targetClasses = state.classes.filter(c => c.grade === sub.grade);
             targetClasses.forEach(cls => {
                 const key = `${cls.name}_${sub.name}`;
@@ -6302,9 +6311,17 @@ function runAssignmentHealthAudit(excelData) {
         }
     });
 
-    // SCANNER 4: Kiểm tra quá tải hoặc thiếu giờ giáo viên
+    // SCANNER 4: Kiểm tra quá tải hoặc thiếu giờ giáo viên (Loại trừ BGH và GV Thể dục nếu bật filter)
     Object.keys(excelTeacherPeriodsMap).forEach(tName => {
         const item = excelTeacherPeriodsMap[tName];
+        const roleLower = (item.role || '').toLowerCase();
+        const isBGH = /hiệu trưởng|ht|pht|phó hiệu trưởng|bgh|tpt/i.test(roleLower) || /hiệu trưởng|ht|pht|phó hiệu trưởng|tpt/i.test(tName.toLowerCase());
+        const isGDTC = /thể dục|gdtc|tdtt|td/i.test(roleLower);
+
+        if (isBGH || (ignoreBGHAndGDTC && isGDTC)) {
+            return; // Không cảnh báo định mức đối với BGH và GV Thể Dục xếp riêng
+        }
+
         if (item.calculated > 22) {
             warnings.push({
                 id: `overload_${tName}`,
@@ -6314,7 +6331,7 @@ function runAssignmentHealthAudit(excelData) {
                 desc: `Định mức chuẩn là 19 tiết. Với ${item.calculated} tiết sẽ rất khó xếp TKB không bị trùng buổi.`,
                 actionText: `Xem xét san sẻ bớt lớp cho đồng nghiệp trong tổ`
             });
-        } else if (item.calculated > 0 && item.calculated < 12 && !item.role.toLowerCase().includes('hiệu trưởng')) {
+        } else if (item.calculated > 0 && item.calculated < 12) {
             warnings.push({
                 id: `underload_${tName}`,
                 type: 'warning',
@@ -6854,6 +6871,120 @@ function renderReconExcelTable() {
     }).join('');
 }
 
+function toggleAuditIgnoreBGHAndGDTC() {
+    if (!lastParsedPCCMData) return;
+    runAssignmentHealthAudit(lastParsedPCCMData);
+    updatePCCMAuditBanner();
+    renderReconciliationModal();
+}
+
+// XUẤT TOÀN BỘ BÁO CÁO CHẨN ĐOÁN & ĐỐI SOÁT PCCM RA FILE EXCEL (.XLSX)
+function exportPCCMAuditReportExcel() {
+    if (!lastAuditResults || !lastParsedPCCMData) {
+        showToast("Chưa có dữ liệu chẩn đoán để xuất Excel!", "warning");
+        return;
+    }
+
+    if (typeof XLSX === 'undefined') {
+        showToast("Thư viện SheetJS chưa sẵn sàng!", "danger");
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Bất Thường & Cảnh Báo
+    const issuesList = [...lastAuditResults.critical, ...lastAuditResults.warnings];
+    const ws1Data = [
+        ['STT', 'Mức Độ Lỗi', 'Phân Loại Lỗi', 'Tiêu Đề Lỗi', 'Mô Tả Chi Tiết', 'Gợi Ý Xử Lý']
+    ];
+    issuesList.forEach((item, idx) => {
+        ws1Data.push([
+            idx + 1,
+            item.type === 'critical' ? 'LỖI ĐỎ (CRITICAL)' : 'CẢNH BÁO (WARNING)',
+            item.category || '',
+            item.title || '',
+            item.desc || '',
+            item.actionText || ''
+        ]);
+    });
+    const ws1 = XLSX.utils.aoa_to_sheet(ws1Data);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Bat_Thuong');
+
+    // Sheet 2: Đối Soát 3 Chiều
+    const ws2Data = [
+        ['STT', 'Lớp', 'Môn Học', 'Tổ Chuyên Môn', 'Phân Công Excel (BGH)', 'Số Tiết Excel', 'Phân Công Hệ Thống (Tổ)', 'Số Tiết Hệ Thống', 'Đánh Giá Đối Soát', 'Mô Tả Đối Soát', 'Lựa Chọn Áp Dụng']
+    ];
+    lastAuditResults.diffItems.forEach((item, idx) => {
+        ws2Data.push([
+            idx + 1,
+            item.clsName,
+            item.subName,
+            item.groupName,
+            item.excelTeacher,
+            item.excelPeriods,
+            item.sysTeacher || '(Chưa phân)',
+            item.sysPeriods || 0,
+            item.status.toUpperCase(),
+            item.diffDesc,
+            reconciliationChoices[item.key] === 'excel' ? 'File Excel BGH' : 'Hệ Thống Tổ'
+        ]);
+    });
+    const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Doi_Soat_3_Chieu');
+
+    // Sheet 3: Thống Kê Số Tiết Lớp & Nạp FET
+    const ws3Data = [
+        ['STT', 'Tên Lớp', 'Khối', 'Tổng Tiết Cả Tuần', 'Tiết Thể Dục (GDTC)', 'Tiết Văn Hóa Nạp FET', 'Chuẩn Khối (FET)', 'Đánh Giá Cân Bằng']
+    ];
+    (lastAuditResults.classBalanceList || []).forEach((clsItem, idx) => {
+        let evalText = 'ĐỦ TIẾT (FET)';
+        if (clsItem.fetPeriods < clsItem.targetFetPeriods) evalText = `THIẾU ${clsItem.targetFetPeriods - clsItem.fetPeriods}T`;
+        else if (clsItem.fetPeriods > clsItem.targetFetPeriods) evalText = `THỪA ${clsItem.fetPeriods - clsItem.targetFetPeriods}T`;
+
+        ws3Data.push([
+            idx + 1,
+            clsItem.clsName,
+            clsItem.grade,
+            clsItem.totalPeriods,
+            clsItem.gdtcPeriods,
+            clsItem.fetPeriods,
+            clsItem.targetFetPeriods,
+            evalText
+        ]);
+    });
+    const ws3 = XLSX.utils.aoa_to_sheet(ws3Data);
+    XLSX.utils.book_append_sheet(wb, ws3, 'Thong_Ke_Tiet_Lop');
+
+    // Sheet 4: Danh Sách 92 Giáo Viên Bóc Tách
+    const ws4Data = [
+        ['STT', 'Họ Và Tên', 'Chức Vụ', 'Chuyên Môn Đào Tạo', 'Tổ Chuyên Môn', 'Nhiệm Vụ Giảng Dạy', 'Kiêm Nhiệm', 'Bồi Dưỡng HSG', 'Phụ Đạo', 'Tổng Tiết TH']
+    ];
+    (lastParsedPCCMData.teachers || []).forEach(t => {
+        const groupObj = state.groups.find(g => g.id === t.inferredGroup);
+        const assignsStr = t.teachingAssigns.map(a => `${a.subject}: ${a.classes.join(', ')} (${a.periods || 'Auto'}T)`).join('; ');
+        ws4Data.push([
+            t.stt,
+            t.fullName,
+            t.role,
+            t.cm,
+            groupObj ? groupObj.name : 'Chưa rõ',
+            assignsStr,
+            t.duty || '',
+            t.hsg || '',
+            t.phudao || '',
+            t.totalPeriods
+        ]);
+    });
+    const ws4 = XLSX.utils.aoa_to_sheet(ws4Data);
+    XLSX.utils.book_append_sheet(wb, ws4, 'Danh_Sach_92_GV');
+
+    // Tải tệp Excel
+    const d = new Date();
+    const dateStr = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+    XLSX.writeFile(wb, `Bao_Cao_Chan_Doan_Doi_Soat_PCCM_${dateStr}.xlsx`);
+    showToast("Đã xuất và tải về tệp Báo Cáo Chẩn Đoán Excel thành công!", "success");
+}
+
 function setReconChoice(key, choice) {
     reconciliationChoices[key] = choice;
     renderReconciliationDiffTable();
@@ -6872,7 +7003,7 @@ function quickAutoFixAuditItem(issueId) {
     showToast(`Đã tự động áp dụng phương án tối ưu cho mục: ${issueId}`, 'success');
 }
 
-// ÁP DỤNG CẬP NHẬT VÀO HỆ THỐNG
+// ÁP DỤNG CẬP NHẬT VÀO HỆ THỐNG (Tối ưu hóa tránh Page Unresponsive)
 async function applyReconciliationData(mode) {
     if (!lastParsedPCCMData) {
         showToast("Chưa có dữ liệu Excel PCCM để áp dụng!", "warning");
@@ -6885,9 +7016,9 @@ async function applyReconciliationData(mode) {
         "Bước 1/3: Sao lưu an toàn & Nhân sự",
         30
     );
-    await pccmSleep(150);
+    await pccmSleep(100);
 
-    // 1. Tự động Snapshot (Sao lưu phiên bản phân công hiện tại)
+    // 1. Tự động Snapshot (Giới hạn tối đa 10 phiên bản gần nhất để tránh tràn bộ nhớ)
     if (typeof state.assignmentVersions === 'undefined') state.assignmentVersions = [];
     const currentSnapshot = {
         id: 'ver_' + Date.now(),
@@ -6897,11 +7028,14 @@ async function applyReconciliationData(mode) {
         note: 'Snapshot an toàn tự động bởi AI Reconciliation Engine'
     };
     state.assignmentVersions.push(currentSnapshot);
+    if (state.assignmentVersions.length > 10) {
+        state.assignmentVersions = state.assignmentVersions.slice(-10);
+    }
 
     let updatedCount = 0;
     const teachersFromExcel = lastParsedPCCMData.teachers;
 
-    // 2. Cập nhật / Bổ sung giáo viên vào state.teachers nếu chưa có
+    // 2. Cập nhật / Bổ sung giáo viên vào state.teachers
     teachersFromExcel.forEach(t => {
         let existing = state.teachers.find(st => st.fullName.toLowerCase() === t.fullName.toLowerCase());
         if (!existing) {
@@ -6920,6 +7054,7 @@ async function applyReconciliationData(mode) {
         } else {
             if (t.totalPeriods > 0) existing.quota = t.totalPeriods;
             if (t.role) existing.position = t.role;
+            if (t.inferredGroup) existing.group = t.inferredGroup;
         }
     });
 
@@ -6928,7 +7063,7 @@ async function applyReconciliationData(mode) {
         "Bước 2/3: Ghi dữ liệu phân công",
         70
     );
-    await pccmSleep(150);
+    await pccmSleep(100);
 
     // 3. Cập nhật phân công (state.assignments)
     if (!state.assignments) state.assignments = {};
@@ -6972,16 +7107,19 @@ async function applyReconciliationData(mode) {
         "Bước 3/3: Đồng bộ Realtime Database",
         100
     );
-    await pccmSleep(150);
+    await pccmSleep(100);
 
-    // 4. Lưu dữ liệu & Đồng bộ Realtime Database
+    // 4. Lưu dữ liệu & Đóng modal trước khi render view nặng để UI luôn mượt mà
     persistData();
-    refreshActiveViews();
-    if (typeof renderMergedAssignments === 'function') renderMergedAssignments();
-
     hidePCCMLoading();
     closeReconciliationModal();
     updatePCCMAuditBanner();
+
+    // Defer view rendering to allow browser UI thread to breathe
+    setTimeout(() => {
+        refreshActiveViews();
+        if (typeof renderMergedAssignments === 'function') renderMergedAssignments();
+    }, 50);
 
     showToast(`Đã đồng bộ thành công ${updatedCount} lượt phân công vào hệ thống!`, "success");
 }
