@@ -586,6 +586,7 @@
                 <button class="tab-btn" onclick="switchAdminTab('curriculumTab')">3. Chương Trình Học & Số Tiết</button>
                 <button class="tab-btn" onclick="switchAdminTab('mergeTab')">4. Gộp Phân Công & FET CSV</button>
                 <button class="tab-btn" onclick="switchAdminTab('fetConverterTab')">5. Cập Nhật TKB Từ FET / Excel</button>
+                <button class="tab-btn" onclick="switchAdminTab('analyticsTab')">6. Báo Cáo & Thống Kê</button>
             </div>
 
             <!-- Tab 1: School Setup -->
@@ -1358,6 +1359,220 @@
                     </div>
                     <div id="googleSheetsSyncResult" style="display: none; padding: 12px 16px; background: rgba(30, 41, 59, 0.5); border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem;">
                         <!-- Dynamic result link and status -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 6: Analytics & Statistical Reports -->
+            <div id="analyticsTab" class="tab-content glass-card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                            <span class="material-icons-round" style="color: var(--primary-light); font-size: 1.8rem;">analytics</span>
+                            6. Báo Cáo Thống Kê & Phân Tích Dữ Liệu Toàn Trường
+                        </h2>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">
+                            Tổng hợp trực quan đa chiều số liệu Lớp học, Nhân sự, Tổ chuyên môn, Phân phối chương trình và Cân đối định mức giảng dạy.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <button class="btn btn-success" onclick="exportAnalyticsReportExcel()" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                            <span class="material-icons-round" style="font-size: 1.15rem;">file_download</span> Tải Báo Cáo Excel (.xlsx)
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.print()" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-icons-round" style="font-size: 1.15rem;">print</span> In Báo Cáo
+                        </button>
+                        <button class="btn btn-secondary" onclick="renderAnalyticsDashboard()" style="padding: 8px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-icons-round" style="font-size: 1.15rem;">refresh</span> Làm mới
+                        </button>
+                        <button class="btn btn-danger" onclick="confirmCleanDatabaseReset()" style="padding: 8px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: var(--danger);" title="Xóa sạch dữ liệu để khai báo lại từ đầu">
+                            <span class="material-icons-round" style="font-size: 1.15rem;">delete_sweep</span> Dọn sạch dữ liệu (Reset)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. Top KPI Summary Metric Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 28px;">
+                    <!-- Card 1: Lớp học -->
+                    <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 14px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Tổng Số Lớp Học</span>
+                            <span class="material-icons-round" style="color: #60a5fa; background: rgba(59, 130, 246, 0.15); padding: 8px; border-radius: 10px; font-size: 1.3rem;">school</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                            <span id="kpiTotalClasses" style="font-size: 2.2rem; font-weight: 700; color: #60a5fa; line-height: 1;">0</span>
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">lớp</span>
+                        </div>
+                        <div id="kpiClassSessionDetail" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <span>Sáng: <b id="kpiClassesMorning" style="color: #38bdf8;">0</b></span>
+                            <span>Chiều: <b id="kpiClassesAfternoon" style="color: #fb923c;">0</b></span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Giáo viên -->
+                    <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 14px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Tổng Số Giáo Viên</span>
+                            <span class="material-icons-round" style="color: #f43f5e; background: rgba(244, 63, 94, 0.15); padding: 8px; border-radius: 10px; font-size: 1.3rem;">groups</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                            <span id="kpiTotalTeachers" style="font-size: 2.2rem; font-weight: 700; color: #f43f5e; line-height: 1;">0</span>
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">nhân sự</span>
+                        </div>
+                        <div id="kpiTeacherRoleDetail" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <span>Tổ trưởng: <b id="kpiTeachersLeader" style="color: #f43f5e;">0</b></span>
+                            <span>Giáo viên: <b id="kpiTeachersNormal" style="color: #cbd5e1;">0</b></span>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Tổ & Môn học -->
+                    <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 14px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Tổ Chuyên Môn & Môn</span>
+                            <span class="material-icons-round" style="color: #c084fc; background: rgba(168, 85, 247, 0.15); padding: 8px; border-radius: 10px; font-size: 1.3rem;">account_tree</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                            <span id="kpiTotalGroups" style="font-size: 2.2rem; font-weight: 700; color: #c084fc; line-height: 1;">0</span>
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">tổ chuyên môn</span>
+                        </div>
+                        <div id="kpiSubjectDetail" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <span>Danh mục: <b id="kpiTotalGlobalSubjects" style="color: #c084fc;">0</b> môn</span>
+                            <span>Cấu hình: <b id="kpiTotalGradeSubjects" style="color: #e879f9;">0</b> mục</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Tổng tiết & Tải -->
+                    <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Tổng Tiết Giảng Dạy / Tuần</span>
+                            <span class="material-icons-round" style="color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 8px; border-radius: 10px; font-size: 1.3rem;">hourglass_bottom</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                            <span id="kpiTotalAssignedPeriods" style="font-size: 2.2rem; font-weight: 700; color: #34d399; line-height: 1;">0</span>
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">tiết</span>
+                        </div>
+                        <div id="kpiQuotaBalanceDetail" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <span>Tổng định mức: <b id="kpiTotalQuota" style="color: #34d399;">0</b> tiết</span>
+                            <span>Độ phủ: <b id="kpiLoadCoverage" style="color: #facc15;">0%</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Interactive Modern Chart Widgets Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 20px; margin-bottom: 32px;">
+                    
+                    <!-- Chart 1: Phân bổ số tiết & định mức theo Tổ chuyên môn -->
+                    <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 22px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+                                <span class="material-icons-round" style="color: var(--primary-light);">bar_chart</span>
+                                So Sánh Số Tiết Phân Công & Tổng Định Mức Theo Tổ
+                            </h3>
+                            <div style="display: flex; gap: 12px; font-size: 0.75rem;">
+                                <span style="display: flex; align-items: center; gap: 4px; color: #38bdf8;"><span style="display:inline-block; width:10px; height:10px; background:#38bdf8; border-radius:2px;"></span> Tiết thực dạy</span>
+                                <span style="display: flex; align-items: center; gap: 4px; color: #a855f7;"><span style="display:inline-block; width:10px; height:10px; background:#a855f7; border-radius:2px;"></span> Định mức</span>
+                            </div>
+                        </div>
+                        <div id="groupPeriodBarChartContainer" style="min-height: 240px; display: flex; flex-direction: column; justify-content: center; gap: 14px;">
+                            <!-- Dynamic Bars Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Cơ cấu giáo viên theo Tổ chuyên môn -->
+                    <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 22px;">
+                        <h3 style="font-size: 1rem; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+                            <span class="material-icons-round" style="color: #f43f5e;">pie_chart</span>
+                            Cơ Cấu & Tỷ Lệ Giáo Viên Theo Tổ Chuyên Môn
+                        </h3>
+                        <div id="groupTeacherDonutContainer" style="min-height: 240px; display: flex; flex-direction: column; justify-content: center; gap: 12px;">
+                            <!-- Dynamic Distribution Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Thống kê số lớp theo Khối & Buổi -->
+                    <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 22px;">
+                        <h3 style="font-size: 1rem; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+                            <span class="material-icons-round" style="color: #facc15;">view_column</span>
+                            Phân Bổ Lớp Học Theo Khối & Buổi Học (Sáng / Chiều)
+                        </h3>
+                        <div id="gradeClassSessionChartContainer" style="min-height: 200px; display: flex; flex-direction: column; justify-content: center; gap: 12px;">
+                            <!-- Dynamic Grade Distribution by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Chart 4: Thống kê Tải Giảng Dạy Của Giáo Viên -->
+                    <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 22px;">
+                        <h3 style="font-size: 1rem; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+                            <span class="material-icons-round" style="color: #34d399;">speed</span>
+                            Phân Bổ Tải Giảng Dạy & Cân Bằng Giờ Dạy Của Giáo Viên
+                        </h3>
+                        <div id="teacherWorkloadDistributionContainer" style="min-height: 200px; display: flex; flex-direction: column; justify-content: center; gap: 14px;">
+                            <!-- Dynamic Workload Groups by JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 3. Detailed Statistical Tables -->
+                <div style="margin-top: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="font-size: 1.05rem; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <span class="material-icons-round" style="color: var(--primary-light);">table_chart</span>
+                            Bảng Tổng Hợp Chi Tiết Số Liệu Theo Tổ Chuyên Môn
+                        </h3>
+                    </div>
+                    <div class="table-container" style="max-height: 380px; overflow-y: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center;">STT</th>
+                                    <th>Tổ Chuyên Môn</th>
+                                    <th style="width: 110px; text-align: center;">Số Giáo Viên</th>
+                                    <th>Môn Phụ Trách</th>
+                                    <th style="width: 130px; text-align: center;">Tổng Tiết Dạy</th>
+                                    <th style="width: 130px; text-align: center;">Tổng Định Mức</th>
+                                    <th style="width: 120px; text-align: center;">Chênh Lệch</th>
+                                    <th style="width: 140px; text-align: center;">Đánh Giá Tải</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analyticsGroupTableBody">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. Detailed Teacher Workload Table -->
+                <div style="margin-top: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="font-size: 1.05rem; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <span class="material-icons-round" style="color: #f43f5e;">badge</span>
+                            Bảng Thống Kê Định Mức & Tiết Dạy Từng Giáo Viên Toàn Trường
+                        </h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="analyticsTeacherSearchInput" class="form-control" placeholder="Tìm theo tên giáo viên hoặc tổ..." style="width: 260px; font-size: 0.82rem; padding: 6px 12px; height: 32px;" oninput="filterAnalyticsTeacherTable()">
+                        </div>
+                    </div>
+                    <div class="table-container" style="max-height: 440px; overflow-y: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center;">STT</th>
+                                    <th>Họ và Tên</th>
+                                    <th style="width: 100px;">Viết Tắt</th>
+                                    <th>Tổ Chuyên Môn</th>
+                                    <th>Môn Dạy</th>
+                                    <th style="width: 110px; text-align: center;">Chức Vụ</th>
+                                    <th style="width: 100px; text-align: center;">Định Mức</th>
+                                    <th style="width: 120px; text-align: center;">Tiết Phân Công</th>
+                                    <th style="width: 110px; text-align: center;">Chênh Lệch</th>
+                                    <th style="width: 130px; text-align: center;">Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analyticsTeacherTableBody">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

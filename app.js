@@ -821,6 +821,11 @@ function refreshActiveViews() {
         renderAdminGroupLockStatus();
         renderAssignmentVersions();
         renderWeeklyTimetablesTable();
+
+        const analyticsTab = document.getElementById('analyticsTab');
+        if (analyticsTab && analyticsTab.classList.contains('active')) {
+            renderAnalyticsDashboard();
+        }
         
         // Cập nhật ô nhập ngày áp dụng thời khóa biểu
         const dateInput = document.getElementById('timetableApplyDateInput');
@@ -1315,10 +1320,20 @@ function switchAdminTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
-    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
     if (btn) btn.classList.add('active');
 
-    document.getElementById(tabId).classList.add('active');
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) {
+        targetTab.classList.add('active');
+        if (tabId === 'fetConverterTab' || tabId === 'analyticsTab') {
+            targetTab.style.display = 'block';
+        }
+    }
+
+    if (tabId === 'analyticsTab') {
+        renderAnalyticsDashboard();
+    }
 }
 
 // ================= GROUP LEADER DASHBOARD WORKSPACE =================
@@ -14402,6 +14417,594 @@ window.exportGroupAssignmentExcel = exportGroupAssignmentExcel;
 window.exportAllAssignmentsExcel = exportAllAssignmentsExcel;
 window.printSubstitutionsPDF = printSubstitutionsPDF;
 window.printCurrentAnalyzedSubstitutionsPDF = printCurrentAnalyzedSubstitutionsPDF;
+// ================= TAB 6: ADVANCED ANALYTICS & STATISTICAL DASHBOARD =================
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderAnalyticsDashboard() {
+    if (state.currentUser !== 'admin') return;
+
+    // 1. Calculations
+    const classes = state.classes || [];
+    const teachers = state.teachers || [];
+    const groups = state.groups || [];
+    const globalSubjects = state.globalSubjects || [];
+    const gradeSubjects = state.subjects || [];
+    const assignments = state.assignments || {};
+
+    const totalClasses = classes.length;
+    const morningClasses = classes.filter(c => (c.session || '').toLowerCase() === 'sáng').length;
+    const afternoonClasses = classes.filter(c => (c.session || '').toLowerCase() === 'chiều').length;
+
+    const totalTeachers = teachers.length;
+    const leaderTeachers = teachers.filter(t => (t.position || '').toLowerCase().includes('tổ trưởng')).length;
+    const normalTeachers = totalTeachers - leaderTeachers;
+
+    const totalGroups = groups.length;
+    const totalGlobalSubjects = globalSubjects.length;
+    const totalGradeSubjects = gradeSubjects.length;
+
+    // Tính tổng định mức giáo viên toàn trường
+    let totalQuota = 0;
+    teachers.forEach(t => {
+        totalQuota += (parseInt(t.quota) || 19);
+    });
+
+    // Tính số tiết thực dạy của từng giáo viên và từng tổ từ state.assignments
+    const teacherPeriodsMap = {};
+    teachers.forEach(t => {
+        teacherPeriodsMap[(t.shortName || '').trim().toLowerCase()] = 0;
+    });
+
+    let totalAssignedPeriods = 0;
+    Object.keys(assignments).forEach(key => {
+        const val = assignments[key];
+        if (val && val.teacher && val.periods > 0) {
+            const tKey = val.teacher.trim().toLowerCase();
+            const p = parseInt(val.periods) || 0;
+            if (teacherPeriodsMap[tKey] !== undefined) {
+                teacherPeriodsMap[tKey] += p;
+            } else {
+                teacherPeriodsMap[tKey] = p;
+            }
+            totalAssignedPeriods += p;
+        }
+    });
+
+    const coveragePct = totalQuota > 0 ? Math.round((totalAssignedPeriods / totalQuota) * 100) : 0;
+
+    // 2. Update KPI Elements
+    const kpiTotalClassesEl = document.getElementById('kpiTotalClasses');
+    if (kpiTotalClassesEl) kpiTotalClassesEl.innerText = totalClasses;
+    const kpiClassesMorningEl = document.getElementById('kpiClassesMorning');
+    if (kpiClassesMorningEl) kpiClassesMorningEl.innerText = morningClasses;
+    const kpiClassesAfternoonEl = document.getElementById('kpiClassesAfternoon');
+    if (kpiClassesAfternoonEl) kpiClassesAfternoonEl.innerText = afternoonClasses;
+
+    const kpiTotalTeachersEl = document.getElementById('kpiTotalTeachers');
+    if (kpiTotalTeachersEl) kpiTotalTeachersEl.innerText = totalTeachers;
+    const kpiTeachersLeaderEl = document.getElementById('kpiTeachersLeader');
+    if (kpiTeachersLeaderEl) kpiTeachersLeaderEl.innerText = leaderTeachers;
+    const kpiTeachersNormalEl = document.getElementById('kpiTeachersNormal');
+    if (kpiTeachersNormalEl) kpiTeachersNormalEl.innerText = normalTeachers;
+
+    const kpiTotalGroupsEl = document.getElementById('kpiTotalGroups');
+    if (kpiTotalGroupsEl) kpiTotalGroupsEl.innerText = totalGroups;
+    const kpiTotalGlobalSubjectsEl = document.getElementById('kpiTotalGlobalSubjects');
+    if (kpiTotalGlobalSubjectsEl) kpiTotalGlobalSubjectsEl.innerText = totalGlobalSubjects;
+    const kpiTotalGradeSubjectsEl = document.getElementById('kpiTotalGradeSubjects');
+    if (kpiTotalGradeSubjectsEl) kpiTotalGradeSubjectsEl.innerText = totalGradeSubjects;
+
+    const kpiTotalAssignedPeriodsEl = document.getElementById('kpiTotalAssignedPeriods');
+    if (kpiTotalAssignedPeriodsEl) kpiTotalAssignedPeriodsEl.innerText = totalAssignedPeriods;
+    const kpiTotalQuotaEl = document.getElementById('kpiTotalQuota');
+    if (kpiTotalQuotaEl) kpiTotalQuotaEl.innerText = totalQuota;
+    const kpiLoadCoverageEl = document.getElementById('kpiLoadCoverage');
+    if (kpiLoadCoverageEl) kpiLoadCoverageEl.innerText = coveragePct + '%';
+
+    // 3. Render Chart 1: Group Period vs Quota comparison bars
+    const groupBarContainer = document.getElementById('groupPeriodBarChartContainer');
+    if (groupBarContainer) {
+        if (groups.length === 0) {
+            groupBarContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.88rem;">Chưa có dữ liệu Tổ chuyên môn để phân tích</div>`;
+        } else {
+            let maxVal = 1;
+            const groupStats = groups.map(g => {
+                const groupTeachers = teachers.filter(t => t.group === g.id);
+                let gQuota = 0;
+                let gAssigned = 0;
+                groupTeachers.forEach(t => {
+                    gQuota += (parseInt(t.quota) || 19);
+                    const tKey = (t.shortName || '').trim().toLowerCase();
+                    gAssigned += (teacherPeriodsMap[tKey] || 0);
+                });
+                if (gQuota > maxVal) maxVal = gQuota;
+                if (gAssigned > maxVal) maxVal = gAssigned;
+                return {
+                    id: g.id,
+                    name: g.name,
+                    teacherCount: groupTeachers.length,
+                    subjects: g.subjects || [],
+                    quota: gQuota,
+                    assigned: gAssigned,
+                    diff: gAssigned - gQuota
+                };
+            });
+
+            groupBarContainer.innerHTML = groupStats.map(gs => {
+                const pctAssigned = Math.min(100, Math.round((gs.assigned / maxVal) * 100));
+                const pctQuota = Math.min(100, Math.round((gs.quota / maxVal) * 100));
+                const diffBadge = gs.diff > 0 
+                    ? `<span style="color:#f87171; font-weight:600;">+${gs.diff} tiết (Vượt tải)</span>`
+                    : (gs.diff < 0 ? `<span style="color:#fbbf24; font-weight:600;">${gs.diff} tiết (Thiếu tiết)</span>` : `<span style="color:#34d399; font-weight:600;">Cân bằng (0)</span>`);
+
+                return `
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.84rem; font-weight: 500;">
+                            <span style="color: var(--text-main); font-weight: 600;">${escapeHtml(gs.name)} <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: normal;">(${gs.teacherCount} GV)</span></span>
+                            <span style="font-size: 0.78rem;">${diffBadge}</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <!-- Assigned Bar -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="flex: 1; height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden;">
+                                    <div style="width: ${pctAssigned}%; height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); border-radius: 5px; transition: width 0.4s ease;"></div>
+                                </div>
+                                <span style="font-size: 0.76rem; font-weight: 600; color: #38bdf8; width: 45px; text-align: right;">${gs.assigned}t</span>
+                            </div>
+                            <!-- Quota Bar -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="flex: 1; height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden;">
+                                    <div style="width: ${pctQuota}%; height: 100%; background: linear-gradient(90deg, #7c3aed, #c084fc); border-radius: 5px; transition: width 0.4s ease;"></div>
+                                </div>
+                                <span style="font-size: 0.76rem; font-weight: 600; color: #c084fc; width: 45px; text-align: right;">${gs.quota}t</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    // 4. Render Chart 2: Group Teacher Multi-color distribution
+    const donutContainer = document.getElementById('groupTeacherDonutContainer');
+    if (donutContainer) {
+        if (groups.length === 0 || teachers.length === 0) {
+            donutContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.88rem;">Chưa có dữ liệu phân bố Giáo viên</div>`;
+        } else {
+            const palette = ['#38bdf8', '#f43f5e', '#a855f7', '#34d399', '#facc15', '#fb923c', '#e879f9', '#2dd4bf'];
+            const groupTeacherCounts = groups.map((g, idx) => {
+                const count = teachers.filter(t => t.group === g.id).length;
+                const pct = totalTeachers > 0 ? Math.round((count / totalTeachers) * 100) : 0;
+                return {
+                    name: g.name,
+                    count: count,
+                    pct: pct,
+                    color: palette[idx % palette.length]
+                };
+            });
+
+            let multiBarHtml = `<div style="display: flex; height: 18px; border-radius: 9px; overflow: hidden; background: rgba(255,255,255,0.06); margin-bottom: 16px;">`;
+            groupTeacherCounts.forEach(item => {
+                if (item.pct > 0) {
+                    multiBarHtml += `<div style="width: ${item.pct}%; background: ${item.color}; height: 100%;" title="${escapeHtml(item.name)}: ${item.count} GV (${item.pct}%)"></div>`;
+                }
+            });
+            multiBarHtml += `</div>`;
+
+            let legendHtml = `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">`;
+            groupTeacherCounts.forEach(item => {
+                legendHtml += `
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; background: rgba(15,23,42,0.3); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: ${item.color}; flex-shrink: 0;"></span>
+                        <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <span style="color: var(--text-main); font-weight: 500;">${escapeHtml(item.name)}</span>
+                        </div>
+                        <span style="font-weight: 700; color: ${item.color};">${item.count} <span style="font-weight: normal; font-size: 0.75rem; color: var(--text-muted);">(${item.pct}%)</span></span>
+                    </div>
+                `;
+            });
+            legendHtml += `</div>`;
+
+            donutContainer.innerHTML = multiBarHtml + legendHtml;
+        }
+    }
+
+    // 5. Render Chart 3: Grade Class & Session Distribution
+    const gradeClassContainer = document.getElementById('gradeClassSessionChartContainer');
+    if (gradeClassContainer) {
+        if (classes.length === 0) {
+            gradeClassContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.88rem;">Chưa có dữ liệu Lớp học để phân tích</div>`;
+        } else {
+            const grades = ['6', '7', '8', '9', '10', '11', '12'];
+            const gradeStats = [];
+            grades.forEach(gr => {
+                const grClasses = classes.filter(c => (c.grade || '').toString().trim() === gr);
+                if (grClasses.length > 0) {
+                    const morn = grClasses.filter(c => (c.session || '').toLowerCase() === 'sáng').length;
+                    const aft = grClasses.filter(c => (c.session || '').toLowerCase() === 'chiều').length;
+                    gradeStats.push({ grade: gr, total: grClasses.length, morning: morn, afternoon: aft });
+                }
+            });
+
+            classes.forEach(c => {
+                const g = (c.grade || 'Khác').toString().trim();
+                if (!grades.includes(g) && !gradeStats.some(gs => gs.grade === g)) {
+                    const grClasses = classes.filter(cl => (cl.grade || 'Khác').toString().trim() === g);
+                    const morn = grClasses.filter(cl => (cl.session || '').toLowerCase() === 'sáng').length;
+                    const aft = grClasses.filter(cl => (cl.session || '').toLowerCase() === 'chiều').length;
+                    gradeStats.push({ grade: g, total: grClasses.length, morning: morn, afternoon: aft });
+                }
+            });
+
+            let gradeHtml = `<div style="display: flex; flex-direction: column; gap: 10px;">`;
+            gradeStats.forEach(gs => {
+                const mornPct = gs.total > 0 ? Math.round((gs.morning / gs.total) * 100) : 0;
+                const aftPct = gs.total > 0 ? (100 - mornPct) : 0;
+                gradeHtml += `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="width: 70px; font-size: 0.85rem; font-weight: 600; color: var(--text-main);">Khối ${gs.grade}:</span>
+                        <div style="flex: 1; height: 16px; background: rgba(255,255,255,0.06); border-radius: 8px; overflow: hidden; display: flex;">
+                            ${gs.morning > 0 ? `<div style="width: ${mornPct}%; background: #38bdf8; height: 100%;" title="Khối ${gs.grade} Sáng: ${gs.morning} lớp"></div>` : ''}
+                            ${gs.afternoon > 0 ? `<div style="width: ${aftPct}%; background: #fb923c; height: 100%;" title="Khối ${gs.grade} Chiều: ${gs.afternoon} lớp"></div>` : ''}
+                        </div>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); width: 70px; text-align: right;">${gs.total} lớp</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); width: 140px;">(Sáng: ${gs.morning} | Chiều: ${gs.afternoon})</span>
+                    </div>
+                `;
+            });
+            gradeHtml += `</div>`;
+            gradeClassContainer.innerHTML = gradeHtml;
+        }
+    }
+
+    // 6. Render Chart 4: Teacher Workload Balance Groups
+    const workloadContainer = document.getElementById('teacherWorkloadDistributionContainer');
+    if (workloadContainer) {
+        if (teachers.length === 0) {
+            workloadContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.88rem;">Chưa có dữ liệu Giáo viên để phân tích tải</div>`;
+        } else {
+            let underCount = 0;
+            let exactCount = 0;
+            let overCount = 0;
+
+            teachers.forEach(t => {
+                const q = parseInt(t.quota) || 19;
+                const tKey = (t.shortName || '').trim().toLowerCase();
+                const p = teacherPeriodsMap[tKey] || 0;
+                if (p < q) underCount++;
+                else if (p === q) exactCount++;
+                else overCount++;
+            });
+
+            const underPct = Math.round((underCount / totalTeachers) * 100);
+            const exactPct = Math.round((exactCount / totalTeachers) * 100);
+            const overPct = Math.round((overCount / totalTeachers) * 100);
+
+            workloadContainer.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Under Quota -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="width: 130px; font-size: 0.83rem; color: #fbbf24; font-weight: 500;">Thiếu tiết (&lt; ĐM):</span>
+                        <div style="flex: 1; height: 14px; background: rgba(255,255,255,0.06); border-radius: 7px; overflow: hidden;">
+                            <div style="width: ${underPct}%; height: 100%; background: #fbbf24; border-radius: 7px;"></div>
+                        </div>
+                        <span style="font-size: 0.82rem; font-weight: 700; color: #fbbf24; width: 90px; text-align: right;">${underCount} GV (${underPct}%)</span>
+                    </div>
+
+                    <!-- Exact Quota -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="width: 130px; font-size: 0.83rem; color: #34d399; font-weight: 500;">Đạt chuẩn (= ĐM):</span>
+                        <div style="flex: 1; height: 14px; background: rgba(255,255,255,0.06); border-radius: 7px; overflow: hidden;">
+                            <div style="width: ${exactPct}%; height: 100%; background: #34d399; border-radius: 7px;"></div>
+                        </div>
+                        <span style="font-size: 0.82rem; font-weight: 700; color: #34d399; width: 90px; text-align: right;">${exactCount} GV (${exactPct}%)</span>
+                    </div>
+
+                    <!-- Over Quota -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="width: 130px; font-size: 0.83rem; color: #f87171; font-weight: 500;">Vượt tải (&gt; ĐM):</span>
+                        <div style="flex: 1; height: 14px; background: rgba(255,255,255,0.06); border-radius: 7px; overflow: hidden;">
+                            <div style="width: ${overPct}%; height: 100%; background: #f87171; border-radius: 7px;"></div>
+                        </div>
+                        <span style="font-size: 0.82rem; font-weight: 700; color: #f87171; width: 90px; text-align: right;">${overCount} GV (${overPct}%)</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // 7. Render Group Statistical Table
+    const groupTableBody = document.getElementById('analyticsGroupTableBody');
+    if (groupTableBody) {
+        if (groups.length === 0) {
+            groupTableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa có dữ liệu Tổ chuyên môn</td></tr>`;
+        } else {
+            groupTableBody.innerHTML = groups.map((g, idx) => {
+                const groupTeachers = teachers.filter(t => t.group === g.id);
+                let gQuota = 0;
+                let gAssigned = 0;
+                groupTeachers.forEach(t => {
+                    gQuota += (parseInt(t.quota) || 19);
+                    const tKey = (t.shortName || '').trim().toLowerCase();
+                    gAssigned += (teacherPeriodsMap[tKey] || 0);
+                });
+                const diff = gAssigned - gQuota;
+                const statusBadge = diff > 0 
+                    ? `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">Vượt tải (+${diff})</span>`
+                    : (diff < 0 ? `<span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">Thiếu tiết (${diff})</span>` : `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Cân bằng (0)</span>`);
+
+                const subsStr = (g.subjects && g.subjects.length > 0) ? g.subjects.join(', ') : '<span style="color:var(--text-muted); font-style:italic;">Chưa gán môn</span>';
+
+                return `
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; color: var(--text-muted);">${idx + 1}</td>
+                        <td style="font-weight: 600; color: #38bdf8;">${escapeHtml(g.name)}</td>
+                        <td style="text-align: center; font-weight: 600;">${groupTeachers.length}</td>
+                        <td style="font-size: 0.85rem;">${subsStr}</td>
+                        <td style="text-align: center; font-weight: 700; color: #38bdf8;">${gAssigned}</td>
+                        <td style="text-align: center; font-weight: 600; color: #c084fc;">${gQuota}</td>
+                        <td style="text-align: center; font-weight: 700; color: ${diff > 0 ? '#f87171' : (diff < 0 ? '#fbbf24' : '#34d399')};">${diff > 0 ? '+' + diff : diff}</td>
+                        <td style="text-align: center;">${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    // 8. Render Teacher Statistical Table
+    renderAnalyticsTeacherTable();
+}
+
+function renderAnalyticsTeacherTable(searchQuery = '') {
+    const tableBody = document.getElementById('analyticsTeacherTableBody');
+    if (!tableBody) return;
+
+    const teachers = state.teachers || [];
+    const groups = state.groups || [];
+    const assignments = state.assignments || {};
+
+    if (teachers.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa có dữ liệu Giáo viên</td></tr>`;
+        return;
+    }
+
+    const teacherPeriodsMap = {};
+    teachers.forEach(t => {
+        teacherPeriodsMap[(t.shortName || '').trim().toLowerCase()] = 0;
+    });
+
+    Object.keys(assignments).forEach(key => {
+        const val = assignments[key];
+        if (val && val.teacher && val.periods > 0) {
+            const tKey = val.teacher.trim().toLowerCase();
+            const p = parseInt(val.periods) || 0;
+            if (teacherPeriodsMap[tKey] !== undefined) {
+                teacherPeriodsMap[tKey] += p;
+            } else {
+                teacherPeriodsMap[tKey] = p;
+            }
+        }
+    });
+
+    const cleanQuery = searchQuery.trim().toLowerCase();
+    const filteredTeachers = teachers.filter(t => {
+        if (!cleanQuery) return true;
+        const gName = (groups.find(g => g.id === t.group) || {}).name || '';
+        return (t.fullName || '').toLowerCase().includes(cleanQuery) ||
+               (t.shortName || '').toLowerCase().includes(cleanQuery) ||
+               gName.toLowerCase().includes(cleanQuery) ||
+               (t.subjects || []).some(s => s.toLowerCase().includes(cleanQuery));
+    });
+
+    if (filteredTeachers.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 24px;">Không tìm thấy giáo viên nào khớp với "${escapeHtml(searchQuery)}"</td></tr>`;
+        return;
+    }
+
+    tableBody.innerHTML = filteredTeachers.map((t, idx) => {
+        const gObj = groups.find(g => g.id === t.group);
+        const groupName = gObj ? gObj.name : '<span style="color:#f87171;">Chưa gán tổ</span>';
+        const quota = parseInt(t.quota) || 19;
+        const tKey = (t.shortName || '').trim().toLowerCase();
+        const assigned = teacherPeriodsMap[tKey] || 0;
+        const diff = assigned - quota;
+
+        const statusBadge = diff > 0 
+            ? `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">Vượt tải (+${diff})</span>`
+            : (diff < 0 ? `<span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">Thiếu tiết (${diff})</span>` : `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Đúng định mức (0)</span>`);
+
+        const subsStr = (t.subjects && t.subjects.length > 0) ? t.subjects.join(', ') : '-';
+
+        return `
+            <tr>
+                <td style="text-align: center; font-weight: bold; color: var(--text-muted);">${idx + 1}</td>
+                <td style="font-weight: 600; color: var(--text-main);">${escapeHtml(t.fullName)}</td>
+                <td style="font-weight: 600; color: #38bdf8;">${escapeHtml(t.shortName || '')}</td>
+                <td>${groupName}</td>
+                <td style="font-size: 0.85rem;">${escapeHtml(subsStr)}</td>
+                <td style="text-align: center; font-size: 0.85rem;">${escapeHtml(t.position || 'Giáo viên')}</td>
+                <td style="text-align: center; font-weight: 600;">${quota}</td>
+                <td style="text-align: center; font-weight: 700; color: #38bdf8;">${assigned}</td>
+                <td style="text-align: center; font-weight: 700; color: ${diff > 0 ? '#f87171' : (diff < 0 ? '#fbbf24' : '#34d399')};">${diff > 0 ? '+' + diff : diff}</td>
+                <td style="text-align: center;">${statusBadge}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filterAnalyticsTeacherTable() {
+    const input = document.getElementById('analyticsTeacherSearchInput');
+    const q = input ? input.value : '';
+    renderAnalyticsTeacherTable(q);
+}
+
+function exportAnalyticsReportExcel() {
+    if (typeof XLSX === 'undefined' || !XLSX.utils || !XLSX.writeFile) {
+        showToast("Thư viện xuất Excel chưa sẵn sàng!", "danger");
+        return;
+    }
+
+    try {
+        const wb = XLSX.utils.book_new();
+
+        // Sheet 1: Tổng quan theo Tổ chuyên môn
+        const groups = state.groups || [];
+        const teachers = state.teachers || [];
+        const assignments = state.assignments || {};
+
+        const teacherPeriodsMap = {};
+        teachers.forEach(t => {
+            teacherPeriodsMap[(t.shortName || '').trim().toLowerCase()] = 0;
+        });
+        Object.keys(assignments).forEach(key => {
+            const val = assignments[key];
+            if (val && val.teacher && val.periods > 0) {
+                const tKey = val.teacher.trim().toLowerCase();
+                teacherPeriodsMap[tKey] = (teacherPeriodsMap[tKey] || 0) + (parseInt(val.periods) || 0);
+            }
+        });
+
+        const groupRows = [
+            ["BÁO CÁO THỐNG KÊ TỔNG HỢP THEO TỔ CHUYÊN MÔN"],
+            [`Thời gian xuất: ${new Date().toLocaleString('vi-VN')}`],
+            [],
+            ["STT", "Tổ Chuyên Môn", "Số Giáo Viên", "Môn Phụ Trách", "Tổng Tiết Giảng Dạy", "Tổng Định Mức", "Chênh Lệch (+/-)", "Đánh Giá Tải"]
+        ];
+
+        groups.forEach((g, idx) => {
+            const groupTeachers = teachers.filter(t => t.group === g.id);
+            let gQuota = 0;
+            let gAssigned = 0;
+            groupTeachers.forEach(t => {
+                gQuota += (parseInt(t.quota) || 19);
+                const tKey = (t.shortName || '').trim().toLowerCase();
+                gAssigned += (teacherPeriodsMap[tKey] || 0);
+            });
+            const diff = gAssigned - gQuota;
+            const evalText = diff > 0 ? `Vượt tải (+${diff})` : (diff < 0 ? `Thiếu tiết (${diff})` : "Cân bằng (0)");
+            groupRows.push([
+                idx + 1,
+                g.name,
+                groupTeachers.length,
+                (g.subjects || []).join(', '),
+                gAssigned,
+                gQuota,
+                diff,
+                evalText
+            ]);
+        });
+
+        const wsGroups = XLSX.utils.aoa_to_sheet(groupRows);
+        XLSX.utils.book_append_sheet(wb, wsGroups, "Tổ chuyên môn");
+
+        // Sheet 2: Định mức giáo viên
+        const teacherRows = [
+            ["BÁO CÁO ĐỊNH MỨC & TIẾT DẠY GIÁO VIÊN TOÀN TRƯỜNG"],
+            [`Thời gian xuất: ${new Date().toLocaleString('vi-VN')}`],
+            [],
+            ["STT", "Họ và Tên", "Tên Viết Tắt", "Tổ Chuyên Môn", "Môn Giảng Dạy", "Chức Vụ", "Định Mức", "Tiết Phân Công", "Chênh Lệch", "Trạng Thái"]
+        ];
+
+        teachers.forEach((t, idx) => {
+            const gObj = groups.find(g => g.id === t.group);
+            const groupName = gObj ? gObj.name : 'Chưa gán tổ';
+            const quota = parseInt(t.quota) || 19;
+            const tKey = (t.shortName || '').trim().toLowerCase();
+            const assigned = teacherPeriodsMap[tKey] || 0;
+            const diff = assigned - quota;
+            const evalText = diff > 0 ? `Vượt tải (+${diff})` : (diff < 0 ? `Thiếu tiết (${diff})` : "Đúng định mức (0)");
+
+            teacherRows.push([
+                idx + 1,
+                t.fullName,
+                t.shortName || '',
+                groupName,
+                (t.subjects || []).join(', '),
+                t.position || 'Giáo viên',
+                quota,
+                assigned,
+                diff,
+                evalText
+            ]);
+        });
+
+        const wsTeachers = XLSX.utils.aoa_to_sheet(teacherRows);
+        XLSX.utils.book_append_sheet(wb, wsTeachers, "Giáo viên toàn trường");
+
+        // Sheet 3: Lớp học
+        const classes = state.classes || [];
+        const classRows = [
+            ["DANH SÁCH LỚP HỌC & BUỔI HỌC"],
+            [`Thời gian xuất: ${new Date().toLocaleString('vi-VN')}`],
+            [],
+            ["STT", "Tên Lớp", "Khối Lớp", "Buổi Học"]
+        ];
+        classes.forEach((c, idx) => {
+            classRows.push([
+                idx + 1,
+                c.name,
+                c.grade || '',
+                c.session || ''
+            ]);
+        });
+        const wsClasses = XLSX.utils.aoa_to_sheet(classRows);
+        XLSX.utils.book_append_sheet(wb, wsClasses, "Danh sách lớp học");
+
+        XLSX.writeFile(wb, "BaoCao_ThongKe_TongHop_ToanTruong.xlsx");
+        showToast("Đã tải xuống thành công Báo cáo Thống kê Tổng hợp (.xlsx)!", "success");
+    } catch(e) {
+        console.error(e);
+        showToast("Lỗi khi xuất Báo cáo thống kê: " + e.message, "danger");
+    }
+}
+
+function confirmCleanDatabaseReset() {
+    showConfirmModal(
+        "Xác Nhận Dọn Sạch Toàn Bộ Dữ Liệu Rác",
+        `<div style="text-align: left; line-height: 1.6;">
+            <p style="color: #f87171; font-weight: 600; font-size: 1rem;">⚠️ CẢNH BÁO XÓA SẠCH DỮ LIỆU!</p>
+            <p>Thao tác này sẽ dọn dẹp và xóa sạch <b>toàn bộ dữ liệu rác</b> (Danh mục môn học, Tổ chuyên môn, Lớp học, Giáo viên, Phân công giảng dạy và Thời khóa biểu).</p>
+            <p>Hệ thống sẽ được đưa về trạng thái sạch ban đầu để bạn bắt đầu khai báo dữ liệu chuẩn từ đầu theo đúng quy trình phân cấp của Admin.</p>
+            <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.85rem;">🔒 Tài khoản quản trị tối cao (Admin) sẽ được bảo toàn an toàn 100%.</p>
+        </div>`,
+        () => {
+            state.globalSubjects = [];
+            state.groups = [];
+            state.classes = [];
+            state.teachers = [];
+            state.subjects = [];
+            state.assignments = {};
+            state.timetable = {};
+            state.weeklyTimetables = [];
+
+            ensureAdminAccountExists();
+            persistData();
+            refreshActiveViews();
+            renderAnalyticsDashboard();
+
+            showToast("Đã dọn sạch toàn bộ dữ liệu hệ thống thành công! Bạn có thể bắt đầu khai báo từ Mục 1.1.", "success");
+        },
+        "Xác nhận Dọn sạch (Reset)",
+        "btn-danger",
+        "delete_forever"
+    );
+}
+
+// Window export definitions
+window.renderAnalyticsDashboard = renderAnalyticsDashboard;
+window.renderAnalyticsTeacherTable = renderAnalyticsTeacherTable;
+window.filterAnalyticsTeacherTable = filterAnalyticsTeacherTable;
+window.exportAnalyticsReportExcel = exportAnalyticsReportExcel;
+window.confirmCleanDatabaseReset = confirmCleanDatabaseReset;
 window.addTeacher = addTeacher;
 window.addTeacherManual = addTeacherManual;
 window.renderTeachers = renderTeachers;
@@ -14446,3 +15049,4 @@ window.onload = function() {
         sheetInput.value = savedSheetUrl;
     }
 }
+
