@@ -1151,13 +1151,24 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 32px; text-align: right; display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap;">
-                    <button class="btn btn-success" onclick="exportAllAssignmentsExcel()">
-                        <span class="material-icons-round">table_view</span> Xuất Excel Phân Công Toàn Trường (.xlsx)
-                    </button>
-                    <button class="btn btn-primary" onclick="exportFETCSV()">
-                        <span class="material-icons-round">receipt_long</span> Xuất file CSV Hoạt Động cho FET
-                    </button>
+                <div style="margin-top: 32px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input type="checkbox" id="excludeGDTCForFET" checked style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                        <label for="excludeGDTCForFET" style="font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 0; cursor: pointer;">
+                            Loại trừ môn Thể dục (GDTC) khi xuất file FET <span style="font-size: 0.75rem; color: #fbbf24; font-weight: normal;">(Khuyên dùng: Xếp TKB Thể dục riêng)</span>
+                        </label>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="openClassBalanceModalDirectly()" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px;">
+                            <span class="material-icons-round" style="color: #60a5fa;">equalizer</span> 📊 Thống Kê Tiết Lớp & Nạp FET
+                        </button>
+                        <button class="btn btn-success" onclick="exportAllAssignmentsExcel()" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px;">
+                            <span class="material-icons-round">table_view</span> Xuất Excel Phân Công
+                        </button>
+                        <button class="btn btn-primary" onclick="exportFETCSV()" style="display: flex; align-items: center; gap: 6px; padding: 8px 18px; font-weight: 600;">
+                            <span class="material-icons-round">receipt_long</span> Xuất file CSV cho FET
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1414,6 +1425,9 @@
                 <button type="button" class="tab-btn" id="btnReconTabExcel" onclick="switchReconTab('excel')" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                     <span class="material-icons-round" style="font-size: 1.1rem;">view_list</span> 3. Toàn Bộ 92 GV Excel (<span id="tabCountExcel">0</span>)
                 </button>
+                <button type="button" class="tab-btn" id="btnReconTabClassBalance" onclick="switchReconTab('classBalance')" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="font-size: 1.1rem;">equalizer</span> 4. Thống Kê Tiết Lớp & Nạp FET (<span id="tabCountClasses">0</span>)
+                </button>
             </div>
 
             <!-- Modal Body Scrollable Content -->
@@ -1495,6 +1509,48 @@
                                 </tr>
                             </thead>
                             <tbody id="reconExcelTableBody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Subtab 4: Class Period Balance & FET Pre-flight Table -->
+                <div id="reconSubtabClassBalance" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <span style="font-size: 0.9rem; font-weight: 700; color: #fff;">Bảng Thống Kê Cân Bằng Số Tiết Từng Lớp (FET Pre-flight)</span>
+                            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 2px 0 0 0;">
+                                Môn Thể dục (GDTC) được tách riêng. Các lớp trong cùng khối bắt buộc phải có tổng số tiết văn hóa nạp FET bằng nhau.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label for="reconClassGradeFilter" style="font-size: 0.8rem; color: var(--text-muted);">Lọc theo khối:</label>
+                            <select id="reconClassGradeFilter" class="form-control" style="width: 130px; padding: 4px 8px; font-size: 0.8rem; height: 32px;" onchange="renderClassBalanceTable()">
+                                <option value="all">Tất cả các khối</option>
+                                <option value="6">Khối 6</option>
+                                <option value="7">Khối 7</option>
+                                <option value="8">Khối 8</option>
+                                <option value="9">Khối 9</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: rgba(15, 23, 42, 0.4);">
+                        <table class="matrix-table" style="font-size: 0.82rem; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px; text-align: center;">STT</th>
+                                    <th>Lớp học</th>
+                                    <th>Khối</th>
+                                    <th style="text-align: center;">Tổng tiết cả tuần</th>
+                                    <th style="text-align: center; color: #f59e0b;">Tiết Thể dục (GDTC)</th>
+                                    <th style="text-align: center; color: #38bdf8;">Tiết Văn Hóa nạp FET</th>
+                                    <th style="text-align: center;">Chuẩn Khối (FET)</th>
+                                    <th style="width: 140px; text-align: center;">Đánh giá cân bằng</th>
+                                    <th>Phân bổ môn học</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reconClassBalanceTableBody">
                                 <!-- Dynamic rows -->
                             </tbody>
                         </table>

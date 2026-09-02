@@ -6306,15 +6306,202 @@ function runAssignmentHealthAudit(excelData) {
         });
     });
 
+    // SCANNER 6: Kiểm tra cân bằng tổng số tiết từng lớp trong khối (Class Period Balance & FET Readiness)
+    const classBalanceList = calculateClassBalanceStats(excelClassSubjectMap);
+    classBalanceList.forEach(clsItem => {
+        if (clsItem.fetPeriods !== clsItem.targetFetPeriods && clsItem.totalPeriods > 0) {
+            const isUnder = clsItem.fetPeriods < clsItem.targetFetPeriods;
+            const diffAmount = Math.abs(clsItem.targetFetPeriods - clsItem.fetPeriods);
+            warnings.push({
+                id: `class_bal_${clsItem.clsName}`,
+                type: 'warning',
+                category: 'Lệch Tiết Khối (FET)',
+                title: `Lớp ${clsItem.clsName} có ${clsItem.fetPeriods} tiết văn hóa (${isUnder ? 'Thiếu ' + diffAmount + 'T' : 'Thừa ' + diffAmount + 'T'} so với chuẩn khối ${clsItem.targetFetPeriods}T)`,
+                desc: `Tổng số tiết cả tuần là ${clsItem.totalPeriods}T (gồm ${clsItem.gdtcPeriods}T Thể dục). Khi nạp vào FET để xếp TKB, các lớp cùng khối bắt buộc phải có số tiết văn hóa bằng nhau.`,
+                actionText: isUnder ? `Bổ sung môn còn thiếu cho lớp ${clsItem.clsName}` : `Kiểm tra môn bị trùng của lớp ${clsItem.clsName}`
+            });
+        }
+    });
+
     lastAuditResults = {
         critical: critical,
         warnings: warnings,
         matches: matches,
         autofills: autofills,
-        diffItems: diffItems
+        diffItems: diffItems,
+        classBalanceList: classBalanceList
     };
 
     return lastAuditResults;
+}
+
+// ================= TÍNH TOÁN & THỐNG KÊ CÂN BẰNG SỐ TIẾT TỪNG LỚP =================
+
+function calculateClassBalanceStats(excelClassSubjectMap) {
+    const classMap = {};
+
+    // Khởi tạo tất cả các lớp trong hệ thống
+    (state.classes || []).forEach(c => {
+        if (!c.name) return;
+        const gradeMatch = c.name.match(/^\d+/);
+        const grade = c.grade || (gradeMatch ? gradeMatch[0] : '6');
+        classMap[c.name] = {
+            clsName: c.name,
+            grade: grade,
+            totalPeriods: 0,
+            gdtcPeriods: 0,
+            fetPeriods: 0,
+            subjectsList: []
+        };
+    });
+
+    // Tính toán từ Excel nếu có, ngược lại tính từ state.assignments
+    if (excelClassSubjectMap && Object.keys(excelClassSubjectMap).length > 0) {
+        Object.keys(excelClassSubjectMap).forEach(key => {
+            const [clsName, subName] = key.split('_');
+            const assign = excelClassSubjectMap[key][0];
+            const periods = assign ? assign.periods : 2;
+            const teacher = assign ? assign.teacher : '';
+
+            if (!classMap[clsName]) {
+                const gradeMatch = clsName.match(/^\d+/);
+                classMap[clsName] = {
+                    clsName: clsName,
+                    grade: gradeMatch ? gradeMatch[0] : '6',
+                    totalPeriods: 0,
+                    gdtcPeriods: 0,
+                    fetPeriods: 0,
+                    subjectsList: []
+                };
+            }
+
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(subName.trim());
+            classMap[clsName].totalPeriods += periods;
+            if (isGDTC) {
+                classMap[clsName].gdtcPeriods += periods;
+            } else {
+                classMap[clsName].fetPeriods += periods;
+            }
+            classMap[clsName].subjectsList.push({ name: subName, periods, teacher });
+        });
+    } else {
+        // Tính toán từ state.assignments
+        Object.keys(state.assignments || {}).forEach(k => {
+            const parsed = parseAssignmentKey(k);
+            if (parsed.cls === 'Kiêm nhiệm') return;
+            const sub = state.subjects.find(s => s.id === parsed.subId);
+            const subName = sub ? sub.name : parsed.subId;
+            const val = state.assignments[k];
+            if (!val || !val.teacher) return;
+
+            const periods = val.periods || (sub ? sub.periods : 2);
+            if (!classMap[parsed.cls]) {
+                const gradeMatch = parsed.cls.match(/^\d+/);
+                classMap[parsed.cls] = {
+                    clsName: parsed.cls,
+                    grade: gradeMatch ? gradeMatch[0] : '6',
+                    totalPeriods: 0,
+                    gdtcPeriods: 0,
+                    fetPeriods: 0,
+                    subjectsList: []
+                };
+            }
+
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(subName.trim());
+            classMap[parsed.cls].totalPeriods += periods;
+            if (isGDTC) {
+                classMap[parsed.cls].gdtcPeriods += periods;
+            } else {
+                classMap[parsed.cls].fetPeriods += periods;
+            }
+            classMap[parsed.cls].subjectsList.push({ name: subName, periods, teacher: val.teacher });
+        });
+    }
+
+    // Xác định chuẩn FET của từng khối (Khối 6, 7, 8, 9)
+    const gradeTargetMap = {};
+    ['6', '7', '8', '9'].forEach(gr => {
+        const gradeSubs = (state.subjects || []).filter(s => String(s.grade) === gr && s.name && !/^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim()));
+        let sumSubPeriods = gradeSubs.reduce((acc, s) => acc + (s.periods || 0), 0);
+        gradeTargetMap[gr] = sumSubPeriods > 0 ? sumSubPeriods : 27; // Chuẩn mặc định 27T văn hóa nạp FET
+    });
+
+    const resultList = Object.values(classMap).map(item => {
+        item.targetFetPeriods = gradeTargetMap[item.grade] || 27;
+        return item;
+    });
+
+    // Sắp xếp theo khối và tên lớp
+    resultList.sort((a, b) => {
+        if (a.grade !== b.grade) return a.grade.localeCompare(b.grade);
+        return a.clsName.localeCompare(b.clsName);
+    });
+
+    return resultList;
+}
+
+function renderClassBalanceTable() {
+    const tbody = document.getElementById('reconClassBalanceTableBody');
+    if (!tbody) return;
+
+    if (!lastAuditResults || !lastAuditResults.classBalanceList) {
+        lastAuditResults = lastAuditResults || {};
+        lastAuditResults.classBalanceList = calculateClassBalanceStats();
+    }
+
+    const filterGrade = document.getElementById('reconClassGradeFilter') ? document.getElementById('reconClassGradeFilter').value : 'all';
+    let list = lastAuditResults.classBalanceList || [];
+
+    if (filterGrade !== 'all') {
+        list = list.filter(item => String(item.grade) === String(filterGrade));
+    }
+
+    if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">Chưa có dữ liệu lớp học để thống kê!</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = list.map((item, idx) => {
+        let statusBadge = '';
+        if (item.fetPeriods === item.targetFetPeriods && item.fetPeriods > 0) {
+            statusBadge = `<span class="diff-badge match" style="display: inline-flex; align-items: center; gap: 4px;"><span class="material-icons-round" style="font-size: 0.9rem;">check_circle</span> ĐỦ ${item.fetPeriods}T (FET)</span>`;
+        } else if (item.fetPeriods < item.targetFetPeriods) {
+            statusBadge = `<span class="diff-badge mismatch" style="display: inline-flex; align-items: center; gap: 4px;"><span class="material-icons-round" style="font-size: 0.9rem;">warning</span> THIẾU ${item.targetFetPeriods - item.fetPeriods}T</span>`;
+        } else {
+            statusBadge = `<span class="diff-badge conflict" style="display: inline-flex; align-items: center; gap: 4px;"><span class="material-icons-round" style="font-size: 0.9rem;">error</span> THỪA ${item.fetPeriods - item.targetFetPeriods}T</span>`;
+        }
+
+        const subjectsBadges = (item.subjectsList || []).map(s => {
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim());
+            const colorStyle = isGDTC ? 'background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);' : 'background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);';
+            return `<span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; margin: 1px; display: inline-block; ${colorStyle}">
+                ${s.name} (${s.periods}T - ${s.teacher || 'Chưa phân'})
+            </span>`;
+        }).join(' ');
+
+        return `
+            <tr>
+                <td style="text-align: center; color: var(--text-muted);">${idx + 1}</td>
+                <td><strong style="color: #fff; font-size: 0.95rem;">${item.clsName}</strong></td>
+                <td><span style="color: var(--primary-light); font-weight: 600;">Khối ${item.grade}</span></td>
+                <td style="text-align: center;"><strong style="color: #fff;">${item.totalPeriods}T</strong></td>
+                <td style="text-align: center;"><strong style="color: #f59e0b;">${item.gdtcPeriods}T</strong></td>
+                <td style="text-align: center;"><strong style="color: #38bdf8; font-size: 0.95rem;">${item.fetPeriods}T</strong></td>
+                <td style="text-align: center;"><span style="color: var(--text-muted); font-weight: 600;">${item.targetFetPeriods}T</span></td>
+                <td style="text-align: center;">${statusBadge}</td>
+                <td><div style="max-height: 80px; overflow-y: auto;">${subjectsBadges || '<em style="color: var(--text-muted);">Chưa có môn</em>'}</div></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function openClassBalanceModalDirectly() {
+    if (!lastAuditResults || !lastAuditResults.classBalanceList) {
+        lastAuditResults = lastAuditResults || { critical: [], warnings: [], matches: [], autofills: [], diffItems: [] };
+        lastAuditResults.classBalanceList = calculateClassBalanceStats();
+    }
+    openReconciliationModal();
+    switchReconTab('classBalance');
 }
 
 // Cập nhật banner chẩn đoán ở Tab 4
@@ -6380,7 +6567,7 @@ function closeReconciliationModal() {
 
 function switchReconTab(tabName) {
     activeReconTab = tabName;
-    ['Diagnostics', 'Diff', 'Excel'].forEach(name => {
+    ['Diagnostics', 'Diff', 'Excel', 'ClassBalance'].forEach(name => {
         const btn = document.getElementById(`btnReconTab${name}`);
         const subtab = document.getElementById(`reconSubtab${name}`);
         if (btn) btn.classList.remove('active');
@@ -6394,6 +6581,7 @@ function switchReconTab(tabName) {
 
     if (tabName === 'diff') renderReconciliationDiffTable();
     if (tabName === 'excel') renderReconExcelTable();
+    if (tabName === 'classBalance') renderClassBalanceTable();
 }
 
 function filterAuditItems(filter) {
@@ -6419,9 +6607,14 @@ function renderReconciliationModal() {
     document.getElementById('tabCountDiagnostics').innerText = criticalCount + warningCount;
     document.getElementById('tabCountDiff').innerText = lastAuditResults.diffItems.length;
     document.getElementById('tabCountExcel').innerText = lastParsedPCCMData ? lastParsedPCCMData.teachers.length : 0;
+    const tabCountClassesEl = document.getElementById('tabCountClasses');
+    if (tabCountClassesEl) {
+        tabCountClassesEl.innerText = lastAuditResults.classBalanceList ? lastAuditResults.classBalanceList.length : (state.classes ? state.classes.length : 0);
+    }
 
-    // 2. Render Subtab 1: Diagnostics
+    // 2. Render Subtabs
     renderAuditItemsList();
+    renderClassBalanceTable();
 
     // 3. Render Subtab 2: Diff filter dropdowns
     const groupFilter = document.getElementById('reconGroupFilter');
@@ -6736,7 +6929,11 @@ function exportFETCSV() {
     const rule3 = (document.getElementById('splitRule3') && document.getElementById('splitRule3').value) ? document.getElementById('splitRule3').value : '2+1';
     const rule2 = (document.getElementById('splitRule2') && document.getElementById('splitRule2').value) ? document.getElementById('splitRule2').value : '2';
 
+    const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
+
     let csvContent = `"Students Sets","Subject","Teachers","Activity Tags","Total Duration","Split Duration","Min Days","Weight","Consecutive","Comments"\n`;
+    let exportedCount = 0;
+    let excludedGDTCCount = 0;
 
     Object.keys(state.assignments).forEach(key => {
         const parsedKey = parseAssignmentKey(key);
@@ -6747,6 +6944,12 @@ function exportFETCSV() {
         if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
             const sub = state.subjects.find(s => s && s.id === subId);
             if (sub && sub.grade !== 'Kiêm nhiệm') {
+                const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(sub.name.trim());
+                if (excludeGDTC && isGDTC) {
+                    excludedGDTCCount++;
+                    return; // Bỏ qua môn Thể dục khi xuất file cho FET
+                }
+
                 let split = val.periods.toString();
                 if (val.periods >= 7) {
                     // Tự động phân rã thành các cặp 2 tiết và 1 tiết
@@ -6775,6 +6978,7 @@ function exportFETCSV() {
                     // For split periods, use weight 98 and consecutive 1
                     csvContent += `"${cls}","${sub.name}","${val.teacher}","",${val.periods},"${split}",1,98,1,""\n`;
                 }
+                exportedCount++;
             }
         }
     });
@@ -6790,7 +6994,9 @@ function exportFETCSV() {
     dlAnchorElem.click();
     document.body.removeChild(dlAnchorElem);
     URL.revokeObjectURL(url);
-    showToast('Đã xuất tệp CSV hoạt động FET thành công!', 'success');
+
+    const extraMsg = (excludeGDTC && excludedGDTCCount > 0) ? ` (Đã loại trừ ${excludedGDTCCount} phân công Thể dục)` : '';
+    showToast(`Đã xuất tệp CSV FET thành công với ${exportedCount} hoạt động${extraMsg}!`, 'success');
 }
 
 // ================= EXCEL DATA IMPORT SYSTEM =================
