@@ -1066,6 +1066,10 @@
                             </select>
                         </div>
                         <span id="mergedTeacherPeriodsText" style="font-size: 0.85rem; font-weight: 600; color: var(--primary-light); display: none; margin-left: 8px; align-items: center; gap: 4px;"></span>
+                        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #38bdf8; cursor: pointer; margin-bottom: 0; white-space: nowrap;">
+                            <input type="checkbox" id="filterHideGDTCInMerged" checked onchange="renderMergedAssignments()" style="width: 15px; height: 15px; accent-color: var(--primary);">
+                            Ẩn môn Thể dục (GDTC)
+                        </label>
                         <button class="btn btn-secondary" onclick="clearMergedFilters()" style="padding: 4px 12px; font-size: 0.8rem; height: 32px; display: flex; align-items: center; gap: 4px;">
                             <span class="material-icons-round" style="font-size: 1rem;">clear_all</span> Làm mới bộ lọc
                         </button>

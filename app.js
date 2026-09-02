@@ -1052,6 +1052,12 @@ function renderMergedAssignments() {
         filteredRows = filteredRows.filter(r => r.teacher === selectedTeacher);
     }
 
+    // Lọc ẩn môn Thể dục (GDTC) nếu người dùng bật tùy chọn
+    const hideGDTC = (document.getElementById('filterHideGDTCInMerged') ? document.getElementById('filterHideGDTCInMerged').checked : true);
+    if (hideGDTC) {
+        filteredRows = filteredRows.filter(r => !/^(gdtc|thể dục|td|thể chất)$/i.test(r.subName.trim()));
+    }
+
     // Hiển thị định mức số tiết của giáo viên được lọc
     const teacherPeriodsText = document.getElementById('mergedTeacherPeriodsText');
     if (teacherPeriodsText) {
@@ -1089,7 +1095,11 @@ function renderMergedAssignments() {
         }
 
         const teacherDisplay = r.teacher 
-            ? `${r.teacherObj ? r.teacherObj.fullName : r.teacher} (<b>${r.teacher}</b>)`
+            ? (r.teacherObj 
+                ? (r.teacherObj.shortName && r.teacherObj.shortName !== r.teacherObj.fullName 
+                    ? `${r.teacherObj.fullName} (<b>${r.teacherObj.shortName}</b>)` 
+                    : `<b>${r.teacherObj.fullName}</b>`)
+                : `<b>${r.teacher}</b>`)
             : `<span style="color: var(--text-muted);">-</span>`;
 
         tbody.innerHTML += `
@@ -5887,104 +5897,88 @@ function parsePCCMFullTeaching(teachingStr) {
     return assignments;
 }
 
-// Đảm bảo hệ thống có đầy đủ các tổ chuyên môn chuẩn của trường THCS
-function ensureStandardSchoolGroups() {
-    const standardGroups = [
-        { id: 'g_toan_tin', name: 'Tổ Toán - Tin', subjects: ['Toán', 'Tin học', 'Tin'] },
-        { id: 'g_khtn', name: 'Tổ Khoa Học Tự Nhiên (KHTN)', subjects: ['KHTN', 'Khoa học tự nhiên', 'Vật lí', 'Hóa học', 'Sinh học', 'Công nghệ', 'CN'] },
-        { id: 'g_van_su_dia', name: 'Tổ Văn - Sử - Địa', subjects: ['Ngữ văn', 'Văn', 'Lịch sử & Địa lí', 'Lịch sử', 'Địa lí', 'GDCD', 'GDĐP', 'HĐTN'] },
-        { id: 'g_tieng_anh', name: 'Tổ Tiếng Anh', subjects: ['Tiếng Anh', 'T.Anh', 'Ngoại ngữ'] },
-        { id: 'g_vtm_gdtc', name: 'Tổ Thể Dục - Nghệ Thuật (VTM)', subjects: ['GDTC', 'Thể dục', 'Âm nhạc', 'Mĩ thuật', 'Nghệ thuật'] }
-    ];
-
-    if (!state.groups) state.groups = [];
-
-    standardGroups.forEach(sg => {
-        let existing = state.groups.find(g => 
-            g.name.toLowerCase().includes(sg.name.toLowerCase()) ||
-            (sg.id === 'g_khtn' && (g.name.toLowerCase().includes('khtn') || g.name.toLowerCase().includes('tự nhiên'))) ||
-            (sg.id === 'g_vtm_gdtc' && (g.name.toLowerCase().includes('vtm') || g.name.toLowerCase().includes('thể dục') || g.name.toLowerCase().includes('nghệ thuật')))
-        );
-
-        if (!existing) {
-            state.groups.push(sg);
-        } else {
-            sg.subjects.forEach(sub => {
-                if (!existing.subjects) existing.subjects = [];
-                if (!existing.subjects.some(s => s.toLowerCase() === sub.toLowerCase())) {
-                    existing.subjects.push(sub);
-                }
-            });
-        }
-    });
+// Dọn dẹp các tổ rác tự sinh trước đây để trả lại cấu hình tổ nguyên bản của Admin
+function sanitizeStateGroups() {
+    if (!state.groups || !Array.isArray(state.groups)) return;
+    // Xóa các ID tổ tự sinh nếu Admin đã có tổ tương ứng
+    const autoGenIds = ['g_vtm_gdtc', 'g_toan_tin', 'g_khtn', 'g_van_su_dia', 'g_tieng_anh'];
+    const hasCustomGroups = state.groups.some(g => !autoGenIds.includes(g.id));
+    if (hasCustomGroups) {
+        state.groups = state.groups.filter(g => !autoGenIds.includes(g.id));
+    }
 }
 
-// Tự động suy luận Tổ chuyên môn cho giáo viên dựa trên 4 cấp độ ưu tiên chuẩn xác
+// Chuẩn hóa họ tên tiếng Việt để so sánh chính xác
+function normalizeVietnameseName(str) {
+    if (!str) return '';
+    return str.trim().toLowerCase()
+        .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
+        .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e')
+        .replace(/ì|í|ị|ỉ|ĩ/g, 'i')
+        .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o')
+        .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u')
+        .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y')
+        .replace(/đ/g, 'd')
+        .replace(/\s+/g, ' ');
+}
+
+// Khớp giáo viên Excel với danh sách Giáo viên đã tạo trong Admin
+function matchTeacherWithAdmin(excelFullName) {
+    if (!excelFullName || !state.teachers || !Array.isArray(state.teachers)) return null;
+    const rawExcel = excelFullName.trim().toLowerCase();
+    const normExcel = normalizeVietnameseName(excelFullName);
+
+    // 1. Khớp chính xác fullName hoặc shortName
+    let match = state.teachers.find(st => 
+        (st.fullName && st.fullName.trim().toLowerCase() === rawExcel) ||
+        (st.shortName && st.shortName.trim().toLowerCase() === rawExcel)
+    );
+    if (match) return match;
+
+    // 2. Khớp sau khi chuẩn hóa không dấu
+    match = state.teachers.find(st => 
+        (st.fullName && normalizeVietnameseName(st.fullName) === normExcel) ||
+        (st.shortName && normalizeVietnameseName(st.shortName) === normExcel)
+    );
+    if (match) return match;
+
+    // 3. Khớp Tên Chính (First name / Last token) + Họ
+    const parts = excelFullName.trim().split(/\s+/);
+    if (parts.length > 1) {
+        const lastName = parts[parts.length - 1].toLowerCase();
+        const firstName = parts[0].toLowerCase();
+        const candidates = state.teachers.filter(st => {
+            const stParts = (st.fullName || '').trim().split(/\s+/);
+            if (stParts.length < 2) return false;
+            return stParts[stParts.length - 1].toLowerCase() === lastName && stParts[0].toLowerCase() === firstName;
+        });
+        if (candidates.length === 1) return candidates[0];
+    }
+
+    return null;
+}
+
+// Suy luận Tổ chuyên môn cho giáo viên - 100% dựa trên danh sách Tổ Chuyên Môn HIỆN CÓ trong Admin
 function inferPCCMTeacherGroup(t) {
-    ensureStandardSchoolGroups();
+    sanitizeStateGroups();
+
+    if (!state.groups || state.groups.length === 0) {
+        return 'unassigned';
+    }
+
+    // 1. Nếu giáo viên đã tồn tại trong danh sách Admin -> Lấy đúng tổ của giáo viên trong Admin
+    const matchedAdminTeacher = matchTeacherWithAdmin(t.fullName);
+    if (matchedAdminTeacher && matchedAdminTeacher.group) {
+        const g = state.groups.find(x => x.id === matchedAdminTeacher.group);
+        if (g) return g.id;
+    }
 
     const cm = (t.cm || '').toLowerCase();
     const role = (t.role || '').toLowerCase();
     const duty = (t.duty || '').toLowerCase();
     const teaching = (t.teaching || '').toLowerCase();
 
-    const findGroupByName = (keywords) => {
-        return state.groups.find(g => keywords.some(k => g.name.toLowerCase().includes(k)));
-    };
-
-    // CẤP ĐỘ 1: Ưu tiên tuyệt đối theo Chức vụ Tổ trưởng / Tổ phó
-    if (role.includes('khtn') || role.includes('tự nhiên')) {
-        const g = findGroupByName(['khtn', 'tự nhiên']);
-        if (g) return g.id;
-    }
-    if (role.includes('toán') || role.includes('tin')) {
-        const g = findGroupByName(['toán', 'tin']);
-        if (g) return g.id;
-    }
-    if (role.includes('văn') || role.includes('ngữ văn')) {
-        const g = findGroupByName(['văn']);
-        if (g) return g.id;
-    }
-    if (role.includes('tiếng anh') || role.includes('ngoại ngữ') || role.includes('ta') || role.includes('anh')) {
-        const g = findGroupByName(['anh', 'ngoại ngữ']);
-        if (g) return g.id;
-    }
-    if (role.includes('sử') || role.includes('địa')) {
-        const g = findGroupByName(['sử', 'địa', 'văn']);
-        if (g) return g.id;
-    }
-    if (role.includes('vtm') || role.includes('thể') || role.includes('nhạc') || role.includes('họa') || role.includes('nghệ thuật')) {
-        const g = findGroupByName(['vtm', 'thể', 'nghệ thuật']);
-        if (g) return g.id;
-    }
-
-    // CẤP ĐỘ 2: Ưu tiên theo Môn học thực tế được phân công giảng dạy
-    if (teaching.includes('khtn') || teaching.includes('hóa') || teaching.includes('sinh') || teaching.includes('lý') || teaching.includes('lí') || teaching.includes('công nghệ') || teaching.includes('cn')) {
-        const g = findGroupByName(['khtn', 'tự nhiên']);
-        if (g) return g.id;
-    }
-    if (teaching.includes('toán') || teaching.includes('tin')) {
-        const g = findGroupByName(['toán', 'tin']);
-        if (g) return g.id;
-    }
-    if (teaching.includes('văn') || teaching.includes('ngữ văn')) {
-        const g = findGroupByName(['văn']);
-        if (g) return g.id;
-    }
-    if (teaching.includes('tiếng anh') || teaching.includes('anh') || teaching.includes('t.anh')) {
-        const g = findGroupByName(['anh', 'ngoại ngữ']);
-        if (g) return g.id;
-    }
-    if (teaching.includes('sử') || teaching.includes('địa') || teaching.includes('gdcd') || teaching.includes('lịch sử') || teaching.includes('địa lí') || teaching.includes('gdđp') || teaching.includes('hđtn')) {
-        const g = findGroupByName(['sử', 'địa', 'văn']);
-        if (g) return g.id;
-    }
-    if (teaching.includes('thể dục') || teaching.includes('gdtc') || teaching.includes('td') || teaching.includes('âm nhạc') || teaching.includes('mĩ thuật') || teaching.includes('nhạc') || teaching.includes('mt')) {
-        const g = findGroupByName(['vtm', 'thể', 'nghệ thuật']);
-        if (g) return g.id;
-    }
-
-    // CẤP ĐỘ 3: Dựa trên các token phân công (teachingAssigns)
+    // 2. Khớp theo môn học của các tổ hiện có trong Admin
     if (t.teachingAssigns && t.teachingAssigns.length > 0) {
         for (const assign of t.teachingAssigns) {
             const matchedGroup = state.groups.find(g => {
@@ -5995,34 +5989,43 @@ function inferPCCMTeacherGroup(t) {
         }
     }
 
-    // CẤP ĐỘ 4: Dựa trên Chuyên môn đào tạo (cho BGH, TPT Đội, người không có môn dạy)
-    if (cm.includes('hóa') || cm.includes('sinh') || cm.includes('lý') || cm.includes('lí') || cm.includes('khtn') || cm.includes('ktcn')) {
-        const g = findGroupByName(['khtn', 'tự nhiên']);
-        if (g) return g.id;
-    }
-    if (cm.includes('toán') || cm.includes('tin')) {
-        const g = findGroupByName(['toán', 'tin']);
-        if (g) return g.id;
-    }
-    if (cm.includes('văn')) {
-        const g = findGroupByName(['văn']);
-        if (g) return g.id;
-    }
-    if (cm.includes('tiếng anh') || cm.includes('ngoại ngữ') || cm.includes('nn') || cm.includes('anh')) {
-        const g = findGroupByName(['anh', 'ngoại ngữ']);
-        if (g) return g.id;
-    }
-    if (cm.includes('sử') || cm.includes('địa') || cm.includes('gdcd')) {
-        const g = findGroupByName(['sử', 'địa', 'văn']);
-        if (g) return g.id;
-    }
-    if (cm.includes('td') || cm.includes('nhạc') || cm.includes('họa') || cm.includes('mt') || cm.includes('thể')) {
-        const g = findGroupByName(['vtm', 'thể', 'nghệ thuật']);
+    // 3. Khớp theo từ khóa tên của các tổ hiện có trong Admin
+    const findAdminGroupByName = (keywords) => {
+        return state.groups.find(g => keywords.some(k => g.name.toLowerCase().includes(k)));
+    };
+
+    // Kiểm tra Tổ Văn Thể Mỹ / Thể dục / Nghệ thuật
+    if (teaching.includes('nhạc') || teaching.includes('họa') || teaching.includes('mĩ thuật') || teaching.includes('thể dục') || teaching.includes('gdtc') || teaching.includes('td') || role.includes('vtm') || cm.includes('nhạc') || cm.includes('họa') || cm.includes('td')) {
+        const g = findAdminGroupByName(['văn thể mỹ', 'vtm', 'thể', 'nghệ thuật', 'mỹ thuật', 'âm nhạc']);
         if (g) return g.id;
     }
 
-    // Mặc định
-    return state.groups[0] ? state.groups[0].id : 'g_toan_tin';
+    // Kiểm tra Tổ Khoa Học Tự Nhiên (KHTN)
+    if (teaching.includes('khtn') || teaching.includes('hóa') || teaching.includes('sinh') || teaching.includes('lý') || teaching.includes('lí') || teaching.includes('công nghệ') || teaching.includes('cn') || role.includes('khtn') || cm.includes('hóa') || cm.includes('sinh') || cm.includes('lý')) {
+        const g = findAdminGroupByName(['khtn', 'tự nhiên', 'sinh', 'hóa', 'lý']);
+        if (g) return g.id;
+    }
+
+    // Kiểm tra Tổ Toán - Tin
+    if (teaching.includes('toán') || teaching.includes('tin') || role.includes('toán') || role.includes('tin') || cm.includes('toán') || cm.includes('tin')) {
+        const g = findAdminGroupByName(['toán', 'tin']);
+        if (g) return g.id;
+    }
+
+    // Kiểm tra Tổ Văn - Sử - Địa / KHXH
+    if (teaching.includes('văn') || teaching.includes('sử') || teaching.includes('địa') || teaching.includes('gdcd') || role.includes('văn') || role.includes('sử') || role.includes('địa') || cm.includes('văn') || cm.includes('sử') || cm.includes('địa')) {
+        const g = findAdminGroupByName(['văn', 'sử', 'địa', 'xã hội', 'khxh']);
+        if (g) return g.id;
+    }
+
+    // Kiểm tra Tổ Tiếng Anh / Ngoại ngữ
+    if (teaching.includes('anh') || teaching.includes('t.anh') || role.includes('anh') || role.includes('ngoại ngữ') || cm.includes('anh') || cm.includes('nn')) {
+        const g = findAdminGroupByName(['anh', 'ngoại ngữ']);
+        if (g) return g.id;
+    }
+
+    // Mặc định: Gán vào tổ đầu tiên hiện có của Admin
+    return state.groups[0].id;
 }
 
 // ================= LOADING & VISUAL PROGRESS OVERLAY CONTROLLERS =================
@@ -6381,6 +6384,9 @@ function runAssignmentHealthAudit(excelData) {
             const sysKey = `${clsName}_${subId}`;
             const sysAssign = systemAssignments[sysKey];
 
+            const matchedExcelTeacher = matchTeacherWithAdmin(excelAssign.teacher);
+            const excelTeacherShort = matchedExcelTeacher ? matchedExcelTeacher.shortName : excelAssign.teacher;
+
             let status = 'match';
             let diffDesc = 'Khớp hoàn toàn 100%';
 
@@ -6390,11 +6396,17 @@ function runAssignmentHealthAudit(excelData) {
             } else if (!sysAssign || !sysAssign.teacher) {
                 status = 'mismatch';
                 diffDesc = 'Hệ thống chưa phân công lớp này';
-            } else if (sysAssign.teacher.toLowerCase() !== excelAssign.teacher.toLowerCase()) {
-                status = 'conflict';
-                diffDesc = `Lệch giáo viên: Excel [${excelAssign.teacher}] ≠ Hệ thống [${sysAssign.teacher}]`;
             } else {
-                matches.push(csKey);
+                const sysTeacherNorm = normalizeVietnameseName(sysAssign.teacher);
+                const excelTeacherNorm = normalizeVietnameseName(excelAssign.teacher);
+                const excelShortNorm = normalizeVietnameseName(excelTeacherShort);
+
+                if (sysTeacherNorm === excelTeacherNorm || sysTeacherNorm === excelShortNorm) {
+                    matches.push(csKey);
+                } else {
+                    status = 'conflict';
+                    diffDesc = `Lệch giáo viên: Excel [${excelAssign.teacher}] ≠ Hệ thống [${sysAssign.teacher}]`;
+                }
             }
 
             diffItems.push({
@@ -6404,6 +6416,7 @@ function runAssignmentHealthAudit(excelData) {
                 groupId: g.id,
                 groupName: g.name,
                 excelTeacher: excelAssign.teacher,
+                excelTeacherShort: excelTeacherShort,
                 excelPeriods: excelAssign.periods,
                 sysTeacher: sysAssign ? sysAssign.teacher : '',
                 sysPeriods: sysAssign ? sysAssign.periods : 0,
@@ -6431,6 +6444,21 @@ function runAssignmentHealthAudit(excelData) {
         }
     });
 
+    // SCANNER 7: Kiểm tra Giáo Viên Chưa Khai Báo Trong Admin (Teacher Registry Auditor)
+    teachersList.forEach(t => {
+        const matched = matchTeacherWithAdmin(t.fullName);
+        if (!matched) {
+            warnings.push({
+                id: `unmatched_gv_${t.stt}`,
+                type: 'warning',
+                category: 'Chưa Khai Báo Trong Admin',
+                title: `Giáo viên "${t.fullName}" (${t.role || 'GV'}) chưa có trong Admin`,
+                desc: `Họ tên "${t.fullName}" trong file Excel chưa khớp với danh sách Giáo viên đã tạo trong Admin. Vui lòng kiểm tra lại họ tên hoặc tạo giáo viên trong Admin để tránh phân sai người.`,
+                actionText: `Thêm GV vào Admin`
+            });
+        }
+    });
+
     lastAuditResults = {
         critical: critical,
         warnings: warnings,
@@ -6448,9 +6476,10 @@ function runAssignmentHealthAudit(excelData) {
 function calculateClassBalanceStats(excelClassSubjectMap) {
     const classMap = {};
 
-    // Khởi tạo tất cả các lớp trong hệ thống
+    // Khởi tạo tất cả các lớp chính khóa trong hệ thống (bỏ qua các lớp bồi dưỡng / phụ đạo PĐ_, HSG_)
     (state.classes || []).forEach(c => {
         if (!c.name) return;
+        if (/^(pđ|hsg|bồi dưỡng|phụ đạo|kiêm nhiệm)/i.test(c.name.trim())) return;
         const gradeMatch = c.name.match(/^\d+/);
         const grade = c.grade || (gradeMatch ? gradeMatch[0] : '6');
         classMap[c.name] = {
@@ -6467,6 +6496,8 @@ function calculateClassBalanceStats(excelClassSubjectMap) {
     if (excelClassSubjectMap && Object.keys(excelClassSubjectMap).length > 0) {
         Object.keys(excelClassSubjectMap).forEach(key => {
             const [clsName, subName] = key.split('_');
+            if (/^(pđ|hsg|bồi dưỡng|phụ đạo|kiêm nhiệm)/i.test(clsName.trim())) return;
+
             const assign = excelClassSubjectMap[key][0];
             const periods = assign ? assign.periods : 2;
             const teacher = assign ? assign.teacher : '';
@@ -6496,7 +6527,7 @@ function calculateClassBalanceStats(excelClassSubjectMap) {
         // Tính toán từ state.assignments
         Object.keys(state.assignments || {}).forEach(k => {
             const parsed = parseAssignmentKey(k);
-            if (parsed.cls === 'Kiêm nhiệm') return;
+            if (parsed.cls === 'Kiêm nhiệm' || /^(pđ|hsg|bồi dưỡng|phụ đạo)/i.test(parsed.cls)) return;
             const sub = state.subjects.find(s => s.id === parsed.subId);
             const subName = sub ? sub.name : parsed.subId;
             const val = state.assignments[k];
@@ -6526,13 +6557,8 @@ function calculateClassBalanceStats(excelClassSubjectMap) {
         });
     }
 
-    // Xác định chuẩn FET của từng khối (Khối 6, 7, 8, 9)
-    const gradeTargetMap = {};
-    ['6', '7', '8', '9'].forEach(gr => {
-        const gradeSubs = (state.subjects || []).filter(s => String(s.grade) === gr && s.name && !/^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim()));
-        let sumSubPeriods = gradeSubs.reduce((acc, s) => acc + (s.periods || 0), 0);
-        gradeTargetMap[gr] = sumSubPeriods > 0 ? sumSubPeriods : 27; // Chuẩn mặc định 27T văn hóa nạp FET
-    });
+    // Chuẩn FET văn hóa của các khối là 27 tiết/tuần
+    const gradeTargetMap = { '6': 27, '7': 27, '8': 27, '9': 27 };
 
     const resultList = Object.values(classMap).map(item => {
         item.targetFetPeriods = gradeTargetMap[item.grade] || 27;
@@ -7035,10 +7061,14 @@ async function applyReconciliationData(mode) {
     let updatedCount = 0;
     const teachersFromExcel = lastParsedPCCMData.teachers;
 
-    // 2. Cập nhật / Bổ sung giáo viên vào state.teachers
+    // 2. Cập nhật thông tin định mức cho giáo viên đã có trong Admin
     teachersFromExcel.forEach(t => {
-        let existing = state.teachers.find(st => st.fullName.toLowerCase() === t.fullName.toLowerCase());
-        if (!existing) {
+        let existing = matchTeacherWithAdmin(t.fullName);
+        if (existing) {
+            if (t.totalPeriods > 0) existing.quota = t.totalPeriods;
+            if (t.role) existing.position = t.role;
+        } else {
+            // Nếu chưa có trong Admin, tạo mới với định dạng chuẩn
             const nameParts = t.fullName.trim().split(/\s+/);
             const shortName = nameParts.length > 1 ? (nameParts[0].charAt(0) + '.' + nameParts[nameParts.length - 1]) : t.fullName;
             const newTeacher = {
@@ -7051,10 +7081,6 @@ async function applyReconciliationData(mode) {
                 subjects: t.teachingAssigns.map(a => a.subject)
             };
             state.teachers.push(newTeacher);
-        } else {
-            if (t.totalPeriods > 0) existing.quota = t.totalPeriods;
-            if (t.role) existing.position = t.role;
-            if (t.inferredGroup) existing.group = t.inferredGroup;
         }
     });
 
@@ -7093,9 +7119,12 @@ async function applyReconciliationData(mode) {
                 });
             }
 
+            const matchedTeacher = matchTeacherWithAdmin(item.excelTeacher);
+            const teacherKey = matchedTeacher ? matchedTeacher.shortName : (item.excelTeacherShort || item.excelTeacher);
+
             const targetKey = `${item.clsName}_${subId}`;
             state.assignments[targetKey] = {
-                teacher: item.excelTeacher,
+                teacher: teacherKey,
                 periods: item.excelPeriods || (subObj ? subObj.periods : 2)
             };
             updatedCount++;
@@ -7121,7 +7150,11 @@ async function applyReconciliationData(mode) {
         if (typeof renderMergedAssignments === 'function') renderMergedAssignments();
     }, 50);
 
-    showToast(`Đã đồng bộ thành công ${updatedCount} lượt phân công vào hệ thống!`, "success");
+    if (updatedCount > 0) {
+        showToast(`Đã đồng bộ thành công ${updatedCount} lượt phân công vào hệ thống!`, "success");
+    } else {
+        showToast("Tất cả các tổ đã có phân công từ trước hoặc không có mục cần nạp mới.", "info");
+    }
 }
 
 // ================= TAB 4: DUPLICATE MERGE & FET ACTIVITY EXPORT =================
