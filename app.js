@@ -611,7 +611,10 @@ function initFirebase() {
                 state.timetableApplyDate = data.timetableApplyDate || "";
                 state.subjects = Array.isArray(data.subjects) ? data.subjects.filter(s => s && !s.isPlaceholder && s.id !== '__empty_subject__') : [];
                 state.globalSubjects = Array.isArray(data.globalSubjects) ? data.globalSubjects.filter(gs => gs && !gs.isPlaceholder && gs.id !== '__empty_gs__') : [];
-                state.assignmentVersions = Array.isArray(data.assignmentVersions) ? data.assignmentVersions : [];
+                state.assignmentVersions = Array.isArray(data.assignmentVersions) ? data.assignmentVersions.map(ver => ({
+                    ...ver,
+                    assignments: desanitizeObjectKeysFromFirebase(ver.assignments || {})
+                })) : [];
                 state.groupLocks = (data.groupLocks && typeof data.groupLocks === 'object') ? desanitizeObjectKeysFromFirebase(data.groupLocks) : {};
                 state.weeklyTimetables = Array.isArray(data.weeklyTimetables) ? data.weeklyTimetables : [];
                 state.currentWeekId = data.currentWeekId || null;
@@ -729,7 +732,10 @@ function persistData() {
             assignments: sanitizeObjectKeysForFirebase(state.assignments || {}),
             timetable: sanitizeObjectKeysForFirebase(state.timetable || {}),
             timetableApplyDate: state.timetableApplyDate || "",
-            assignmentVersions: state.assignmentVersions || [],
+            assignmentVersions: (state.assignmentVersions || []).map(ver => ({
+                ...ver,
+                assignments: sanitizeObjectKeysForFirebase(ver.assignments || {})
+            })),
             groupLocks: sanitizeObjectKeysForFirebase(state.groupLocks || {}),
             substitutions: state.substitutions || [],
             weeklyTimetables: state.weeklyTimetables || [],
