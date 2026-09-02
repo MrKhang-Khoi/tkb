@@ -5837,6 +5837,12 @@ function parsePCCMClassTokens(tokenStr, defaultGrade) {
             continue;
         }
 
+        let mPhudao = tok.match(/^(?:PĐ|PD)[_\s-]?([6789])$/i);
+        if (mPhudao) {
+            resultClasses.push(`PĐ_${mPhudao[1]}`);
+            continue;
+        }
+
         if (/^[6789][ABab]\d+$/i.test(tok)) {
             resultClasses.push(tok.toUpperCase());
         }
@@ -6119,6 +6125,25 @@ async function handlePCCMExcelUpload(event) {
 
                     const teachingAssigns = parsePCCMFullTeaching(teaching);
 
+                    // Bóc tách phân công các lớp Phụ Đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9) từ cột HSG / Phụ đạo
+                    const allNotes = `${hsg} ${phudao}`;
+                    const pdMatches = allNotes.matchAll(/phụ\s*đạo\s*([6789])(?:\s*\(\s*(\d+)\s*t?\s*\))?/gi);
+                    for (const m of pdMatches) {
+                        const gr = m[1];
+                        const pdPeriods = m[2] ? parseInt(m[2]) : 2;
+                        let pdSub = 'Phụ đạo';
+                        if (/toán/i.test(teaching) || /toán/i.test(cm)) pdSub = 'Toán';
+                        else if (/văn/i.test(teaching) || /văn/i.test(cm)) pdSub = 'Ngữ văn';
+                        else if (/tiếng anh|anh/i.test(teaching) || /anh/i.test(cm)) pdSub = 'Tiếng Anh';
+
+                        teachingAssigns.push({
+                            subject: pdSub,
+                            classes: [`PĐ_${gr}`],
+                            periods: pdPeriods,
+                            rawContent: `Phụ đạo ${gr}(${pdPeriods})`
+                        });
+                    }
+
                     const tObj = {
                         stt: parseInt(stt),
                         fullName: fullName,
@@ -6141,6 +6166,19 @@ async function handlePCCMExcelUpload(event) {
                 showToast("Không tìm thấy dữ liệu giáo viên trong file Excel!", "danger");
                 return;
             }
+
+            // Đảm bảo các lớp Phụ Đạo PĐ_6, PĐ_7, PĐ_8, PĐ_9 tồn tại trong state.classes để xếp TKB
+            ['6', '7', '8', '9'].forEach(gr => {
+                const pdName = `PĐ_${gr}`;
+                if (!state.classes) state.classes = [];
+                if (!state.classes.some(c => c.name === pdName)) {
+                    state.classes.push({
+                        id: `c_pd_${gr}`,
+                        name: pdName,
+                        grade: gr
+                    });
+                }
+            });
 
             lastParsedPCCMData = {
                 sheetName: sheetName,
@@ -6476,11 +6514,10 @@ function runAssignmentHealthAudit(excelData) {
 function calculateClassBalanceStats(excelClassSubjectMap) {
     const classMap = {};
 
-    // Khởi tạo tất cả các lớp chính khóa trong hệ thống (bỏ qua các lớp bồi dưỡng / phụ đạo PĐ_, HSG_)
+    // Khởi tạo tất cả các lớp trong hệ thống (gồm cả các lớp chính khóa và các lớp Phụ đạo PĐ_6, PĐ_7, PĐ_8, PĐ_9)
     (state.classes || []).forEach(c => {
-        if (!c.name) return;
-        if (/^(pđ|hsg|bồi dưỡng|phụ đạo|kiêm nhiệm)/i.test(c.name.trim())) return;
-        const gradeMatch = c.name.match(/^\d+/);
+        if (!c.name || c.name === 'Kiêm nhiệm') return;
+        const gradeMatch = c.name.match(/\d+/);
         const grade = c.grade || (gradeMatch ? gradeMatch[0] : '6');
         classMap[c.name] = {
             clsName: c.name,
@@ -6496,14 +6533,14 @@ function calculateClassBalanceStats(excelClassSubjectMap) {
     if (excelClassSubjectMap && Object.keys(excelClassSubjectMap).length > 0) {
         Object.keys(excelClassSubjectMap).forEach(key => {
             const [clsName, subName] = key.split('_');
-            if (/^(pđ|hsg|bồi dưỡng|phụ đạo|kiêm nhiệm)/i.test(clsName.trim())) return;
+            if (clsName === 'Kiêm nhiệm') return;
 
             const assign = excelClassSubjectMap[key][0];
             const periods = assign ? assign.periods : 2;
             const teacher = assign ? assign.teacher : '';
 
             if (!classMap[clsName]) {
-                const gradeMatch = clsName.match(/^\d+/);
+                const gradeMatch = clsName.match(/\d+/);
                 classMap[clsName] = {
                     clsName: clsName,
                     grade: gradeMatch ? gradeMatch[0] : '6',
@@ -6527,7 +6564,7 @@ function calculateClassBalanceStats(excelClassSubjectMap) {
         // Tính toán từ state.assignments
         Object.keys(state.assignments || {}).forEach(k => {
             const parsed = parseAssignmentKey(k);
-            if (parsed.cls === 'Kiêm nhiệm' || /^(pđ|hsg|bồi dưỡng|phụ đạo)/i.test(parsed.cls)) return;
+            if (parsed.cls === 'Kiêm nhiệm') return;
             const sub = state.subjects.find(s => s.id === parsed.subId);
             const subName = sub ? sub.name : parsed.subId;
             const val = state.assignments[k];
@@ -6535,7 +6572,7 @@ function calculateClassBalanceStats(excelClassSubjectMap) {
 
             const periods = val.periods || (sub ? sub.periods : 2);
             if (!classMap[parsed.cls]) {
-                const gradeMatch = parsed.cls.match(/^\d+/);
+                const gradeMatch = parsed.cls.match(/\d+/);
                 classMap[parsed.cls] = {
                     clsName: parsed.cls,
                     grade: gradeMatch ? gradeMatch[0] : '6',
@@ -6557,11 +6594,16 @@ function calculateClassBalanceStats(excelClassSubjectMap) {
         });
     }
 
-    // Chuẩn FET văn hóa của các khối là 27 tiết/tuần
+    // Chuẩn FET văn hóa của các khối chính khóa là 27 tiết/tuần
     const gradeTargetMap = { '6': 27, '7': 27, '8': 27, '9': 27 };
 
     const resultList = Object.values(classMap).map(item => {
-        item.targetFetPeriods = gradeTargetMap[item.grade] || 27;
+        const isPhuDao = /^pđ/i.test(item.clsName);
+        if (isPhuDao) {
+            item.targetFetPeriods = item.fetPeriods > 0 ? item.fetPeriods : 6;
+        } else {
+            item.targetFetPeriods = gradeTargetMap[item.grade] || 27;
+        }
         return item;
     });
 
