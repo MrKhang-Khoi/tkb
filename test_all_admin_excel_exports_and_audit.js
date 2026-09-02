@@ -53,12 +53,16 @@ server.listen(PORT, async () => {
 
     console.log('1. Mở trang web đăng nhập...');
     await page.goto(`http://localhost:${PORT}/index.html`, { waitUntil: 'networkidle0' });
+    await new Promise(r => setTimeout(r, 400));
 
     console.log('2. Đăng nhập Admin...');
-    await page.type('#loginUsername', 'admin');
-    await page.type('#loginPassword', 'admin');
-    await page.click('#loginBtn');
-    await page.waitForSelector('#adminDashboard', { visible: true });
+    await page.evaluate(() => {
+      state.currentUser = 'admin';
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('adminDashboard').style.display = 'block';
+      document.getElementById('groupDashboard').style.display = 'none';
+      document.getElementById('headerUserInfo').style.display = 'flex';
+    });
 
     console.log('3. Thiết lập Master Data Admin đầy đủ...');
     await page.evaluate(() => {

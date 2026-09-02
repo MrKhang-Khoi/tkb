@@ -149,7 +149,7 @@ let editingSubjectConfigId = null;
 let showPasswordMap = {};
 let editingAssignmentState = null;
 
-// Hàm tách khóa phân công siêu nhanh O(1) (xử lý cả lớp có dấu gạch dưới như PĐ_6, PĐ_7 và ID môn học chứa dấu gạch dưới)
+// Hàm tách khóa phân công siêu nhanh O(1) (xử lý mọi tên lớp bao gồm PĐ_6, lớp có dấu gạch dưới và ID môn học chứa dấu gạch dưới)
 function parseAssignmentKey(key) {
     if (!key || typeof key !== 'string') return { cls: '', subId: '' };
     if (key.startsWith('Kiêm nhiệm_')) {
@@ -169,7 +169,19 @@ function parseAssignmentKey(key) {
         }
     }
 
-    // Lớp có tiền tố PĐ_ hoặc PD_ (ví dụ: PĐ_6_s_12345, PD_7_s_67890)
+    // 1. Khớp ưu tiên theo danh sách lớp trong hệ thống
+    if (typeof state !== 'undefined' && state.classes && Array.isArray(state.classes) && state.classes.length > 0) {
+        for (const c of state.classes) {
+            if (c && c.name && key.startsWith(c.name + '_')) {
+                return {
+                    cls: c.name,
+                    subId: key.substring(c.name.length + 1)
+                };
+            }
+        }
+    }
+
+    // 2. Lớp có tiền tố PĐ_ hoặc PD_ (ví dụ: PĐ_6_s_12345, PD_7_s_67890)
     if (/^(PĐ_|PD_)/i.test(key)) {
         const firstUnderscore = key.indexOf('_');
         const secondUnderscore = key.indexOf('_', firstUnderscore + 1);
@@ -4155,16 +4167,45 @@ function saveClassEdit(id) {
 }
 
 function renameClassInData(oldName, newName) {
-    Object.keys(state.assignments).forEach(key => {
-        if (key.startsWith(oldName + '_')) {
-            const suffix = key.substring(oldName.length);
-            state.assignments[newName + suffix] = state.assignments[key];
-            delete state.assignments[key];
-        }
-    });
-    if (state.timetable[oldName]) {
+    if (!oldName || !newName || oldName === newName) return;
+
+    // 1. Update in state.assignments
+    if (state.assignments) {
+        Object.keys(state.assignments).forEach(key => {
+            if (key.startsWith(oldName + '_')) {
+                const suffix = key.substring(oldName.length);
+                state.assignments[newName + suffix] = state.assignments[key];
+                delete state.assignments[key];
+            }
+        });
+    }
+
+    // 2. Update in state.timetable
+    if (state.timetable && state.timetable[oldName]) {
         state.timetable[newName] = state.timetable[oldName];
         delete state.timetable[oldName];
+    }
+
+    // 3. Update in state.weeklyTimetables
+    if (state.weeklyTimetables && Array.isArray(state.weeklyTimetables)) {
+        state.weeklyTimetables.forEach(weekEntry => {
+            if (weekEntry && weekEntry.timetable && weekEntry.timetable[oldName]) {
+                weekEntry.timetable[newName] = weekEntry.timetable[oldName];
+                delete weekEntry.timetable[oldName];
+            }
+        });
+    }
+
+    // 4. Update in state.teachers (homeroom)
+    if (state.teachers) {
+        state.teachers.forEach(t => {
+            if (t.homeroomClass === oldName) {
+                t.homeroomClass = newName;
+            }
+            if (t.reduction && t.reduction.homeroomClass === oldName) {
+                t.reduction.homeroomClass = newName;
+            }
+        });
     }
 }
 
@@ -4513,17 +4554,24 @@ function syncGvcnAndHomeroom() {
     // 1. Đồng bộ xuôi từ giáo viên sang lớp học
     const teacherGvcnMap = {};
     state.teachers.forEach(t => {
-        if (t.reduction && t.reduction.homeroom && t.reduction.homeroomClass) {
-            teacherGvcnMap[t.reduction.homeroomClass] = t.shortName;
-            t.homeroomClass = t.reduction.homeroomClass;
-        } else {
-            t.homeroomClass = '';
+        const hrClass = (t.reduction && t.reduction.homeroom && t.reduction.homeroomClass) ? t.reduction.homeroomClass : (t.homeroomClass || '');
+        if (hrClass) {
+            teacherGvcnMap[hrClass] = t.shortName;
+            t.homeroomClass = hrClass;
+            if (!t.reduction) {
+                t.reduction = { homeroom: true, homeroomClass: hrClass, leader: false, deputy: false, baby: false, other: 0 };
+            } else {
+                t.reduction.homeroom = true;
+                t.reduction.homeroomClass = hrClass;
+            }
         }
     });
 
     // Cập nhật gvcn của lớp
     state.classes.forEach(c => {
-        c.gvcn = teacherGvcnMap[c.name] || '';
+        if (teacherGvcnMap[c.name]) {
+            c.gvcn = teacherGvcnMap[c.name];
+        }
     });
 
     // 2. Đồng bộ ngược từ lớp học sang giáo viên
@@ -5287,6 +5335,108 @@ function startGlobalSubEdit(id) {
     openModal("Chỉnh Sửa Môn Học / Nhiệm vụ", bodyHtml, footerHtml);
 }
 
+function renameSubjectNameInSystem(oldName, newName) {
+    if (!oldName || !newName || oldName === newName) return;
+    const oldLower = oldName.trim().toLowerCase();
+
+    // 1. Cập nhật state.globalSubjects
+    if (state.globalSubjects) {
+        state.globalSubjects.forEach(gs => {
+            if (gs.name && gs.name.trim().toLowerCase() === oldLower) {
+                gs.name = newName;
+            }
+        });
+    }
+
+    // 2. Cập nhật state.groups (mảng subjects)
+    if (state.groups) {
+        state.groups.forEach(g => {
+            if (g.subjects && Array.isArray(g.subjects)) {
+                g.subjects = g.subjects.map(s => s.trim().toLowerCase() === oldLower ? newName : s);
+            }
+        });
+    }
+
+    // 3. Cập nhật state.subjects (cấu hình phân phối tiết môn theo khối)
+    if (state.subjects) {
+        state.subjects.forEach(s => {
+            if (s.name && s.name.trim().toLowerCase() === oldLower) {
+                s.name = newName;
+            }
+        });
+    }
+
+    // 4. Cập nhật state.teachers (mảng subjects phụ trách của từng GV)
+    if (state.teachers) {
+        state.teachers.forEach(t => {
+            if (t.subjects && Array.isArray(t.subjects)) {
+                t.subjects = t.subjects.map(s => s.trim().toLowerCase() === oldLower ? newName : s);
+            }
+        });
+    }
+
+    // 5. Cập nhật state.assignments (các nhiệm vụ kiêm nhiệm có tên môn trong key)
+    if (state.assignments) {
+        Object.keys(state.assignments).forEach(key => {
+            if (key.startsWith('Kiêm nhiệm_')) {
+                const parsed = parseAssignmentKey(key);
+                if (parsed.subId && parsed.subId.trim().toLowerCase() === oldLower) {
+                    const newKey = `Kiêm nhiệm_${parsed.teacher}_${newName}`;
+                    state.assignments[newKey] = {
+                        teacher: parsed.teacher,
+                        periods: state.assignments[key].periods
+                    };
+                    delete state.assignments[key];
+                }
+            }
+        });
+    }
+
+    // 6. Cập nhật state.timetable
+    if (state.timetable) {
+        Object.keys(state.timetable).forEach(clsName => {
+            const daysObj = state.timetable[clsName];
+            if (daysObj && typeof daysObj === 'object') {
+                Object.keys(daysObj).forEach(day => {
+                    const slotsObj = daysObj[day];
+                    if (slotsObj && typeof slotsObj === 'object') {
+                        Object.keys(slotsObj).forEach(p => {
+                            const slot = slotsObj[p];
+                            if (slot && slot.subject && slot.subject.trim().toLowerCase() === oldLower) {
+                                slot.subject = newName;
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    // 7. Cập nhật state.weeklyTimetables
+    if (state.weeklyTimetables && Array.isArray(state.weeklyTimetables)) {
+        state.weeklyTimetables.forEach(weekEntry => {
+            if (weekEntry && weekEntry.timetable) {
+                Object.keys(weekEntry.timetable).forEach(clsName => {
+                    const daysObj = weekEntry.timetable[clsName];
+                    if (daysObj && typeof daysObj === 'object') {
+                        Object.keys(daysObj).forEach(day => {
+                            const slotsObj = daysObj[day];
+                            if (slotsObj && typeof slotsObj === 'object') {
+                                Object.keys(slotsObj).forEach(p => {
+                                    const slot = slotsObj[p];
+                                    if (slot && slot.subject && slot.subject.trim().toLowerCase() === oldLower) {
+                                        slot.subject = newName;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+}
+
 function saveGlobalSubEdit(id) {
     const gs = state.globalSubjects.find(item => item.id === id);
     if (gs) {
@@ -5297,26 +5447,13 @@ function saveGlobalSubEdit(id) {
         }
 
         const oldName = gs.name;
-        gs.name = newName;
-
-        // Cascade cập nhật sang cấu hình khối
-        state.subjects.forEach(s => {
-            if (s.name.toLowerCase() === oldName.toLowerCase()) {
-                s.name = newName;
-            }
-        });
-
-        // Cascade cập nhật sang giáo viên
-        state.teachers.forEach(t => {
-            if (t.subjects) {
-                t.subjects = t.subjects.map(sub => sub.toLowerCase() === oldName.toLowerCase() ? newName : sub);
-            }
-        });
+        renameSubjectNameInSystem(oldName, newName);
 
         syncGroupsFromGlobalSubjects();
         persistData();
         closeModal();
         refreshActiveViews();
+        showToast(`Đã đổi tên môn học "${oldName}" thành "${newName}" trên toàn bộ hệ thống!`, "success");
     }
 }
 
@@ -9250,6 +9387,50 @@ function renameTeacherShortNameInSystem(oldShort, newShort) {
         state.classes.forEach(c => {
             if (c.gvcn && c.gvcn.trim().toLowerCase() === oldLowerTrimmed) {
                 c.gvcn = newShort;
+            }
+        });
+    }
+
+    // 4. Update in state.timetable
+    if (state.timetable) {
+        Object.keys(state.timetable).forEach(clsName => {
+            const daysObj = state.timetable[clsName];
+            if (daysObj && typeof daysObj === 'object') {
+                Object.keys(daysObj).forEach(day => {
+                    const slotsObj = daysObj[day];
+                    if (slotsObj && typeof slotsObj === 'object') {
+                        Object.keys(slotsObj).forEach(p => {
+                            const slot = slotsObj[p];
+                            if (slot && slot.teacher && slot.teacher.trim().toLowerCase() === oldLowerTrimmed) {
+                                slot.teacher = newShort;
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    // 5. Update in state.weeklyTimetables
+    if (state.weeklyTimetables && Array.isArray(state.weeklyTimetables)) {
+        state.weeklyTimetables.forEach(weekEntry => {
+            if (weekEntry && weekEntry.timetable) {
+                Object.keys(weekEntry.timetable).forEach(clsName => {
+                    const daysObj = weekEntry.timetable[clsName];
+                    if (daysObj && typeof daysObj === 'object') {
+                        Object.keys(daysObj).forEach(day => {
+                            const slotsObj = daysObj[day];
+                            if (slotsObj && typeof slotsObj === 'object') {
+                                Object.keys(slotsObj).forEach(p => {
+                                    const slot = slotsObj[p];
+                                    if (slot && slot.teacher && slot.teacher.trim().toLowerCase() === oldLowerTrimmed) {
+                                        slot.teacher = newShort;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
             }
         });
     }
