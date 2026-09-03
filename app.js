@@ -3667,6 +3667,62 @@ function exportGroupAssignmentExcel() {
     }
 }
 
+// Thuật toán so khớp chính xác tên giáo viên (tránh lỗi nhầm lẫn do substring matching)
+function findExactTeacherMatch(rawName, groupId = null) {
+    if (!rawName) return null;
+    
+    function normalizeStr(str) {
+        return (str || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+    
+    function cleanParentheses(str) {
+        return normalizeStr((str || '').toString().replace(/\([^)]*\)/g, ''));
+    }
+    
+    function extractShortFromParen(str) {
+        const m = (str || '').toString().match(/\(([^)]+)\)/);
+        return m ? normalizeStr(m[1]) : '';
+    }
+
+    const normRaw = normalizeStr(rawName);
+    const cleanRaw = cleanParentheses(rawName);
+    const parenShort = extractShortFromParen(rawName);
+
+    const allTeachers = state.teachers || [];
+    const groupObj = (state.groups || []).find(g => g.id === groupId || g.name === groupId);
+    const currentGroupId = groupObj ? groupObj.id : groupId;
+    
+    // Ưu tiên tìm trong tổ chuyên môn hiện tại nếu có
+    const groupTeachers = currentGroupId ? allTeachers.filter(t => t && (t.group === currentGroupId || (groupObj && t.group === groupObj.id) || (groupObj && t.group === groupObj.name))) : [];
+
+    const pools = [groupTeachers, allTeachers];
+
+    for (const pool of pools) {
+        if (!pool || pool.length === 0) continue;
+
+        // 1. Khớp chính xác 100% Họ và tên (bỏ khoảng trắng thừa & ngoặc)
+        let found = pool.find(t => t && (
+            normalizeStr(t.fullName) === normRaw ||
+            cleanParentheses(t.fullName) === cleanRaw ||
+            cleanParentheses(t.fullName) === normRaw ||
+            normalizeStr(t.fullName) === cleanRaw
+        ));
+        if (found) return found;
+
+        // 2. Khớp theo Tên viết tắt trong ngoặc đơn
+        if (parenShort) {
+            found = pool.find(t => t && normalizeStr(t.shortName) === parenShort);
+            if (found) return found;
+        }
+        
+        // 3. Khớp chính xác theo shortName
+        found = pool.find(t => t && normalizeStr(t.shortName) === normRaw);
+        if (found) return found;
+    }
+
+    return null;
+}
+
 async function importGroupAssignmentExcel(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -3755,15 +3811,13 @@ async function importGroupAssignmentExcel(event) {
             const teacherRawName = row[colTeacher].toString().trim();
             if (!teacherRawName || teacherRawName.toLowerCase().includes('tổng cộng') || teacherRawName.toLowerCase().includes('toàn tổ')) continue;
 
-            // Tìm giáo viên trong danh sách
-            const tObj = (state.teachers || []).find(t => 
-                t.fullName.trim().toLowerCase() === teacherRawName.toLowerCase() ||
-                t.shortName.trim().toLowerCase() === teacherRawName.toLowerCase() ||
-                teacherRawName.toLowerCase().includes(t.shortName.toLowerCase()) ||
-                teacherRawName.toLowerCase().includes(t.fullName.toLowerCase())
-            );
+            // Tìm giáo viên trong danh sách theo thuật toán so khớp chính xác
+            const tObj = findExactTeacherMatch(teacherRawName, groupId);
 
-            if (!tObj) continue;
+            if (!tObj) {
+                console.warn("Không tìm thấy giáo viên tương ứng trong hệ thống:", teacherRawName);
+                continue;
+            }
 
             const tShort = tObj.shortName;
             const teacherData = {
@@ -3772,6 +3826,8 @@ async function importGroupAssignmentExcel(event) {
                 duties: [],
                 assignments: [],
                 homeroomClass: '',
+                hasGvcn: false,
+                gvcnDutyStr: '',
                 totalPeriods: 0
             };
 
@@ -3789,6 +3845,7 @@ async function importGroupAssignmentExcel(event) {
 
                         if (dName.toLowerCase().includes('gvcn') || dName.toLowerCase().includes('chủ nhiệm')) {
                             teacherData.hasGvcn = true;
+                            teacherData.gvcnDutyStr = tok;
                         } else {
                             const subObj = (state.subjects || []).find(s => s.name.toLowerCase() === dName.toLowerCase() && s.grade === 'Kiêm nhiệm');
                             if (subObj) {
@@ -3814,7 +3871,10 @@ async function importGroupAssignmentExcel(event) {
                     // Kiểm tra nếu block chứa thông tin GVCN dạng "GVCN: 6A1 (4T)" hoặc "Chủ nhiệm: 6A1"
                     if (block.toLowerCase().includes('gvcn') || block.toLowerCase().includes('chủ nhiệm')) {
                         const mCls = block.match(/([0-9A-Za-z]+)/);
-                        if (mCls) teacherData.homeroomClass = mCls[1];
+                        if (mCls) {
+                            teacherData.homeroomClass = mCls[1];
+                            teacherData.hasGvcn = true;
+                        }
                         return;
                     }
 
@@ -3869,7 +3929,7 @@ async function importGroupAssignmentExcel(event) {
         const previewRowsHtml = parsedResults.map((t, idx) => {
             const dutyBadges = t.duties.map(d => `<span style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">${d.name} (${d.periods}T)</span>`).join('');
             const assignBadges = t.assignments.map(a => `<span style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); color: #c7d2fe; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin: 2px; display: inline-block;">${a.subName}: <b>${a.clsName}</b> (${a.periods}T)</span>`).join('');
-            const gvcnBadge = t.homeroomClass ? `<span style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">⭐ GVCN: ${t.homeroomClass}</span>` : '';
+            const gvcnBadge = t.homeroomClass ? `<span style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">⭐ GVCN: ${t.homeroomClass}</span>` : (t.hasGvcn ? `<span style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">⭐ ${t.gvcnDutyStr || 'GVCN (5T)'}</span>` : '');
 
             return `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
@@ -16482,6 +16542,7 @@ window.deleteAllGroups = deleteAllGroups;
 window.deleteAllGlobalSubjects = deleteAllGlobalSubjects;
 window.deleteAllAccounts = deleteAllAccounts;
 window.state = state;
+window.findExactTeacherMatch = findExactTeacherMatch;
 window.importGroupAssignmentExcel = importGroupAssignmentExcel;
 window.renderTeacherQuickAssignPreview = renderTeacherQuickAssignPreview;
 window.scrollToTeacherCard = scrollToTeacherCard;
