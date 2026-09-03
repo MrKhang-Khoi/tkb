@@ -1679,31 +1679,23 @@ function initSearchableDropdown(inputId, menuId, items, onSelectCallback) {
     }
     input._dropdownInitialized = true;
 
-    // Click to show dropdown
+    // Click to show dropdown - Luôn hiển thị đầy đủ toàn bộ danh sách khi mở
     input.addEventListener('focus', (e) => {
         e.stopPropagation();
         document.querySelectorAll('.searchable-select .dropdown-menu').forEach(m => m.style.display = 'none');
         const curItems = input.dropdownItems || [];
-        const filterVal = input.value.toLowerCase().trim();
-        const filtered = filterVal ? curItems.filter(item => 
-            (item.label || '').toLowerCase().includes(filterVal) || 
-            (item.value || '').toLowerCase().includes(filterVal)
-        ) : curItems;
-        renderDropdownItems(input, menu, filtered);
+        renderDropdownItems(input, menu, curItems);
         menu.style.display = 'block';
+        try { input.select(); } catch(err) {}
     });
 
     input.addEventListener('click', (e) => {
         e.stopPropagation();
         document.querySelectorAll('.searchable-select .dropdown-menu').forEach(m => m.style.display = 'none');
         const curItems = input.dropdownItems || [];
-        const filterVal = input.value.toLowerCase().trim();
-        const filtered = filterVal ? curItems.filter(item => 
-            (item.label || '').toLowerCase().includes(filterVal) || 
-            (item.value || '').toLowerCase().includes(filterVal)
-        ) : curItems;
-        renderDropdownItems(input, menu, filtered);
+        renderDropdownItems(input, menu, curItems);
         menu.style.display = 'block';
+        try { input.select(); } catch(err) {}
     });
 
     // Input to filter and check for dataset value reset
