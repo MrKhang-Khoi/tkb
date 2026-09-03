@@ -783,17 +783,22 @@ function executeFirebasePersist() {
     state.lastUpdated = newTimestamp;
 
     if (state.currentUser && state.currentUser !== 'admin') {
-        // Tổ trưởng: Cập nhật phân công, trạng thái khóa, lớp học (GVCN) và giáo viên (định mức)
+        // Tổ trưởng: Cập nhật phân tán nguyên tử theo từng nhánh (Granular Multi-Path Update)
         const sanitizedAssignments = sanitizeObjectKeysForFirebase(state.assignments || {});
         const sanitizedGroupLocks = sanitizeObjectKeysForFirebase(state.groupLocks || {});
         
-        db.ref("school_data").update({
-            assignments: sanitizedAssignments,
-            groupLocks: sanitizedGroupLocks,
-            classes: (state.classes && state.classes.length > 0) ? state.classes : [{ id: '__empty_class__', name: '', grade: '', isPlaceholder: true }],
-            teachers: (state.teachers && state.teachers.length > 0) ? state.teachers : [{ id: '__empty_teacher__', fullName: '', shortName: '', isPlaceholder: true }],
-            lastUpdated: newTimestamp
-        }).catch(err => {
+        const updates = {};
+        Object.keys(sanitizedAssignments).forEach(k => {
+            updates[`assignments/${k}`] = sanitizedAssignments[k];
+        });
+        Object.keys(sanitizedGroupLocks).forEach(k => {
+            updates[`groupLocks/${k}`] = sanitizedGroupLocks[k];
+        });
+        if (state.classes && state.classes.length > 0) updates['classes'] = state.classes;
+        if (state.teachers && state.teachers.length > 0) updates['teachers'] = state.teachers;
+        updates['lastUpdated'] = newTimestamp;
+
+        db.ref("school_data").update(updates).catch(err => {
             console.error("Lỗi cập nhật phân công lên Firebase:", err);
         });
         return;
