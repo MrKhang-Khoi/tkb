@@ -8886,8 +8886,170 @@ function handleFilesUpload(event) {
 
 // Đã xóa hàm generateDemoMerge() để tránh ghi đè dữ liệu thật
 
-function exportFETCSV() {
-    // Luôn tự động đồng bộ GVCN và môn Chào cờ / HĐTN + SHL trước khi xuất CSV cho FET
+// ================= HỆ THỐNG XUẤT DỮ LIỆU TOÀN DIỆN CHO PHẦN MỀM FET =================
+
+// Hàm nén ZIP chuẩn thuần JS trong trình duyệt (Zero Dependency)
+function createZipBlob(files) {
+    const crcTable = [];
+    for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) {
+            c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        crcTable[n] = c;
+    }
+    function calcCrc32(uint8) {
+        let crc = 0 ^ (-1);
+        for (let i = 0; i < uint8.length; i++) {
+            crc = (crc >>> 8) ^ crcTable[(crc ^ uint8[i]) & 0xFF];
+        }
+        return (crc ^ (-1)) >>> 0;
+    }
+
+    const textEncoder = new TextEncoder();
+    const fileEntries = [];
+    let localOffset = 0;
+    const parts = [];
+
+    const now = new Date();
+    const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+
+    files.forEach(file => {
+        const nameBuf = textEncoder.encode(file.name);
+        const dataBuf = typeof file.content === 'string' ? textEncoder.encode(file.content) : file.content;
+        const checksum = calcCrc32(dataBuf);
+        const uncompressedSize = dataBuf.length;
+        const compressedSize = dataBuf.length;
+
+        const localHeader = new Uint8Array(30);
+        const lhView = new DataView(localHeader.buffer);
+        lhView.setUint32(0, 0x04034b50, true);
+        lhView.setUint16(4, 20, true);
+        lhView.setUint16(6, 0x0800, true); // UTF-8 flag
+        lhView.setUint16(8, 0, true);      // Store
+        lhView.setUint16(10, dosTime, true);
+        lhView.setUint16(12, dosDate, true);
+        lhView.setUint32(14, checksum, true);
+        lhView.setUint32(18, compressedSize, true);
+        lhView.setUint32(22, uncompressedSize, true);
+        lhView.setUint16(26, nameBuf.length, true);
+        lhView.setUint16(28, 0, true);
+
+        parts.push(localHeader, nameBuf, dataBuf);
+
+        fileEntries.push({
+            nameBuf,
+            checksum,
+            compressedSize,
+            uncompressedSize,
+            offset: localOffset,
+            dosTime,
+            dosDate
+        });
+
+        localOffset += localHeader.length + nameBuf.length + dataBuf.length;
+    });
+
+    let centralDirectorySize = 0;
+    const centralDirOffset = localOffset;
+
+    fileEntries.forEach(entry => {
+        const cdHeader = new Uint8Array(46);
+        const cdView = new DataView(cdHeader.buffer);
+        cdView.setUint32(0, 0x02014b50, true);
+        cdView.setUint16(4, 20, true);
+        cdView.setUint16(6, 20, true);
+        cdView.setUint16(8, 0x0800, true);
+        cdView.setUint16(10, 0, true);
+        cdView.setUint16(12, entry.dosTime, true);
+        cdView.setUint16(14, entry.dosDate, true);
+        cdView.setUint32(16, entry.checksum, true);
+        cdView.setUint32(20, entry.compressedSize, true);
+        cdView.setUint32(24, entry.uncompressedSize, true);
+        cdView.setUint16(28, entry.nameBuf.length, true);
+        cdView.setUint16(30, 0, true);
+        cdView.setUint16(32, 0, true);
+        cdView.setUint16(34, 0, true);
+        cdView.setUint16(36, 0, true);
+        cdView.setUint32(38, 0, true);
+        cdView.setUint32(42, entry.offset, true);
+
+        parts.push(cdHeader, entry.nameBuf);
+        centralDirectorySize += cdHeader.length + entry.nameBuf.length;
+    });
+
+    const eocd = new Uint8Array(22);
+    const eocdView = new DataView(eocd.buffer);
+    eocdView.setUint32(0, 0x06054b50, true);
+    eocdView.setUint16(4, 0, true);
+    eocdView.setUint16(6, 0, true);
+    eocdView.setUint16(8, fileEntries.length, true);
+    eocdView.setUint16(10, fileEntries.length, true);
+    eocdView.setUint32(12, centralDirectorySize, true);
+    eocdView.setUint32(16, centralDirOffset, true);
+    eocdView.setUint16(20, 0, true);
+
+    parts.push(eocd);
+
+    return new Blob(parts, { type: 'application/zip' });
+}
+
+// 1. Tạo nội dung CSV Môn học cho FET
+function generateFetSubjectsCSV() {
+    const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
+    const subjectsSet = new Set();
+    (state.subjects || []).forEach(s => {
+        if (s && s.name && s.grade !== 'Kiêm nhiệm') {
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim());
+            if (!excludeGDTC || !isGDTC) {
+                subjectsSet.add(s.name.trim());
+            }
+        }
+    });
+    let content = `"Name","Comments"\n`;
+    Array.from(subjectsSet).sort().forEach(subName => {
+        content += `"${subName}",""\n`;
+    });
+    return content;
+}
+
+// 2. Tạo nội dung CSV Giáo viên cho FET
+function generateFetTeachersCSV() {
+    const teachersList = (state.teachers || []).filter(t => t && t.shortName);
+    let content = `"Name","Comments"\n`;
+    teachersList.forEach(t => {
+        content += `"${t.shortName}","${(t.fullName || t.shortName).replace(/"/g, '""')}"\n`;
+    });
+    return content;
+}
+
+// 3. Tạo nội dung CSV Khối, Lớp học và các nhóm cho FET
+function generateFetStudentsCSV() {
+    let content = `"Year","Group","Subgroup","Number of Students","Comments"\n`;
+    (state.classes || []).forEach(c => {
+        if (c && c.name) {
+            const gradeMatch = c.name.match(/^\d+/);
+            const grade = gradeMatch ? gradeMatch[0] : '6';
+            const yearName = `Khối ${grade}`;
+            content += `"${yearName}","${c.name}","",35,""\n`;
+        }
+    });
+    return content;
+}
+
+// 4. Tạo nội dung CSV Phòng học / Tòa nhà cho FET
+function generateFetRoomsCSV() {
+    let content = `"Building","Name","Capacity","Comments"\n`;
+    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : (state.classes || []).map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
+    roomsList.forEach(r => {
+        content += `"${r.building || 'Khu A'}","${r.name || ''}",${r.capacity || 45},""\n`;
+    });
+    return content;
+}
+
+// 5. Tạo nội dung CSV Tiết giảng (Hoạt động) cho FET
+function generateFetActivitiesCSV() {
     syncGvcnAndHomeroom();
 
     const rule5 = (document.getElementById('splitRule5') && document.getElementById('splitRule5').value) ? document.getElementById('splitRule5').value : '2+2+1';
@@ -8898,27 +9060,23 @@ function exportFETCSV() {
     const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
 
     let csvContent = `"Students Sets","Subject","Teachers","Activity Tags","Total Duration","Split Duration","Min Days","Weight","Consecutive","Comments"\n`;
-    let exportedCount = 0;
-    let excludedGDTCCount = 0;
 
-    Object.keys(state.assignments).forEach(key => {
+    Object.keys(state.assignments || {}).forEach(key => {
         const parsedKey = parseAssignmentKey(key);
         const cls = parsedKey.cls;
         const subId = parsedKey.subId;
         const val = state.assignments[key];
 
         if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
-            const sub = state.subjects.find(s => s && s.id === subId);
+            const sub = (state.subjects || []).find(s => s && s.id === subId);
             if (sub && sub.grade !== 'Kiêm nhiệm') {
                 const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(sub.name.trim());
                 if (excludeGDTC && isGDTC) {
-                    excludedGDTCCount++;
-                    return; // Bỏ qua môn Thể dục khi xuất file cho FET
+                    return;
                 }
 
                 let split = val.periods.toString();
                 if (val.periods >= 7) {
-                    // Tự động phân rã thành các cặp 2 tiết và 1 tiết
                     const pairs = Math.floor(val.periods / 2);
                     const remainder = val.periods % 2;
                     const parts = [];
@@ -8938,31 +9096,319 @@ function exportFETCSV() {
                 }
 
                 if (val.periods === 1) {
-                    // For single periods, constraints are empty
                     csvContent += `"${cls}","${sub.name}","${val.teacher}","",1,"",,,,""\n`;
                 } else {
-                    // For split periods, use weight 98 and consecutive 1
                     csvContent += `"${cls}","${sub.name}","${val.teacher}","",${val.periods},"${split}",1,98,1,""\n`;
                 }
-                exportedCount++;
             }
         }
     });
 
-    // Create UTF-8 blob WITHOUT prepending BOM (\uFEFF)
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.style.display = 'none';
-    dlAnchorElem.setAttribute("href", url);
-    dlAnchorElem.setAttribute("download", `fet_activities_import.csv`);
-    document.body.appendChild(dlAnchorElem);
-    dlAnchorElem.click();
-    document.body.removeChild(dlAnchorElem);
-    URL.revokeObjectURL(url);
+    return csvContent;
+}
 
-    const extraMsg = (excludeGDTC && excludedGDTCCount > 0) ? ` (Đã loại trừ ${excludedGDTCCount} phân công Thể dục)` : '';
-    showToast(`Đã xuất tệp CSV FET thành công với ${exportedCount} hoạt động${extraMsg}!`, 'success');
+// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML)
+function generateFetFullXML() {
+    syncGvcnAndHomeroom();
+    const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
+    const rule5 = (document.getElementById('splitRule5') && document.getElementById('splitRule5').value) ? document.getElementById('splitRule5').value : '2+2+1';
+    const rule4 = (document.getElementById('splitRule4') && document.getElementById('splitRule4').value) ? document.getElementById('splitRule4').value : '2+2';
+    const rule3 = (document.getElementById('splitRule3') && document.getElementById('splitRule3').value) ? document.getElementById('splitRule3').value : '2+1';
+    const rule2 = (document.getElementById('splitRule2') && document.getElementById('splitRule2').value) ? document.getElementById('splitRule2').value : '2';
+
+    // Gom nhóm học sinh theo Khối và Lớp
+    const yearsMap = {};
+    (state.classes || []).forEach(c => {
+        if (c && c.name) {
+            const gradeMatch = c.name.match(/^\d+/);
+            const grade = gradeMatch ? gradeMatch[0] : '6';
+            const yName = `Khối ${grade}`;
+            if (!yearsMap[yName]) yearsMap[yName] = [];
+            yearsMap[yName].push(c.name);
+        }
+    });
+
+    let studentsXml = '';
+    Object.keys(yearsMap).sort().forEach(yName => {
+        studentsXml += `    <Year>\n      <Name>${yName}</Name>\n      <Number_of_Students>0</Number_of_Students>\n`;
+        yearsMap[yName].sort().forEach(clsName => {
+            studentsXml += `      <Group>\n        <Name>${clsName}</Name>\n        <Number_of_Students>0</Number_of_Students>\n      </Group>\n`;
+        });
+        studentsXml += `    </Year>\n`;
+    });
+
+    // Danh sách môn học
+    const subjectsSet = new Set();
+    (state.subjects || []).forEach(s => {
+        if (s && s.name && s.grade !== 'Kiêm nhiệm') {
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim());
+            if (!excludeGDTC || !isGDTC) subjectsSet.add(s.name.trim());
+        }
+    });
+    let subjectsXml = '';
+    Array.from(subjectsSet).sort().forEach(sName => {
+        subjectsXml += `    <Subject>\n      <Name>${sName}</Name>\n    </Subject>\n`;
+    });
+
+    // Danh sách giáo viên
+    let teachersXml = '';
+    (state.teachers || []).forEach(t => {
+        if (t && t.shortName) {
+            teachersXml += `    <Teacher>\n      <Name>${t.shortName}</Name>\n    </Teacher>\n`;
+        }
+    });
+
+    // Danh sách phòng học
+    let roomsXml = '';
+    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : (state.classes || []).map(c => ({ name: `P.${c.name}`, capacity: 45 }));
+    roomsList.forEach(r => {
+        roomsXml += `    <Room>\n      <Name>${r.name}</Name>\n      <Capacity>${r.capacity || 45}</Capacity>\n    </Room>\n`;
+    });
+
+    // Danh sách tiết giảng (Activities)
+    let activitiesXml = '';
+    let actId = 1;
+    let actGroupId = 1;
+
+    Object.keys(state.assignments || {}).forEach(key => {
+        const parsedKey = parseAssignmentKey(key);
+        const cls = parsedKey.cls;
+        const subId = parsedKey.subId;
+        const val = state.assignments[key];
+
+        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
+            const sub = (state.subjects || []).find(s => s && s.id === subId);
+            if (sub && sub.grade !== 'Kiêm nhiệm') {
+                const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(sub.name.trim());
+                if (excludeGDTC && isGDTC) return;
+
+                let splits = [val.periods];
+                if (val.periods >= 7) {
+                    const pairs = Math.floor(val.periods / 2);
+                    const remainder = val.periods % 2;
+                    splits = [];
+                    for (let p = 0; p < pairs; p++) splits.push(2);
+                    if (remainder > 0) splits.push(1);
+                } else if (val.periods === 6) splits = [2, 2, 2];
+                else if (val.periods === 5) splits = rule5.split('+').map(Number);
+                else if (val.periods === 4) splits = rule4.split('+').map(Number);
+                else if (val.periods === 3) splits = rule3.split('+').map(Number);
+                else if (val.periods === 2) splits = rule2.split('+').map(Number);
+
+                const curGroupId = splits.length > 1 ? actGroupId++ : 0;
+                splits.forEach(dur => {
+                    activitiesXml += `    <Activity>\n      <Teacher>${val.teacher}</Teacher>\n      <Subject>${sub.name}</Subject>\n      <Students>${cls}</Students>\n      <Duration>${dur}</Duration>\n      <Total_Duration>${val.periods}</Total_Duration>\n      <Id>${actId++}</Id>\n      <Activity_Group_Id>${curGroupId}</Activity_Group_Id>\n      <Active>true</Active>\n    </Activity>\n`;
+                });
+            }
+        }
+    });
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<fet version="5.37.0">
+  <Institution_Name>THCS Truong Hoc</Institution_Name>
+  <Comments>Tao boi FET Timetable Hub</Comments>
+  <Days_List>
+    <Number_of_Days>6</Number_of_Days>
+    <Day><Name>Thu 2</Name></Day>
+    <Day><Name>Thu 3</Name></Day>
+    <Day><Name>Thu 4</Name></Day>
+    <Day><Name>Thu 5</Name></Day>
+    <Day><Name>Thu 6</Name></Day>
+    <Day><Name>Thu 7</Name></Day>
+  </Days_List>
+  <Hours_List>
+    <Number_of_Hours>10</Number_of_Hours>
+    <Hour><Name>Tiet 1 (Sang)</Name></Hour>
+    <Hour><Name>Tiet 2 (Sang)</Name></Hour>
+    <Hour><Name>Tiet 3 (Sang)</Name></Hour>
+    <Hour><Name>Tiet 4 (Sang)</Name></Hour>
+    <Hour><Name>Tiet 5 (Sang)</Name></Hour>
+    <Hour><Name>Tiet 1 (Chieu)</Name></Hour>
+    <Hour><Name>Tiet 2 (Chieu)</Name></Hour>
+    <Hour><Name>Tiet 3 (Chieu)</Name></Hour>
+    <Hour><Name>Tiet 4 (Chieu)</Name></Hour>
+    <Hour><Name>Tiet 5 (Chieu)</Name></Hour>
+  </Hours_List>
+  <Subjects_List>
+${subjectsXml}  </Subjects_List>
+  <Teachers_List>
+${teachersXml}  </Teachers_List>
+  <Students_List>
+${studentsXml}  </Students_List>
+  <Rooms_List>
+${roomsXml}  </Rooms_List>
+  <Activities_List>
+${activitiesXml}  </Activities_List>
+  <Time_Constraints_List>
+    <ConstraintBasicCompulsoryTime>
+      <Weight_Percentage>100</Weight_Percentage>
+      <Active>true</Active>
+    </ConstraintBasicCompulsoryTime>
+  </Time_Constraints_List>
+  <Space_Constraints_List>
+    <ConstraintBasicCompulsorySpace>
+      <Weight_Percentage>100</Weight_Percentage>
+      <Active>true</Active>
+    </ConstraintBasicCompulsorySpace>
+  </Space_Constraints_List>
+</fet>`;
+}
+
+// Hàm tải tệp xuống máy tính
+function triggerFileDownload(filename, content, mimeType) {
+    const blob = (content instanceof Blob) ? content : new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// 7. Xuất Tệp Dự Án FET (.fet)
+function exportFetXmlProject() {
+    const xml = generateFetFullXML();
+    triggerFileDownload('THCS_TKB_FET_Project.fet', xml, 'application/xml;charset=utf-8;');
+    showToast('🎉 Đã xuất tệp dự án FET (.fet) thành công! Hãy vào FET chọn [Tệp -> Mở...] để sử dụng ngay.', 'success');
+}
+
+// 8. Tải Trọn Bộ 5 Tệp CSV Chuẩn Cho FET (.zip)
+function exportFetZipPackage() {
+    const files = [
+        { name: '1_mon_hoc_fet_subjects.csv', content: generateFetSubjectsCSV() },
+        { name: '2_giao_vien_fet_teachers.csv', content: generateFetTeachersCSV() },
+        { name: '3_khoi_lop_fet_students.csv', content: generateFetStudentsCSV() },
+        { name: '4_phong_hoc_fet_rooms.csv', content: generateFetRoomsCSV() },
+        { name: '5_tiet_giang_fet_activities.csv', content: generateFetActivitiesCSV() }
+    ];
+
+    const zipBlob = createZipBlob(files);
+    triggerFileDownload('Tron_Bo_File_CSV_Chuan_FET.zip', zipBlob, 'application/zip');
+    showToast('📦 Đã tải trọn bộ 5 tệp CSV chuẩn cho FET (.zip) thành công!', 'success');
+}
+
+// 9. Tải từng tệp CSV riêng biệt
+function exportSingleFetCSV(type) {
+    if (type === 'subjects') {
+        triggerFileDownload('1_mon_hoc_fet_subjects.csv', generateFetSubjectsCSV(), 'text/csv;charset=utf-8;');
+        showToast('Đã tải CSV Môn học cho FET!', 'success');
+    } else if (type === 'teachers') {
+        triggerFileDownload('2_giao_vien_fet_teachers.csv', generateFetTeachersCSV(), 'text/csv;charset=utf-8;');
+        showToast('Đã tải CSV Giáo viên cho FET!', 'success');
+    } else if (type === 'students') {
+        triggerFileDownload('3_khoi_lop_fet_students.csv', generateFetStudentsCSV(), 'text/csv;charset=utf-8;');
+        showToast('Đã tải CSV Khối & Lớp học cho FET!', 'success');
+    } else if (type === 'rooms') {
+        triggerFileDownload('4_phong_hoc_fet_rooms.csv', generateFetRoomsCSV(), 'text/csv;charset=utf-8;');
+        showToast('Đã tải CSV Phòng học cho FET!', 'success');
+    } else if (type === 'activities') {
+        triggerFileDownload('5_tiet_giang_fet_activities.csv', generateFetActivitiesCSV(), 'text/csv;charset=utf-8;');
+        showToast('Đã tải CSV Tiết giảng (Hoạt động) cho FET!', 'success');
+    }
+}
+
+// Tương thích ngược với nút gọi cũ
+function exportFETCSV() {
+    openFetExportModal();
+}
+
+// 10. Mở Modal Trung Tâm Xuất Dữ Liệu FET
+function openFetExportModal() {
+    syncGvcnAndHomeroom();
+
+    const modalBody = `
+        <div>
+            <!-- Hộp giải thích lỗi & Hướng dẫn sử dụng FET -->
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 0.85rem; color: #fca5a5;">
+                <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 4px; color: #f87171;">
+                    <span class="material-icons-round" style="font-size: 1.1rem;">info</span>
+                    <span>Vì sao FET báo lỗi "Students set doesn't exist" khi nạp Tiết giảng?</span>
+                </div>
+                <p style="margin: 0; line-height: 1.45;">
+                    Phần mềm FET bắt buộc phải có thông tin của <b>Môn học, Giáo viên, Khối lớp và Phòng học</b> TRƯỚC KHI nạp <b>Tiết giảng</b>. Hãy lựa chọn 1 trong 2 giải pháp chuẩn dưới đây:
+                </p>
+            </div>
+
+            <!-- Phương án 1: File Dự án .fet (Khuyên dùng) -->
+            <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.4); border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="badge" style="background: #4f46e5; color: #fff; font-weight: 700; font-size: 0.75rem;">⭐ KHUYÊN DÙNG (1 CLICK)</span>
+                            <h4 style="margin: 0; color: #fff; font-size: 1rem;">Tải Tệp Dự Án FET Hoàn Chỉnh (.fet / XML)</h4>
+                        </div>
+                        <p style="margin: 6px 0 0 0; font-size: 0.8rem; color: #c7d2fe;">
+                            Chứa toàn bộ Khối, Lớp, Môn học, Giáo viên, Phòng học và Tiết giảng. Trong FET chỉ cần vào <code>Tệp -&gt; Mở... (Ctrl+O)</code> là dùng ngay lập tức!
+                        </p>
+                    </div>
+                    <button class="btn btn-primary" onclick="exportFetXmlProject()" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; border: none; font-weight: 600; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">
+                        <span class="material-icons-round">open_in_browser</span> Tải tệp .fet ngay
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phương án 2: Trọn bộ 5 tệp CSV chuẩn (ZIP) -->
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="badge" style="background: #059669; color: #fff; font-weight: 700; font-size: 0.75rem;">📦 TRỌN BỘ CSV</span>
+                            <h4 style="margin: 0; color: #fff; font-size: 1rem;">Tải Trọn Bộ 5 Tệp CSV Chuẩn (.zip)</h4>
+                        </div>
+                        <p style="margin: 6px 0 0 0; font-size: 0.8rem; color: #a7f3d0;">
+                            Gói ZIP chứa đầy đủ 5 file CSV được đánh số thứ tự từ 1 đến 5 để nạp vào FET theo đúng thứ tự menu.
+                        </p>
+                    </div>
+                    <button class="btn btn-success" onclick="exportFetZipPackage()" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; font-weight: 600; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">
+                        <span class="material-icons-round">folder_zip</span> Tải file .zip (5 tệp)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phương án 3: Tải từng tệp CSV riêng biệt theo đúng Menu FET -->
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;">
+                <h4 style="margin: 0 0 10px 0; color: var(--text-main); font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="color: #fbbf24; font-size: 1.1rem;">format_list_numbered</span>
+                    Hoặc tải từng tệp CSV riêng lẻ (Nhập vào FET theo thứ tự từ 1 đến 5):
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <button class="btn btn-secondary" onclick="exportSingleFetCSV('subjects')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 0.8rem; text-align: left;">
+                        <span><b>1.</b> CSV Môn học</span>
+                        <span class="material-icons-round" style="font-size: 1rem; color: #818cf8;">download</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportSingleFetCSV('teachers')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 0.8rem; text-align: left;">
+                        <span><b>2.</b> CSV Giáo viên</span>
+                        <span class="material-icons-round" style="font-size: 1rem; color: #818cf8;">download</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportSingleFetCSV('students')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 0.8rem; text-align: left;">
+                        <span><b>3.</b> CSV Khối & Lớp</span>
+                        <span class="material-icons-round" style="font-size: 1rem; color: #818cf8;">download</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportSingleFetCSV('rooms')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 0.8rem; text-align: left;">
+                        <span><b>4.</b> CSV Phòng học</span>
+                        <span class="material-icons-round" style="font-size: 1rem; color: #818cf8;">download</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportSingleFetCSV('activities')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 0.8rem; text-align: left;">
+                        <span><b>5.</b> CSV Tiết giảng</span>
+                        <span class="material-icons-round" style="font-size: 1rem; color: #818cf8;">download</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const modalFooter = `
+        <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+    `;
+
+    openModal(
+        `<span class="material-icons-round" style="color: #6366f1; vertical-align: middle; margin-right: 6px;">hub</span> Trung Tâm Xuất Dữ Liệu Chuẩn Cho Phần Mềm FET`,
+        modalBody,
+        modalFooter
+    );
 }
 
 // ================= EXCEL DATA IMPORT SYSTEM (STRICT VALIDATION) =================
