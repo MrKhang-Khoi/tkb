@@ -1033,11 +1033,12 @@ function renderMergedAssignments() {
     const groupFilter = document.getElementById('filterMergedGroup');
     if (groupFilter) {
         const savedVal = groupFilter.value;
-        groupFilter.innerHTML = '<option value="all">Tất cả các tổ</option>';
-        state.groups.forEach(g => {
-            groupFilter.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+        let groupOptionsHtml = '<option value="all">Tất cả các tổ</option>';
+        (state.groups || []).forEach(g => {
+            groupOptionsHtml += `<option value="${g.id}">${g.name}</option>`;
         });
-        groupFilter.innerHTML += '<option value="unassigned">Chưa gán tổ</option>';
+        groupOptionsHtml += '<option value="unassigned">Chưa gán tổ</option>';
+        groupFilter.innerHTML = groupOptionsHtml;
         groupFilter.value = savedVal || 'all';
         if (groupFilter.value === '' && savedVal) {
             groupFilter.value = 'all';
@@ -1050,7 +1051,7 @@ function renderMergedAssignments() {
     const teacherFilter = document.getElementById('filterMergedTeacher');
     if (teacherFilter) {
         const savedVal = teacherFilter.value;
-        teacherFilter.innerHTML = '<option value="all">Tất cả giáo viên</option>';
+        let teacherOptionsHtml = '<option value="all">Tất cả giáo viên</option>';
         
         let filteredTeachers = [...state.teachers];
         if (selectedGroup !== 'all') {
@@ -1063,8 +1064,9 @@ function renderMergedAssignments() {
 
         const sortedTeachersDropdown = filteredTeachers.sort((a, b) => a.shortName.localeCompare(b.shortName, 'vi'));
         sortedTeachersDropdown.forEach(t => {
-            teacherFilter.innerHTML += `<option value="${t.shortName}">${t.fullName} (${t.shortName})</option>`;
+            teacherOptionsHtml += `<option value="${t.shortName}">${t.fullName} (${t.shortName})</option>`;
         });
+        teacherFilter.innerHTML = teacherOptionsHtml;
 
         // Giữ lại giáo viên đã chọn nếu họ vẫn thuộc tổ đang lọc, ngược lại chọn 'all'
         if (savedVal && savedVal !== 'all' && filteredTeachers.some(t => t.shortName === savedVal)) {
@@ -1095,7 +1097,7 @@ function renderMergedAssignments() {
         const clsName = clsObj.name;
         const grade = clsObj.grade;
 
-        const gradeSubjects = state.subjects.filter(s => s.grade === grade);
+        const gradeSubjects = (state.subjects || []).filter(s => s.grade === grade);
         const normalSubjects = gradeSubjects.filter(s => !isHomeroomSubject(s.name));
         const homeroomSubjects = gradeSubjects.filter(s => isHomeroomSubject(s.name));
 
@@ -1103,26 +1105,29 @@ function renderMergedAssignments() {
             const key = `${clsName}_${sub.id}`;
             const assign = state.assignments[key] || { teacher: '', periods: 0 };
             
+            let statusType = 'unassigned';
+            let statusText = 'Chưa phân công';
+            let rowStyle = '';
+
+            if (assign.teacher && assign.periods > 0) {
+                if (assign.periods === sub.periods) {
+                    statusType = 'assigned';
+                    statusText = 'Đã phân công';
+                } else {
+                    statusType = 'mismatch';
+                    statusText = `Lệch tiết (${assign.periods}T vs Chuẩn ${sub.periods}T)`;
+                    rowStyle = `style="background-color: rgba(245, 158, 11, 0.08);"`;
+                }
+            } else {
+                statusType = 'unassigned';
+                statusText = 'Chưa phân công';
+                rowStyle = `style="background-color: rgba(239, 68, 68, 0.06);"`;
+            }
+
             // Tìm lại Tổ theo globalSubjects để sửa lỗi Chưa gán
             const gs = state.globalSubjects.find(item => item.name.toLowerCase() === sub.name.toLowerCase());
             const groupId = (gs && gs.groupId) ? gs.groupId : sub.group;
             const groupObj = state.groups.find(g => g.id === groupId);
-
-            let statusType;
-            let statusText;
-            let rowStyle = '';
-
-            if (!assign.teacher || assign.periods === 0) {
-                statusType = 'unassigned';
-                statusText = 'Chưa phân công';
-            } else if (assign.periods !== sub.periods) {
-                statusType = 'mismatch';
-                statusText = `Lệch tiết (${assign.periods}T vs Chuẩn ${sub.periods}T)`;
-                rowStyle = `style="background-color: rgba(245, 158, 11, 0.08);"`;
-            } else {
-                statusType = 'assigned';
-                statusText = 'Đã phân công';
-            }
 
             const teacherObj = assign.teacher ? state.teachers.find(t => t.shortName.trim().toLowerCase() === assign.teacher.trim().toLowerCase()) : null;
             const finalGroupId = teacherObj ? teacherObj.group : groupId;
@@ -1321,7 +1326,8 @@ function renderMergedAssignments() {
         }
     }
 
-    // Render kết quả ra bảng
+    // Render kết quả ra bảng tích lũy chuỗi 1 lần siêu tốc
+    let rowsHtml = '';
     filteredRows.forEach((r, idx) => {
         let statusHtml;
         if (r.statusType === 'unassigned') {
@@ -1340,7 +1346,7 @@ function renderMergedAssignments() {
                 : `<b>${r.teacher}</b>`)
             : `<span style="color: var(--text-muted);">-</span>`;
 
-        tbody.innerHTML += `
+        rowsHtml += `
             <tr ${r.rowStyle}>
                 <td>${idx + 1}</td>
                 <td><b>${r.clsName === 'Kiêm nhiệm' ? 'Kiêm nhiệm' : 'Lớp ' + r.clsName}</b></td>
@@ -1357,14 +1363,16 @@ function renderMergedAssignments() {
         `;
     });
 
+    if (filteredRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Không có dòng phân công nào khớp với bộ lọc hiện tại.</td></tr>`;
+    } else {
+        tbody.innerHTML = rowsHtml;
+    }
+
     // Cập nhật text hiển thị số lượng dòng kết quả
     const countEl = document.getElementById('mergedAssignmentsCountText');
     if (countEl) {
         countEl.innerText = `Hiển thị ${filteredRows.length} dòng dữ liệu phân công.`;
-    }
-
-    if (filteredRows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Không có dòng phân công nào khớp với bộ lọc hiện tại.</td></tr>`;
     }
 }
 
@@ -4424,7 +4432,6 @@ function exportGroupData() {
 function renderClasses() {
     const table = document.getElementById('classListTable');
     if (!table) return;
-    table.innerHTML = '';
 
     const searchQuery = document.getElementById('searchClassListName') ? document.getElementById('searchClassListName').value.trim().toLowerCase() : '';
 
@@ -4437,6 +4444,12 @@ function renderClasses() {
         );
     }
 
+    if (displayedClasses.length === 0) {
+        table.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Không tìm thấy lớp học nào.</td></tr>`;
+        return;
+    }
+
+    let rowsHtml = '';
     displayedClasses.forEach((c, idx) => {
         const session = c.session ? c.session.toLowerCase() : ((c.grade === '6' || c.grade === '8' || c.grade === '10' || c.grade === '12') ? 'chiều' : 'sáng');
         const badgeStyle = session === 'chiều' 
@@ -4444,7 +4457,7 @@ function renderClasses() {
             : 'background: rgba(79, 70, 229, 0.2); color: var(--primary-light); border: 1px solid var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;';
         const sessionDisplay = session === 'chiều' ? 'Chiều' : 'Sáng';
 
-        table.innerHTML += `
+        rowsHtml += `
             <tr>
                 <td>${idx + 1}</td>
                 <td><b>Lớp ${c.name}</b></td>
@@ -4457,6 +4470,7 @@ function renderClasses() {
             </tr>
         `;
     });
+    table.innerHTML = rowsHtml;
 }
 
 function addClass() {
@@ -4688,15 +4702,20 @@ function deleteClassFromData(className) {
 function renderGroups() {
     const groupTable = document.getElementById('groupListTable');
     if (!groupTable) return;
-    groupTable.innerHTML = '';
 
+    if (!state.groups || state.groups.length === 0) {
+        groupTable.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa có tổ chuyên môn nào.</td></tr>`;
+        return;
+    }
+
+    let rowsHtml = '';
     state.groups.forEach((g, index) => {
         // Thu thập các môn được gán cho tổ này
         const assignedSubs = new Set();
         if (g.subjects && Array.isArray(g.subjects)) {
             g.subjects.forEach(s => s && assignedSubs.add(s));
         }
-        state.globalSubjects.forEach(gs => {
+        (state.globalSubjects || []).forEach(gs => {
             if (gs && (gs.groupId === g.id || gs.group === g.id || gs.group === g.name)) {
                 assignedSubs.add(gs.name);
             }
@@ -4714,7 +4733,7 @@ function renderGroups() {
             `).join('');
         }
 
-        groupTable.innerHTML += `
+        rowsHtml += `
             <tr>
                 <td style="text-align: center;">${index + 1}</td>
                 <td><b style="color: var(--text-main);">${g.name}</b></td>
@@ -4735,6 +4754,7 @@ function renderGroups() {
             </tr>
         `;
     });
+    groupTable.innerHTML = rowsHtml;
 }
 
 function openAssignSubjectsToGroupModal(groupId) {
@@ -5247,6 +5267,7 @@ function renderTeachers() {
         return;
     }
 
+    let rowsHtml = '';
     displayedTeachers.forEach((t, idx) => {
         let groupObj = (state.groups || []).find(g => g.id === t.group || (g.name && t.group && g.name.toLowerCase() === t.group.toLowerCase()));
         if (!groupObj && Array.isArray(t.subjects) && t.subjects.length > 0) {
@@ -5255,7 +5276,7 @@ function renderTeachers() {
         const quota = t.quota || 19;
         const groupDisplay = groupObj ? groupObj.name : (t.group && t.group !== 'unassigned' && !t.group.startsWith('g_17') ? t.group : '<span style="color: var(--warning);">Chưa gán</span>');
         
-        table.innerHTML += `
+        rowsHtml += `
             <tr>
                 <td style="text-align: center;">${idx + 1}</td>
                 <td><b>${t.fullName}</b></td>
@@ -5269,6 +5290,7 @@ function renderTeachers() {
             </tr>
         `;
     });
+    table.innerHTML = rowsHtml;
 }
 
 function updateTeacherSubjectsCheckboxes() {
@@ -5530,19 +5552,25 @@ function toggleAccountPassword(username) {
 function renderAccounts() {
     const accountTable = document.getElementById('accountListTable');
     if (!accountTable) return;
-    accountTable.innerHTML = '';
 
     const newAccGroup = document.getElementById('newAccGroup');
     if (newAccGroup) {
-        newAccGroup.innerHTML = '';
-        state.groups.forEach(g => {
-            newAccGroup.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+        let accGroupOptionsHtml = '';
+        (state.groups || []).forEach(g => {
+            accGroupOptionsHtml += `<option value="${g.id}">${g.name}</option>`;
         });
+        newAccGroup.innerHTML = accGroupOptionsHtml;
     }
 
-    state.accounts.forEach(acc => {
-        if (acc.group === 'admin') return;
-        const groupObj = state.groups.find(g => g.id === acc.group);
+    const nonAdminAccounts = (state.accounts || []).filter(acc => acc && acc.group !== 'admin' && acc.username !== 'admin');
+    if (nonAdminAccounts.length === 0) {
+        accountTable.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa có tài khoản tổ trưởng nào.</td></tr>`;
+        return;
+    }
+
+    let rowsHtml = '';
+    nonAdminAccounts.forEach(acc => {
+        const groupObj = (state.groups || []).find(g => g.id === acc.group || g.id === acc.groupId || g.name === acc.group);
         const isPasswordVisible = showPasswordMap[acc.username] || false;
         
         let pwdDisplay = '<span style="color: var(--text-muted); font-size: 0.9rem; letter-spacing: 2px;">••••••••</span>';
@@ -5555,7 +5583,7 @@ function renderAccounts() {
         }
         const eyeIcon = isPasswordVisible ? 'visibility_off' : 'visibility';
 
-        accountTable.innerHTML += `
+        rowsHtml += `
             <tr>
                 <td><b>${acc.username}</b></td>
                 <td>
@@ -5574,6 +5602,7 @@ function renderAccounts() {
             </tr>
         `;
     });
+    accountTable.innerHTML = rowsHtml;
 }
 
 async function addLeaderAccount() {
@@ -5762,19 +5791,24 @@ async function saveAccountEdit(oldUsername) {
 function renderGlobalSubjects() {
     const table = document.getElementById('globalSubjectListTable');
     if (!table) return;
-    table.innerHTML = '';
 
     const searchQuery = document.getElementById('searchGlobalSubjectListName') ? document.getElementById('searchGlobalSubjectListName').value.trim().toLowerCase() : '';
 
-    let displayedSubjects = [...state.globalSubjects];
+    let displayedSubjects = [...(state.globalSubjects || [])];
     if (searchQuery) {
         displayedSubjects = displayedSubjects.filter(gs => 
             (gs.name || '').toLowerCase().includes(searchQuery)
         );
     }
 
+    if (displayedSubjects.length === 0) {
+        table.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 24px;">Không tìm thấy môn học/nhiệm vụ nào.</td></tr>`;
+        return;
+    }
+
+    let rowsHtml = '';
     displayedSubjects.forEach((gs, index) => {
-        table.innerHTML += `
+        rowsHtml += `
             <tr>
                 <td>${index + 1}</td>
                 <td><b>${gs.name}</b></td>
@@ -5785,6 +5819,7 @@ function renderGlobalSubjects() {
             </tr>
         `;
     });
+    table.innerHTML = rowsHtml;
 }
 
 function addGlobalSubject() {
@@ -6041,29 +6076,33 @@ function syncGroupSubjectsFromGlobal() {
 function renderSubjectConfigs() {
     const table = document.getElementById('subjectsListTable');
     if (!table) return;
-    table.innerHTML = '';
 
     // Cập nhật thẻ Select trong form cấu hình số tiết theo khối
     const selectNewSub = document.getElementById('newSubNameSelect');
     if (selectNewSub) {
-        selectNewSub.innerHTML = '';
-        if (state.globalSubjects.length > 0) {
+        if (state.globalSubjects && state.globalSubjects.length > 0) {
+            let optionsHtml = '';
             const uniqueNames = [...new Set(state.globalSubjects.map(gs => gs.name))];
             uniqueNames.forEach(name => {
-                selectNewSub.innerHTML += `<option value="${name}">${name}</option>`;
+                optionsHtml += `<option value="${name}">${name}</option>`;
             });
+            selectNewSub.innerHTML = optionsHtml;
         } else {
             selectNewSub.innerHTML = `<option value="">-- Chưa có môn học --</option>`;
         }
     }
 
-    let idx = 0;
-    state.subjects.forEach((s) => {
-        if (s.grade === 'Kiêm nhiệm') return; // Skip concurrent duties in 3.1
-        idx++;
-        table.innerHTML += `
+    const regularSubjects = (state.subjects || []).filter(s => s && s.grade !== 'Kiêm nhiệm');
+    if (regularSubjects.length === 0) {
+        table.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa có cấu hình phân phối số tiết theo khối nào.</td></tr>`;
+        return;
+    }
+
+    let rowsHtml = '';
+    regularSubjects.forEach((s, idx) => {
+        rowsHtml += `
             <tr>
-                <td>${idx}</td>
+                <td>${idx + 1}</td>
                 <td><b>Môn ${s.name}</b></td>
                 <td>Khối lớp ${s.grade}</td>
                 <td>${s.periods} tiết/tuần</td>
@@ -6074,38 +6113,43 @@ function renderSubjectConfigs() {
             </tr>
         `;
     });
+    table.innerHTML = rowsHtml;
 }
 
 function renderDutyConfigs() {
     const table = document.getElementById('dutiesListTable');
     if (!table) return;
-    table.innerHTML = '';
 
     // Cập nhật thẻ Select trong form cấu hình số tiết hoạt động kiêm nhiệm
     const selectNewDuty = document.getElementById('newDutyNameSelect');
     if (selectNewDuty) {
-        selectNewDuty.innerHTML = '';
-        if (state.globalSubjects.length > 0) {
-            const teachingSubjectNames = new Set(state.subjects.filter(s => s && s.grade !== 'Kiêm nhiệm').map(s => s.name.toLowerCase()));
+        if (state.globalSubjects && state.globalSubjects.length > 0) {
+            const teachingSubjectNames = new Set((state.subjects || []).filter(s => s && s.grade !== 'Kiêm nhiệm').map(s => s.name.toLowerCase()));
             const allNames = [...new Set(state.globalSubjects.map(gs => gs.name))];
             const dutyNames = allNames.filter(name => !teachingSubjectNames.has(name.toLowerCase()));
             const listToDisplay = dutyNames.length > 0 ? dutyNames : allNames;
 
+            let dutyOptionsHtml = '';
             listToDisplay.forEach(name => {
-                selectNewDuty.innerHTML += `<option value="${name}">${name}</option>`;
+                dutyOptionsHtml += `<option value="${name}">${name}</option>`;
             });
+            selectNewDuty.innerHTML = dutyOptionsHtml;
         } else {
             selectNewDuty.innerHTML = `<option value="">-- Chưa có hoạt động --</option>`;
         }
     }
 
-    let idx = 0;
-    state.subjects.forEach((s) => {
-        if (s.grade !== 'Kiêm nhiệm') return; // Only show concurrent duties in 3.2
-        idx++;
-        table.innerHTML += `
+    const dutySubjects = (state.subjects || []).filter(s => s && s.grade === 'Kiêm nhiệm');
+    if (dutySubjects.length === 0) {
+        table.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa có hoạt động kiêm nhiệm nào.</td></tr>`;
+        return;
+    }
+
+    let rowsHtml = '';
+    dutySubjects.forEach((s, idx) => {
+        rowsHtml += `
             <tr>
-                <td>${idx}</td>
+                <td>${idx + 1}</td>
                 <td><b>${s.name}</b></td>
                 <td>${s.periods} tiết/tuần</td>
                 <td>
@@ -6115,6 +6159,7 @@ function renderDutyConfigs() {
             </tr>
         `;
     });
+    table.innerHTML = rowsHtml;
 }
 
 function addDutyConfig() {
