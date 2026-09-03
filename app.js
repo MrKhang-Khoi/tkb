@@ -615,22 +615,51 @@ function initFirebase() {
             const data = snapshot.val();
             if (data) {
                 state.lastUpdated = data.lastUpdated || 0;
-                state.groups = Array.isArray(data.groups) ? data.groups.filter(g => g && !g.isPlaceholder && g.id !== '__empty_group__') : [];
-                state.accounts = Array.isArray(data.accounts) ? data.accounts.filter(a => a && !a.isPlaceholder && a.username !== '__empty_account__') : [];
-                state.teachers = Array.isArray(data.teachers) ? data.teachers.filter(t => t && !t.isPlaceholder && t.id !== '__empty_teacher__') : [];
-                state.assignments = (data.assignments && typeof data.assignments === 'object') ? desanitizeObjectKeysFromFirebase(data.assignments) : {};
-                state.timetable = (data.timetable && typeof data.timetable === 'object') ? desanitizeObjectKeysFromFirebase(data.timetable) : {};
-                state.timetableApplyDate = data.timetableApplyDate || "";
-                state.subjects = Array.isArray(data.subjects) ? data.subjects.filter(s => s && !s.isPlaceholder && s.id !== '__empty_subject__') : [];
-                state.globalSubjects = Array.isArray(data.globalSubjects) ? data.globalSubjects.filter(gs => gs && !gs.isPlaceholder && gs.id !== '__empty_gs__') : [];
+                if (Array.isArray(data.groups) && data.groups.length > 0) {
+                    state.groups = data.groups.filter(g => g && !g.isPlaceholder && g.id !== '__empty_group__');
+                }
+                if (Array.isArray(data.accounts) && data.accounts.length > 0) {
+                    state.accounts = data.accounts.filter(a => a && !a.isPlaceholder && a.username !== '__empty_account__');
+                }
+                if (Array.isArray(data.teachers) && data.teachers.length > 0) {
+                    state.teachers = data.teachers.filter(t => t && !t.isPlaceholder && t.id !== '__empty_teacher__');
+                }
+                
+                // Deep merge assignments để không bao giờ bị ghi đè mất phân công của các tổ khác
+                if (data.assignments && typeof data.assignments === 'object') {
+                    const remoteAssignments = desanitizeObjectKeysFromFirebase(data.assignments);
+                    state.assignments = {
+                        ...(state.assignments || {}),
+                        ...remoteAssignments
+                    };
+                }
+
+                state.timetable = (data.timetable && typeof data.timetable === 'object') ? desanitizeObjectKeysFromFirebase(data.timetable) : (state.timetable || {});
+                state.timetableApplyDate = data.timetableApplyDate || state.timetableApplyDate || "";
+                
+                if (Array.isArray(data.subjects) && data.subjects.length > 0) {
+                    state.subjects = data.subjects.filter(s => s && !s.isPlaceholder && s.id !== '__empty_subject__');
+                }
+                if (Array.isArray(data.globalSubjects) && data.globalSubjects.length > 0) {
+                    state.globalSubjects = data.globalSubjects.filter(gs => gs && !gs.isPlaceholder && gs.id !== '__empty_gs__');
+                }
+
                 state.assignmentVersions = Array.isArray(data.assignmentVersions) ? data.assignmentVersions.map(ver => ({
                     ...ver,
                     assignments: desanitizeObjectKeysFromFirebase(ver.assignments || {})
-                })) : [];
-                state.groupLocks = (data.groupLocks && typeof data.groupLocks === 'object') ? desanitizeObjectKeysFromFirebase(data.groupLocks) : {};
-                state.weeklyTimetables = Array.isArray(data.weeklyTimetables) ? data.weeklyTimetables : [];
-                state.currentWeekId = data.currentWeekId || null;
-                state.substitutions = Array.isArray(data.substitutions) ? data.substitutions : [];
+                })) : (state.assignmentVersions || []);
+
+                if (data.groupLocks && typeof data.groupLocks === 'object') {
+                    const remoteLocks = desanitizeObjectKeysFromFirebase(data.groupLocks);
+                    state.groupLocks = {
+                        ...(state.groupLocks || {}),
+                        ...remoteLocks
+                    };
+                }
+
+                state.weeklyTimetables = Array.isArray(data.weeklyTimetables) ? data.weeklyTimetables : (state.weeklyTimetables || []);
+                state.currentWeekId = data.currentWeekId || state.currentWeekId || null;
+                state.substitutions = Array.isArray(data.substitutions) ? data.substitutions : (state.substitutions || []);
 
                 if (state.timetable && Object.keys(state.timetable).length > 0 && state.weeklyTimetables.length === 0) {
                     const defaultWeek = {
@@ -645,17 +674,20 @@ function initFirebase() {
                     state.currentWeekId = defaultWeek.id;
                 }
                 
-                let loadedClasses = Array.isArray(data.classes) ? data.classes.filter(c => c && !c.isPlaceholder && c.id !== '__empty_class__') : [];
-                state.classes = loadedClasses.map((c, idx) => {
-                    if (typeof c === 'string') {
-                        const match = c.match(/^\d+/);
-                        const grade = match ? match[0] : '6';
-                        return { id: 'c_' + idx + '_' + Date.now(), name: c, grade: grade };
-                    }
-                    return c;
-                });
-                migrateAccountsToHashed();
+                if (Array.isArray(data.classes) && data.classes.length > 0) {
+                    let loadedClasses = data.classes.filter(c => c && !c.isPlaceholder && c.id !== '__empty_class__');
+                    state.classes = loadedClasses.map((c, idx) => {
+                        if (typeof c === 'string') {
+                            const match = c.match(/^\d+/);
+                            const grade = match ? match[0] : '6';
+                            return { id: 'c_' + idx + '_' + Date.now(), name: c, grade: grade };
+                        }
+                        return c;
+                    });
+                }
                 
+                migrateAccountsToHashed();
+                healAndReconcileState();
                 debouncedRefreshActiveViews();
             } else {
                 persistData();
@@ -724,6 +756,7 @@ function loadFromLocalStorage() {
                 state.weeklyTimetables.push(defaultWeek);
                 state.currentWeekId = defaultWeek.id;
             }
+            healAndReconcileState();
         } catch(e) {
             console.error("Error reading localStorage fallback:", e);
         }
@@ -732,6 +765,7 @@ function loadFromLocalStorage() {
 
 let persistTimeout = null;
 function persistData() {
+    healAndReconcileState();
     // 1. Luôn lưu bản sao lưu cục bộ ngay lập tức
     localStorage.setItem('fet_hub_firebase_fallback', JSON.stringify(state));
 
@@ -748,6 +782,22 @@ function executeFirebasePersist() {
     const newTimestamp = Date.now();
     state.lastUpdated = newTimestamp;
 
+    if (state.currentUser && state.currentUser !== 'admin') {
+        // Tổ trưởng: Chỉ cập nhật nhánh phân công & trạng thái khóa của tổ mình để tránh ghi đè dữ liệu toàn cục
+        const sanitizedAssignments = sanitizeObjectKeysForFirebase(state.assignments || {});
+        const sanitizedGroupLocks = sanitizeObjectKeysForFirebase(state.groupLocks || {});
+        
+        db.ref("school_data").update({
+            assignments: sanitizedAssignments,
+            groupLocks: sanitizedGroupLocks,
+            lastUpdated: newTimestamp
+        }).catch(err => {
+            console.error("Lỗi cập nhật phân công lên Firebase:", err);
+        });
+        return;
+    }
+
+    // Admin: Đồng bộ đầy đủ dữ liệu quản trị
     const payload = {
         groups: (state.groups && state.groups.length > 0) ? state.groups : [{ id: '__empty_group__', name: '', subjects: [], isPlaceholder: true }],
         accounts: (state.accounts && state.accounts.length > 0) ? state.accounts : [{ username: '__empty_account__', isPlaceholder: true }],
@@ -789,26 +839,123 @@ function ensureAdminAccountExists() {
     }
 }
 
-// Tự động dọn dẹp các môn học và tổ rác cũ để dữ liệu luôn khớp 100% với Admin
-function cleanupMasterData() {
-    if (!state.globalSubjects) state.globalSubjects = [];
-    if (!state.subjects) state.subjects = [];
+// Tự động đối soát, hàn gắn và bảo toàn toàn vẹn dữ liệu hệ thống (Self-Healing State Engine)
+function healAndReconcileState() {
     if (!state.groups) state.groups = [];
+    if (!state.teachers) state.teachers = [];
+    if (!state.accounts) state.accounts = [];
+    if (!state.globalSubjects) state.globalSubjects = [];
+    if (!state.assignments) state.assignments = {};
+    if (!state.groupLocks) state.groupLocks = {};
+
     ensureAdminAccountExists();
 
-    // 1. Dọn dẹp các tổ rác tự sinh (chỉ giữ tổ Admin tạo)
+    // 1. Dọn dẹp các tổ placeholder rác
     state.groups = state.groups.filter(g => g && g.id && !g.isPlaceholder && g.id !== 'g_vtm_gdtc');
 
-    // 2. Lọc sạch danh mục môn trong các tổ (g.subjects) nếu có globalSubjects
-    if (state.globalSubjects.length > 0) {
-        const validGlobalNames = new Set(state.globalSubjects.map(gs => gs.name.trim().toLowerCase()));
+    const validGroupIds = new Set(state.groups.map(g => g.id));
+    const validGroupNames = new Map(state.groups.map(g => [g.name.toLowerCase().trim(), g]));
+
+    // 2. Tự động khắc phục các giáo viên có t.group là ID cũ/mồ côi hoặc lưu dưới dạng Tên tổ
+    state.teachers.forEach(t => {
+        if (!t) return;
+        if (!t.group || t.group === 'unassigned') return;
         
-        state.groups.forEach(g => {
-            if (g.subjects && Array.isArray(g.subjects)) {
-                g.subjects = g.subjects.filter(sName => sName && validGlobalNames.has(sName.trim().toLowerCase()));
+        const cleanTg = t.group.toString().trim();
+        // Nếu t.group là tên tổ (VD: "Toán-Tin"), chuyển về group.id chuẩn
+        if (validGroupNames.has(cleanTg.toLowerCase())) {
+            t.group = validGroupNames.get(cleanTg.toLowerCase()).id;
+        } else if (!validGroupIds.has(cleanTg)) {
+            // ID mồ côi (ví dụ: g_1788364365416_pseyt)
+            // Thử tìm theo tên môn giảng dạy của giáo viên
+            let remapped = false;
+            if (Array.isArray(t.subjects) && t.subjects.length > 0) {
+                const matchedG = state.groups.find(g => Array.isArray(g.subjects) && g.subjects.some(gs => t.subjects.some(ts => ts && ts.toLowerCase().trim() === gs.toLowerCase().trim())));
+                if (matchedG) {
+                    t.group = matchedG.id;
+                    remapped = true;
+                }
             }
-        });
-    }
+            // Nếu vẫn chưa tìm được và chỉ có 1 tổ hoặc tên giáo viên gợi ý, giữ nguyên hoặc gán theo môn
+            if (!remapped && state.groups.length > 0) {
+                const subStr = Array.isArray(t.subjects) ? t.subjects.join(' ').toLowerCase() : '';
+                for (const g of state.groups) {
+                    if (g.name.toLowerCase().split(/[-_\s]+/).some(part => part && subStr.includes(part))) {
+                        t.group = g.id;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Bảo toàn và tự động đồng bộ g.subjects vào globalSubjects (Không bao giờ xóa mất môn của tổ)
+    state.groups.forEach(g => {
+        if (g && Array.isArray(g.subjects)) {
+            g.subjects.forEach(subName => {
+                if (subName && typeof subName === 'string' && subName.trim()) {
+                    const trimmed = subName.trim();
+                    const exists = state.globalSubjects.some(gs => gs && gs.name && gs.name.toLowerCase().trim() === trimmed.toLowerCase());
+                    if (!exists) {
+                        state.globalSubjects.push({
+                            id: 'gs_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                            name: trimmed,
+                            groupId: g.id,
+                            group: g.id
+                        });
+                    }
+                }
+            });
+        }
+    });
+
+    // 4. Tự động đồng bộ tài khoản tổ trưởng khớp với các tổ hiện có
+    state.groups.forEach(g => {
+        if (!g || !g.id) return;
+        const acc = state.accounts.find(a => a && (a.group === g.id || a.groupId === g.id || a.group === g.name || (a.username && a.username.toLowerCase() === g.name.toLowerCase())));
+        if (acc) {
+            acc.groupId = g.id;
+            acc.group = g.id;
+        }
+    });
+}
+
+function getTeachersForGroup(groupId) {
+    if (!groupId) return [];
+    const { canonicalId, groupName, groupObj } = resolveGroupCanonicalInfo(groupId);
+    const validKeys = new Set();
+    if (canonicalId) validKeys.add(canonicalId.toLowerCase());
+    if (groupName) validKeys.add(groupName.toLowerCase());
+    if (groupId) validKeys.add(groupId.toLowerCase());
+    if (groupObj && groupObj.id) validKeys.add(groupObj.id.toLowerCase());
+    if (groupObj && groupObj.name) validKeys.add(groupObj.name.toLowerCase());
+
+    const groupSubjects = (groupObj && Array.isArray(groupObj.subjects)) 
+        ? groupObj.subjects.map(s => (s || '').toLowerCase().trim()) 
+        : [];
+
+    return (state.teachers || []).filter(t => {
+        if (!t || !t.fullName) return false;
+        if (t.group) {
+            const tg = t.group.toString().trim().toLowerCase();
+            if (validKeys.has(tg)) return true;
+            const tGroupObj = (state.groups || []).find(g => g && (g.id.toLowerCase() === tg || g.name.toLowerCase() === tg));
+            if (tGroupObj && (validKeys.has(tGroupObj.id.toLowerCase()) || validKeys.has(tGroupObj.name.toLowerCase()))) {
+                return true;
+            }
+        }
+        // Dự phòng: Khớp theo môn giảng dạy nếu t.group bị lệch ID
+        if (groupSubjects.length > 0 && Array.isArray(t.subjects) && t.subjects.length > 0) {
+            if (t.subjects.some(s => s && groupSubjects.includes(s.toLowerCase().trim()))) {
+                return true;
+            }
+        }
+        return false;
+    });
+}
+
+function cleanupMasterData() {
+    healAndReconcileState();
 }
 
 function refreshActiveViews() {
@@ -1409,7 +1556,7 @@ function getGroupAssignedSubjects(groupId) {
 
     // 3. Fallback: Chỉ khi tổ chưa từng được Admin gán môn nào, mới lấy từ môn giáo viên trong tổ đăng ký
     if (assignedSet.size === 0) {
-        const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
+        const groupTeachers = getTeachersForGroup(groupId);
         groupTeachers.forEach(t => {
             if (t && t.subjects && Array.isArray(t.subjects)) {
                 t.subjects.forEach(s => {
@@ -1803,7 +1950,7 @@ function renderBatchTeacherDropdown(groupId) {
     const teacherMenu = document.getElementById('batchTeacherMenu');
     if (!teacherSelect || !teacherMenu) return;
 
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
+    const groupTeachers = getTeachersForGroup(groupId);
     const teacherItems = groupTeachers.map(t => {
         let totalAssigned = 0;
         if (state.assignments) {
@@ -3367,7 +3514,7 @@ function renderMatrix(groupId) {
     if (!container) return;
     container.innerHTML = '';
 
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
+    const groupTeachers = getTeachersForGroup(groupId);
     if (groupTeachers.length === 0) {
         container.innerHTML = `<div style="padding: 24px; color: var(--text-muted); text-align: center; background: rgba(30,41,59,0.3); border-radius: 12px; border: 1px dashed var(--border);">Tổ chưa có giáo viên nào. Vui lòng liên hệ Admin để khai báo nhân sự.</div>`;
         return;
@@ -3682,7 +3829,7 @@ function clearAllGroupAssignments() {
         return;
     }
     
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId);
+    const groupTeachers = getTeachersForGroup(groupId);
     if (groupTeachers.length === 0) {
         showToast("Tổ này chưa có giáo viên nào!", "warning");
         return;
@@ -3974,7 +4121,7 @@ function renderTeacherStats(groupId) {
     if (!list) return;
     list.innerHTML = '';
 
-    const groupTeachers = state.teachers.filter(t => t.group === groupId);
+    const groupTeachers = getTeachersForGroup(groupId);
     if (groupTeachers.length === 0) {
         list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.9rem;">Chưa có giáo viên nào trong tổ.</div>`;
         return;
@@ -4016,7 +4163,7 @@ function renderTeacherStats(groupId) {
 
 function exportGroupData() {
     const group = state.currentUser;
-    const groupTeachers = state.teachers.filter(t => t.group === group).map(t => t.shortName);
+    const groupTeachers = getTeachersForGroup(group).map(t => t.shortName);
     
     const groupAssignments = {};
     Object.keys(state.assignments).forEach(key => {
@@ -4782,9 +4929,17 @@ function renderTeachers() {
     let displayedTeachers = [...(state.teachers || [])];
     if (selectedGroupFilter !== 'all') {
         if (selectedGroupFilter === 'unassigned') {
-            displayedTeachers = displayedTeachers.filter(t => !t.group || t.group === 'unassigned' || !(state.groups || []).some(g => g.id === t.group));
+            displayedTeachers = displayedTeachers.filter(t => {
+                if (!t.group || t.group === 'unassigned') return true;
+                const gObj = (state.groups || []).find(g => g.id === t.group || g.name.toLowerCase() === t.group.toLowerCase());
+                return !gObj;
+            });
         } else {
-            displayedTeachers = displayedTeachers.filter(t => t.group === selectedGroupFilter);
+            displayedTeachers = displayedTeachers.filter(t => {
+                if (t.group === selectedGroupFilter) return true;
+                const gObj = (state.groups || []).find(g => g.id === t.group || g.name.toLowerCase() === (t.group || '').toLowerCase());
+                return gObj && gObj.id === selectedGroupFilter;
+            });
         }
     }
 
@@ -4801,14 +4956,19 @@ function renderTeachers() {
     }
 
     displayedTeachers.forEach((t, idx) => {
-        const groupObj = (state.groups || []).find(g => g.id === t.group);
+        let groupObj = (state.groups || []).find(g => g.id === t.group || (g.name && t.group && g.name.toLowerCase() === t.group.toLowerCase()));
+        if (!groupObj && Array.isArray(t.subjects) && t.subjects.length > 0) {
+            groupObj = (state.groups || []).find(g => Array.isArray(g.subjects) && g.subjects.some(gs => t.subjects.some(ts => ts && ts.toLowerCase().trim() === gs.toLowerCase().trim())));
+        }
         const quota = t.quota || 19;
+        const groupDisplay = groupObj ? groupObj.name : (t.group && t.group !== 'unassigned' && !t.group.startsWith('g_17') ? t.group : '<span style="color: var(--warning);">Chưa gán</span>');
+        
         table.innerHTML += `
             <tr>
                 <td style="text-align: center;">${idx + 1}</td>
                 <td><b>${t.fullName}</b></td>
                 <td><span style="font-family: monospace; font-weight: bold; color: var(--primary-light);">${t.shortName}</span></td>
-                <td>${groupObj ? groupObj.name : (t.group && t.group !== 'unassigned' ? t.group : '<span style="color: var(--warning);">Chưa gán</span>')}</td>
+                <td>${groupDisplay}</td>
                 <td style="text-align: center;"><span class="badge" style="background: rgba(99, 102, 241, 0.15); color: var(--primary-light); font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(129, 140, 248, 0.3);">${quota}T</span></td>
                 <td>
                     <button class="btn btn-secondary" onclick="startTeacherEdit('${t.id}')" style="padding: 4px 8px; font-size: 0.8rem; margin-right: 4px;">Sửa</button>
@@ -11538,7 +11698,7 @@ function initGroupTimetableTab(groupId) {
     const teacherSelect = document.getElementById('groupTeacherFilterSelect');
     if (teacherSelect) {
         teacherSelect.innerHTML = '';
-        const groupTeachers = state.teachers.filter(t => t && t.group === groupId && t.fullName && t.fullName.trim() !== '' && t.shortName && t.shortName.trim() !== '');
+        const groupTeachers = getTeachersForGroup(groupId);
         const optAll = document.createElement('option');
         optAll.value = 'all';
         optAll.innerText = `-- Tất cả giáo viên trong tổ (${groupTeachers.length} GV) --`;
@@ -11589,7 +11749,7 @@ function renderGroupTimetableStats(groupId, activeTimetable) {
     if (!tableBody) return;
     tableBody.innerHTML = '';
 
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId && t.fullName && t.fullName.trim() !== '' && t.shortName && t.shortName.trim() !== '');
+    const groupTeachers = getTeachersForGroup(groupId);
     let totalGroupTKBPeriods = 0;
 
     if (!groupTeachers || groupTeachers.length === 0) {
@@ -11676,7 +11836,7 @@ function renderGroupTimetableGrid() {
     container.innerHTML = '';
 
     const groupId = state.currentUser;
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId && t.fullName && t.fullName.trim() !== '' && t.shortName && t.shortName.trim() !== '');
+    const groupTeachers = getTeachersForGroup(groupId);
     const activeData = getActiveGroupTimetable();
     const activeTimetable = activeData.timetable || {};
     const teacherSelectEl = document.getElementById('groupTeacherFilterSelect');
@@ -12019,7 +12179,7 @@ function exportGroupTimetableExcel() {
     const groupId = state.currentUser;
     const groupObj = state.groups.find(g => g && g.id === groupId);
     const groupName = groupObj ? groupObj.name : 'Tổ Chuyên Môn';
-    const groupTeachers = state.teachers.filter(t => t && t.group === groupId && t.fullName && t.fullName.trim() !== '' && t.shortName && t.shortName.trim() !== '');
+    const groupTeachers = getTeachersForGroup(groupId);
 
     if (!groupTeachers || groupTeachers.length === 0) {
         showToast("Không tìm thấy giáo viên nào trong tổ chuyên môn!", "warning");
