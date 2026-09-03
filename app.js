@@ -9345,19 +9345,19 @@ function generateFetFullXML() {
             // Tự động ghim Chào cờ vào Tiết 1 Thứ 2
             if (act.isCC && splitIdx === 0) {
                 const prefDay = isAfternoon ? 'C.T2' : 'S.T2';
-                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 1</Preferred_Hour>\n      <Permanently_Locked>true</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Chào Cờ Đầu Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 1</Preferred_Hour>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Chào Cờ Đầu Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
             }
 
             // Tự động ghim Sinh hoạt lớp vào Tiết 4 Thứ 7
             if (act.isSHL && splitIdx === 0) {
                 const prefDay = isAfternoon ? 'C.T7' : 'S.T7';
-                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 4</Preferred_Hour>\n      <Permanently_Locked>true</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Sinh Hoạt Lớp Cuối Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 4</Preferred_Hour>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Sinh Hoạt Lớp Cuối Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
             }
         });
 
         // Tự động tạo ràng buộc giãn cách ngày (ConstraintMinDaysBetweenActivities) cho các môn tách buổi
         if (currentGroupActIds.length > 1) {
-            minDaysConstraintsXml += `    <ConstraintMinDaysBetweenActivities>\n      <Weight_Percentage>98</Weight_Percentage>\n      <Consecutive_If_Same_Day>true</Consecutive_If_Same_Day>\n      <Number_of_Activities>${currentGroupActIds.length}</Number_of_Activities>\n${currentGroupActIds.map(id => `      <Activity_Id>${id}</Activity_Id>`).join('\n')}\n      <MinDays>1</MinDays>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintMinDaysBetweenActivities>\n`;
+            minDaysConstraintsXml += `    <ConstraintMinDaysBetweenActivities>\n      <Weight_Percentage>95</Weight_Percentage>\n      <Consecutive_If_Same_Day>true</Consecutive_If_Same_Day>\n      <Number_of_Activities>${currentGroupActIds.length}</Number_of_Activities>\n${currentGroupActIds.map(id => `      <Activity_Id>${id}</Activity_Id>`).join('\n')}\n      <MinDays>1</MinDays>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintMinDaysBetweenActivities>\n`;
         }
     });
 
@@ -9445,7 +9445,7 @@ ${activitiesXml}  </Activities_List>
       <Active>true</Active>
     </ConstraintTeachersMaxHoursDaily>
     <ConstraintTeachersMaxGapsPerDay>
-      <Weight_Percentage>95</Weight_Percentage>
+      <Weight_Percentage>100</Weight_Percentage>
       <Max_Gaps>1</Max_Gaps>
       <Active>true</Active>
     </ConstraintTeachersMaxGapsPerDay>
