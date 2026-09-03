@@ -969,28 +969,38 @@ function refreshActiveViews() {
     cleanupMasterData(); // Dọn dẹp dữ liệu rác trước khi render
     syncGvcnAndHomeroom(); // Tự động đồng bộ GVCN và định mức trước khi render các view
     if (state.currentUser === 'admin') {
-        renderClasses();
-        renderGroups();
-        renderTeachers();
-        renderAccounts();
-        renderGlobalSubjects();
-        renderNewGroupSubjectsCheckboxes();
-        updateTeacherSubjectsCheckboxes();
-        renderSubjectConfigs();
-        renderDutyConfigs();
-        
-        // Lazy rendering: Chỉ render bảng phân công tổng hợp nếu tab 4 đang hiển thị
+        const schoolSetupTab = document.getElementById('schoolSetupTab');
+        const staffSetupTab = document.getElementById('staffSetupTab');
+        const curriculumTab = document.getElementById('curriculumTab');
         const mergeTab = document.getElementById('mergeTab');
-        if (mergeTab && mergeTab.classList.contains('active')) {
-            renderMergedAssignments();
-        }
-        
-        renderAdminGroupLockStatus();
-        renderAssignmentVersions();
-        renderWeeklyTimetablesTable();
-
+        const fetConverterTab = document.getElementById('fetConverterTab');
         const analyticsTab = document.getElementById('analyticsTab');
-        if (analyticsTab && analyticsTab.classList.contains('active')) {
+
+        // Lazy Rendering: Chỉ render bảng của tab đang active để giải phóng CPU/RAM, chống nghẽn UI
+        if (schoolSetupTab && (schoolSetupTab.classList.contains('active') || schoolSetupTab.style.display !== 'none')) {
+            renderClasses();
+            renderGroups();
+            renderGlobalSubjects();
+            renderNewGroupSubjectsCheckboxes();
+        }
+        if (staffSetupTab && (staffSetupTab.classList.contains('active') || staffSetupTab.style.display !== 'none')) {
+            renderTeachers();
+            renderAccounts();
+            updateTeacherSubjectsCheckboxes();
+        }
+        if (curriculumTab && (curriculumTab.classList.contains('active') || curriculumTab.style.display !== 'none')) {
+            renderSubjectConfigs();
+            renderDutyConfigs();
+        }
+        if (mergeTab && (mergeTab.classList.contains('active') || mergeTab.style.display !== 'none')) {
+            renderMergedAssignments();
+            renderAdminGroupLockStatus();
+            renderAssignmentVersions();
+        }
+        if (fetConverterTab && (fetConverterTab.classList.contains('active') || fetConverterTab.style.display !== 'none')) {
+            renderWeeklyTimetablesTable();
+        }
+        if (analyticsTab && (analyticsTab.classList.contains('active') || analyticsTab.style.display !== 'none')) {
             renderAnalyticsDashboard();
         }
         
@@ -1484,30 +1494,39 @@ function logout() {
 }
 
 function switchAdminTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    const adminContainer = document.getElementById('adminDashboard');
+    if (!adminContainer) return;
+
+    // Xóa active trên tất cả các tab của Admin và ẩn sạch sẽ
+    adminContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    adminContainer.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';
+    });
     
-    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
+    const btn = Array.from(adminContainer.querySelectorAll('.tab-btn')).find(b => {
+        const attr = b.getAttribute('onclick') || '';
+        return attr.includes(tabId);
+    });
     if (btn) btn.classList.add('active');
 
     const targetTab = document.getElementById(tabId);
     if (targetTab) {
         targetTab.classList.add('active');
-        if (tabId === 'fetConverterTab' || tabId === 'analyticsTab') {
-            targetTab.style.display = 'block';
-        }
+        targetTab.style.display = 'block';
     }
 
+    // Lazy rendering: Chỉ nạp và render dữ liệu đúng cho tab đang chọn để tối ưu hóa CPU/RAM và chống treo trình duyệt
     if (tabId === 'schoolSetupTab') {
         renderClasses();
         renderGroups();
         renderGlobalSubjects();
         renderNewGroupSubjectsCheckboxes();
-    } else if (tabId === 'staffAccountsTab') {
+    } else if (tabId === 'staffSetupTab' || tabId === 'staffAccountsTab') {
         renderTeachers();
         renderAccounts();
         updateTeacherSubjectsCheckboxes();
-    } else if (tabId === 'subjectConfigsTab') {
+    } else if (tabId === 'curriculumTab' || tabId === 'subjectConfigsTab') {
         renderSubjectConfigs();
         renderDutyConfigs();
     } else if (tabId === 'mergeTab') {
