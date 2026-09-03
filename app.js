@@ -9374,6 +9374,40 @@ function handleExcelTimetableUpload(file) {
     reader.readAsArrayBuffer(file);
 }
 
+function escapeXml(unsafe) {
+    if (!unsafe) return "";
+    return String(unsafe).replace(/[<>&'"]/g, function (c) {
+        switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+        }
+    });
+}
+
+function isSpecialSubject(subjectName) {
+    if (!subjectName) return false;
+    const name = subjectName.toLowerCase();
+    return name.includes('chào cờ') || name.includes('chao co') || name.includes('shl') || name.includes('sinh hoạt') || name.includes('hdtn') || name.includes('hđtn') || name.includes('bồi dưỡng') || name.includes('bd') || name.includes('phụ đạo') || name.includes('pđ');
+}
+
+function getDisplayCode(subjectName, className) {
+    if (!subjectName) return className || '';
+    const name = subjectName.toLowerCase();
+    if (name.includes('bồi dưỡng') || name === 'bd') return 'BD';
+    if (name.includes('phụ đạo') || name.startsWith('pđ')) {
+        const gradeMatch = (className || '').match(/\d+/);
+        return gradeMatch ? `PĐ${gradeMatch[0]}` : (subjectName.toUpperCase().replace(/\s+/g, '') || 'PĐ');
+    }
+    if (name.includes('hđtn') || name.includes('hdtn')) return 'HĐTN';
+    if (name.includes('chào cờ') || name.includes('chao co')) return 'CC';
+    if (name.includes('shl') || name.includes('sinh hoạt')) return 'SHL';
+    return className || subjectName;
+}
+
 function generateSpreadsheetML(localClasses, localTeachers, localTimetable, weekName = '', applyDate = '') {
     const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
     const weekdayLabels = { 'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7' };
@@ -9460,25 +9494,6 @@ function generateSpreadsheetML(localClasses, localTeachers, localTimetable, week
    </Borders>
   </Style>
  </Styles>`;
-
-    function escapeXml(unsafe) {
-        if (!unsafe) return "";
-        return unsafe.replace(/[<>&'"]/g, function (c) {
-            switch (c) {
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '&': return '&amp;';
-                case '\'': return '&apos;';
-                case '"': return '&quot;';
-            }
-        });
-    }
-
-    function isSpecialSubject(subjectName) {
-        if (!subjectName) return false;
-        const name = subjectName.toLowerCase();
-        return name.includes('chào cờ') || name.includes('chao co') || name.includes('shl') || name.includes('sinh hoạt') || name.includes('hdtn') || name.includes('hđtn');
-    }
 
     const morningTitle = `THỜI KHÓA BIỂU BUỔI SÁNG${weekName ? ' - ' + weekName.toUpperCase() : ''}`;
     const afternoonTitle = `THỜI KHÓA BIỂU BUỔI CHIỀU${weekName ? ' - ' + weekName.toUpperCase() : ''}`;
@@ -11861,26 +11876,6 @@ function renderGroupTimetableGrid() {
     const weekdayLabels = { 'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7' };
     const periods = [1, 2, 3, 4, 5];
 
-    function isSpecialSubject(subName) {
-        if (!subName) return false;
-        const lower = subName.toLowerCase();
-        return lower.includes('chào cờ') || lower.includes('shl') || lower.includes('hđtn') || lower.includes('sinh hoạt') || lower.includes('bồi dưỡng') || lower.includes('bd') || lower.includes('phụ đạo') || lower.includes('pđ');
-    }
-
-    function getDisplayCode(subjectName, className) {
-        if (!subjectName) return className || '';
-        const name = subjectName.toLowerCase();
-        if (name.includes('bồi dưỡng') || name === 'bd') return 'BD';
-        if (name.includes('phụ đạo') || name.startsWith('pđ')) {
-            const gradeMatch = (className || '').match(/\d+/);
-            return gradeMatch ? `PĐ${gradeMatch[0]}` : (subjectName.toUpperCase().replace(/\s+/g, '') || 'PĐ');
-        }
-        if (name.includes('hđtn') || name.includes('hdtn')) return 'HĐTN';
-        if (name.includes('chào cờ') || name.includes('chao co')) return 'CC';
-        if (name.includes('shl') || name.includes('sinh hoạt')) return 'SHL';
-        return className || subjectName;
-    }
-
     function buildMatrixHtml(sessionName, sessionLabel, headerColor) {
         let html = `
             <div style="margin-bottom: 28px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 16px; overflow-x: auto;">
@@ -11958,39 +11953,6 @@ function generateGroupSpreadsheetML(localClasses, groupTeachers, localTimetable,
     const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
     const weekdayLabels = { 'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7' };
     const periods = [1, 2, 3, 4, 5];
-
-    function escapeXml(unsafe) {
-        if (!unsafe) return "";
-        return String(unsafe).replace(/[<>&'"]/g, function (c) {
-            switch (c) {
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '&': return '&amp;';
-                case '\'': return '&apos;';
-                case '"': return '&quot;';
-            }
-        });
-    }
-
-    function isSpecialSubject(subjectName) {
-        if (!subjectName) return false;
-        const name = subjectName.toLowerCase();
-        return name.includes('chào cờ') || name.includes('chao co') || name.includes('shl') || name.includes('sinh hoạt') || name.includes('hdtn') || name.includes('hđtn') || name.includes('bồi dưỡng') || name.includes('bd') || name.includes('phụ đạo') || name.includes('pđ');
-    }
-
-    function getDisplayCode(subjectName, className) {
-        if (!subjectName) return className || '';
-        const name = subjectName.toLowerCase();
-        if (name.includes('bồi dưỡng') || name === 'bd') return 'BD';
-        if (name.includes('phụ đạo') || name.startsWith('pđ')) {
-            const gradeMatch = (className || '').match(/\d+/);
-            return gradeMatch ? `PĐ${gradeMatch[0]}` : (subjectName.toUpperCase().replace(/\s+/g, '') || 'PĐ');
-        }
-        if (name.includes('hđtn') || name.includes('hdtn')) return 'HĐTN';
-        if (name.includes('chào cờ') || name.includes('chao co')) return 'CC';
-        if (name.includes('shl') || name.includes('sinh hoạt')) return 'SHL';
-        return className || subjectName;
-    }
 
     let xml = `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
