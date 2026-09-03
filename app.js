@@ -632,7 +632,6 @@ function initFirebase() {
                 state.currentWeekId = data.currentWeekId || null;
                 state.substitutions = Array.isArray(data.substitutions) ? data.substitutions : [];
 
-                // Tự động tạo đợt TKB theo tuần đầu tiên nếu có TKB mà chưa có weeklyTimetables
                 if (state.timetable && Object.keys(state.timetable).length > 0 && state.weeklyTimetables.length === 0) {
                     const defaultWeek = {
                         id: 'wt_' + Date.now(),
@@ -646,7 +645,6 @@ function initFirebase() {
                     state.currentWeekId = defaultWeek.id;
                 }
                 
-                // Tương thích ngược: Chuyển đổi lớp học từ String sang Object nếu cần
                 let loadedClasses = Array.isArray(data.classes) ? data.classes.filter(c => c && !c.isPlaceholder && c.id !== '__empty_class__') : [];
                 state.classes = loadedClasses.map((c, idx) => {
                     if (typeof c === 'string') {
@@ -656,10 +654,9 @@ function initFirebase() {
                     }
                     return c;
                 });
-                // Tự động di trú mật khẩu thô lên băm bảo mật
                 migrateAccountsToHashed();
                 
-                refreshActiveViews();
+                debouncedRefreshActiveViews();
             } else {
                 persistData();
             }
@@ -674,6 +671,14 @@ function initFirebase() {
         console.error("Firebase connection failed, falling back to LocalStorage:", e);
         triggerOfflineFallback();
     }
+}
+
+let refreshViewsTimeout = null;
+function debouncedRefreshActiveViews() {
+    if (refreshViewsTimeout) clearTimeout(refreshViewsTimeout);
+    refreshViewsTimeout = setTimeout(() => {
+        refreshActiveViews();
+    }, 60);
 }
 
 function loadFromLocalStorage() {
@@ -707,7 +712,6 @@ function loadFromLocalStorage() {
             state.weeklyTimetables = Array.isArray(parsed.weeklyTimetables) ? parsed.weeklyTimetables : [];
             state.currentWeekId = parsed.currentWeekId || null;
 
-            // Tự động tạo đợt TKB theo tuần đầu tiên nếu có TKB mà chưa có weeklyTimetables
             if (state.timetable && Object.keys(state.timetable).length > 0 && state.weeklyTimetables.length === 0) {
                 const defaultWeek = {
                     id: 'wt_' + Date.now(),
@@ -726,39 +730,48 @@ function loadFromLocalStorage() {
     }
 }
 
+let persistTimeout = null;
 function persistData() {
-    // Luôn lưu bản sao lưu cục bộ để đảm bảo an toàn dữ liệu
+    // 1. Luôn lưu bản sao lưu cục bộ ngay lập tức
     localStorage.setItem('fet_hub_firebase_fallback', JSON.stringify(state));
 
     if (isFirebaseConnected && db) {
-        const newTimestamp = Date.now();
-        state.lastUpdated = newTimestamp;
-
-        const payload = {
-            groups: (state.groups && state.groups.length > 0) ? state.groups : [{ id: '__empty_group__', name: '', subjects: [], isPlaceholder: true }],
-            accounts: (state.accounts && state.accounts.length > 0) ? state.accounts : [{ username: '__empty_account__', isPlaceholder: true }],
-            teachers: (state.teachers && state.teachers.length > 0) ? state.teachers : [{ id: '__empty_teacher__', fullName: '', shortName: '', isPlaceholder: true }],
-            classes: (state.classes && state.classes.length > 0) ? state.classes : [{ id: '__empty_class__', name: '', grade: '', isPlaceholder: true }],
-            subjects: (state.subjects && state.subjects.length > 0) ? state.subjects : [{ id: '__empty_subject__', name: '', grade: '', isPlaceholder: true }],
-            globalSubjects: (state.globalSubjects && state.globalSubjects.length > 0) ? state.globalSubjects : [{ id: '__empty_gs__', name: '', isPlaceholder: true }],
-            assignments: sanitizeObjectKeysForFirebase(state.assignments || {}),
-            timetable: sanitizeObjectKeysForFirebase(state.timetable || {}),
-            timetableApplyDate: state.timetableApplyDate || "",
-            assignmentVersions: (state.assignmentVersions || []).map(ver => ({
-                ...ver,
-                assignments: sanitizeObjectKeysForFirebase(ver.assignments || {})
-            })),
-            groupLocks: sanitizeObjectKeysForFirebase(state.groupLocks || {}),
-            substitutions: state.substitutions || [],
-            weeklyTimetables: state.weeklyTimetables || [],
-            currentWeekId: state.currentWeekId || null,
-            lastUpdated: newTimestamp
-        };
-
-        db.ref("school_data").set(payload).catch(err => {
-            console.error("Lỗi đồng bộ Firebase, dữ liệu đã lưu ở LocalStorage:", err);
-        });
+        if (persistTimeout) clearTimeout(persistTimeout);
+        persistTimeout = setTimeout(() => {
+            executeFirebasePersist();
+        }, 120);
     }
+}
+
+function executeFirebasePersist() {
+    if (!isFirebaseConnected || !db) return;
+    const newTimestamp = Date.now();
+    state.lastUpdated = newTimestamp;
+
+    const payload = {
+        groups: (state.groups && state.groups.length > 0) ? state.groups : [{ id: '__empty_group__', name: '', subjects: [], isPlaceholder: true }],
+        accounts: (state.accounts && state.accounts.length > 0) ? state.accounts : [{ username: '__empty_account__', isPlaceholder: true }],
+        teachers: (state.teachers && state.teachers.length > 0) ? state.teachers : [{ id: '__empty_teacher__', fullName: '', shortName: '', isPlaceholder: true }],
+        classes: (state.classes && state.classes.length > 0) ? state.classes : [{ id: '__empty_class__', name: '', grade: '', isPlaceholder: true }],
+        subjects: (state.subjects && state.subjects.length > 0) ? state.subjects : [{ id: '__empty_subject__', name: '', grade: '', isPlaceholder: true }],
+        globalSubjects: (state.globalSubjects && state.globalSubjects.length > 0) ? state.globalSubjects : [{ id: '__empty_gs__', name: '', isPlaceholder: true }],
+        assignments: sanitizeObjectKeysForFirebase(state.assignments || {}),
+        timetable: sanitizeObjectKeysForFirebase(state.timetable || {}),
+        timetableApplyDate: state.timetableApplyDate || "",
+        assignmentVersions: (state.assignmentVersions || []).map(ver => ({
+            ...ver,
+            assignments: sanitizeObjectKeysForFirebase(ver.assignments || {})
+        })),
+        groupLocks: sanitizeObjectKeysForFirebase(state.groupLocks || {}),
+        substitutions: state.substitutions || [],
+        weeklyTimetables: state.weeklyTimetables || [],
+        currentWeekId: state.currentWeekId || null,
+        lastUpdated: newTimestamp
+    };
+
+    db.ref("school_data").set(payload).catch(err => {
+        console.error("Lỗi đồng bộ Firebase, dữ liệu đã lưu ở LocalStorage:", err);
+    });
 }
 
 // Đảm bảo luôn có tài khoản Admin trong hệ thống
@@ -1331,7 +1344,25 @@ function switchAdminTab(tabId) {
         }
     }
 
-    if (tabId === 'analyticsTab') {
+    if (tabId === 'schoolSetupTab') {
+        renderClasses();
+        renderGroups();
+        renderGlobalSubjects();
+        renderNewGroupSubjectsCheckboxes();
+    } else if (tabId === 'staffAccountsTab') {
+        renderTeachers();
+        renderAccounts();
+        updateTeacherSubjectsCheckboxes();
+    } else if (tabId === 'subjectConfigsTab') {
+        renderSubjectConfigs();
+        renderDutyConfigs();
+    } else if (tabId === 'mergeTab') {
+        renderMergedAssignments();
+        renderAdminGroupLockStatus();
+        renderAssignmentVersions();
+    } else if (tabId === 'fetConverterTab') {
+        renderWeeklyTimetablesTable();
+    } else if (tabId === 'analyticsTab') {
         renderAnalyticsDashboard();
     }
 }
@@ -10322,6 +10353,23 @@ async function saveNewPassword(username) {
 }
 
 // ================= LOGIC CHỐT & KHÓA PHÂN CÔNG =================
+function resolveGroupCanonicalInfo(groupId) {
+    if (!groupId) return { canonicalId: '', groupName: '', groupObj: null };
+    const groupObj = (state.groups || []).find(g => g && (g.id === groupId || (g.name && g.name.trim().toLowerCase() === groupId.trim().toLowerCase())));
+    const canonicalId = groupObj ? groupObj.id : groupId;
+    const groupName = groupObj ? groupObj.name : groupId;
+    return { canonicalId, groupName, groupObj };
+}
+
+function getGroupLockRecord(groupId) {
+    if (!state.groupLocks || !groupId) return null;
+    const { canonicalId, groupName } = resolveGroupCanonicalInfo(groupId);
+    if (canonicalId && state.groupLocks[canonicalId]) return state.groupLocks[canonicalId];
+    if (groupName && state.groupLocks[groupName]) return state.groupLocks[groupName];
+    if (state.groupLocks[groupId]) return state.groupLocks[groupId];
+    return null;
+}
+
 function updateGroupLockUI(groupId) {
     const banner = document.getElementById('groupLockStatusBanner');
     const textEl = document.getElementById('groupLockStatusText');
@@ -10330,7 +10378,8 @@ function updateGroupLockUI(groupId) {
     if (!banner || !textEl || !iconEl || !btn) return;
 
     state.groupLocks = state.groupLocks || {};
-    const lockInfo = state.groupLocks[groupId];
+    const { canonicalId, groupName } = resolveGroupCanonicalInfo(groupId);
+    const lockInfo = getGroupLockRecord(groupId);
     const isLocked = lockInfo && lockInfo.locked;
     const isUnlockRequested = lockInfo && lockInfo.unlockRequested;
 
@@ -10353,7 +10402,7 @@ function updateGroupLockUI(groupId) {
             btn.style.color = '#fff';
             btn.style.fontWeight = '500';
             btn.disabled = false;
-            btn.onclick = () => cancelUnlockRequest(groupId);
+            btn.onclick = () => cancelUnlockRequest(canonicalId || groupId);
         } else {
             // Trạng thái: Đã chốt & Khóa
             banner.style.background = 'rgba(16, 185, 129, 0.15)';
@@ -10372,7 +10421,7 @@ function updateGroupLockUI(groupId) {
             btn.style.color = '#000';
             btn.style.fontWeight = '700';
             btn.disabled = false;
-            btn.onclick = () => requestUnlockGroupAssignment(groupId);
+            btn.onclick = () => requestUnlockGroupAssignment(canonicalId || groupId);
         }
 
         disableBatchAssignInputs(true);
@@ -10397,12 +10446,11 @@ function updateGroupLockUI(groupId) {
 }
 
 function requestUnlockGroupAssignment(groupId) {
-    const groupObj = state.groups.find(g => g.id === groupId);
-    const groupName = groupObj ? groupObj.name : 'Tổ';
+    const { canonicalId, groupName } = resolveGroupCanonicalInfo(groupId);
 
     let currentUsername = 'Tổ trưởng';
     if (state.accounts && state.currentUser) {
-        const acc = state.accounts.find(a => a.group === state.currentUser);
+        const acc = state.accounts.find(a => a && (a.group === state.currentUser || a.groupId === state.currentUser || a.group === canonicalId || a.groupId === canonicalId));
         if (acc) currentUsername = acc.username;
     }
 
@@ -10412,12 +10460,16 @@ function requestUnlockGroupAssignment(groupId) {
          <p style="color: #fde68a; font-size: 0.82rem; margin-top: 6px;">Sau khi Admin chấp nhận, bạn sẽ có quyền chỉnh sửa lại bảng phân công.</p>`,
         () => {
             state.groupLocks = state.groupLocks || {};
-            if (!state.groupLocks[groupId]) {
-                state.groupLocks[groupId] = { locked: true };
-            }
-            state.groupLocks[groupId].unlockRequested = true;
-            state.groupLocks[groupId].unlockRequestedAt = Date.now();
-            state.groupLocks[groupId].unlockRequestedBy = currentUsername;
+            const reqPayload = {
+                locked: true,
+                unlockRequested: true,
+                unlockRequestedAt: Date.now(),
+                unlockRequestedBy: currentUsername
+            };
+
+            if (canonicalId) state.groupLocks[canonicalId] = { ...(state.groupLocks[canonicalId] || {}), ...reqPayload };
+            if (groupName && groupName !== canonicalId) state.groupLocks[groupName] = { ...(state.groupLocks[groupName] || {}), ...reqPayload };
+            if (groupId && groupId !== canonicalId && groupId !== groupName) state.groupLocks[groupId] = { ...(state.groupLocks[groupId] || {}), ...reqPayload };
 
             persistData();
             updateGroupLockUI(groupId);
@@ -10430,12 +10482,16 @@ function requestUnlockGroupAssignment(groupId) {
 }
 
 function cancelUnlockRequest(groupId) {
-    if (state.groupLocks && state.groupLocks[groupId]) {
-        state.groupLocks[groupId].unlockRequested = false;
-        persistData();
-        updateGroupLockUI(groupId);
-        showToast("Đã hủy yêu cầu mở khóa.", "info");
-    }
+    const { canonicalId, groupName } = resolveGroupCanonicalInfo(groupId);
+    state.groupLocks = state.groupLocks || {};
+    [canonicalId, groupName, groupId].forEach(k => {
+        if (k && state.groupLocks[k]) {
+            state.groupLocks[k].unlockRequested = false;
+        }
+    });
+    persistData();
+    updateGroupLockUI(groupId);
+    showToast("Đã hủy yêu cầu mở khóa.", "info");
 }
 
 function disableBatchAssignInputs(disabled) {
@@ -10473,8 +10529,7 @@ function confirmLockGroupAssignment() {
     const groupId = state.currentUser;
     if (!groupId || groupId === 'admin') return;
 
-    const groupObj = state.groups.find(g => g.id === groupId);
-    const groupName = groupObj ? groupObj.name : 'Tổ chuyên môn';
+    const { canonicalId, groupName } = resolveGroupCanonicalInfo(groupId);
 
     showConfirmModal(
         "Xác Nhận Chốt & Khóa Phân Công",
@@ -10485,19 +10540,24 @@ function confirmLockGroupAssignment() {
             
             let currentUsername = 'Tổ trưởng';
             if (state.accounts && state.currentUser) {
-                const acc = state.accounts.find(a => a.group === state.currentUser);
+                const acc = state.accounts.find(a => a && (a.group === state.currentUser || a.groupId === state.currentUser || a.group === canonicalId || a.groupId === canonicalId));
                 if (acc) currentUsername = acc.username;
             }
 
-            state.groupLocks[groupId] = {
+            const lockPayload = {
                 locked: true,
                 lockedAt: Date.now(),
                 lockedBy: currentUsername,
                 unlockRequested: false
             };
 
+            if (canonicalId) state.groupLocks[canonicalId] = lockPayload;
+            if (groupName && groupName !== canonicalId) state.groupLocks[groupName] = lockPayload;
+            if (groupId && groupId !== canonicalId && groupId !== groupName) state.groupLocks[groupId] = lockPayload;
+
             persistData();
             refreshActiveViews();
+            updateGroupLockUI(state.currentUser);
             showToast("Đã chốt và khóa bản phân công chuyên môn thành công!", "success");
         },
         "Chốt & Khóa ngay",
@@ -10512,8 +10572,7 @@ function unlockGroupAssignment(groupId) {
         return;
     }
 
-    const groupObj = state.groups.find(g => g.id === groupId);
-    const groupName = groupObj ? groupObj.name : 'Tổ chuyên môn';
+    const { canonicalId, groupName } = resolveGroupCanonicalInfo(groupId);
 
     showConfirmModal(
         "Xác Nhận Mở Khóa Phân Công",
@@ -10521,10 +10580,26 @@ function unlockGroupAssignment(groupId) {
          <p style="color: #34d399; font-size: 0.82rem; margin-top: 6px;">Tổ trưởng sẽ nhận được quyền chỉnh sửa lại bảng phân công ngay lập tức.</p>`,
         () => {
             state.groupLocks = state.groupLocks || {};
-            if (state.groupLocks[groupId]) {
-                state.groupLocks[groupId].locked = false;
-                state.groupLocks[groupId].unlockRequested = false;
-            }
+            
+            // Xóa/Mở khóa trên tất cả các key alias
+            [canonicalId, groupName, groupId].forEach(k => {
+                if (k && state.groupLocks[k]) {
+                    state.groupLocks[k].locked = false;
+                    state.groupLocks[k].unlockRequested = false;
+                }
+            });
+
+            // Ghi nhận trạng thái mở khóa
+            const unlockPayload = {
+                locked: false,
+                unlockRequested: false,
+                unlockedAt: Date.now(),
+                unlockedBy: 'admin'
+            };
+
+            if (canonicalId) state.groupLocks[canonicalId] = unlockPayload;
+            if (groupName && groupName !== canonicalId) state.groupLocks[groupName] = unlockPayload;
+            if (groupId && groupId !== canonicalId && groupId !== groupName) state.groupLocks[groupId] = unlockPayload;
 
             persistData();
             refreshActiveViews();
@@ -10545,8 +10620,8 @@ function renderAdminGroupLockStatus() {
 
     let totalUnlockRequests = 0;
 
-    state.groups.forEach(g => {
-        const lockInfo = state.groupLocks[g.id];
+    (state.groups || []).forEach(g => {
+        const lockInfo = getGroupLockRecord(g.id);
         const isLocked = lockInfo && lockInfo.locked;
         const isUnlockRequested = lockInfo && lockInfo.unlockRequested;
         
@@ -10556,7 +10631,7 @@ function renderAdminGroupLockStatus() {
         let actionBtn;
 
         if (isLocked) {
-            timeStr = new Date(lockInfo.lockedAt).toLocaleString('vi-VN');
+            timeStr = lockInfo.lockedAt ? new Date(lockInfo.lockedAt).toLocaleString('vi-VN') : '-';
             userStr = lockInfo.lockedBy || 'Tổ trưởng';
 
             if (isUnlockRequested) {
