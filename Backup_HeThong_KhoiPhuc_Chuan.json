@@ -43,217 +43,2445 @@
     }
   ],
   "assignments": {
-    "6A10_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
+    "6A1_sub_chao_co_6": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
     },
-    "6A10_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
+    "7A1_sub_chao_co_7": {
+      "teacher": "Hảo",
+      "periods": 1
     },
-    "6A10_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
+    "7A2_sub_chao_co_7": {
+      "teacher": "M.Thương",
+      "periods": 1
     },
-    "6A10_s_1788365139018zzfh": {
-      "periods": 3,
-      "teacher": ""
+    "7A3_sub_chao_co_7": {
+      "teacher": "T.Thúy",
+      "periods": 1
     },
-    "6A10_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
+    "7A4_sub_chao_co_7": {
+      "teacher": "T.Quỳnh",
+      "periods": 1
     },
-    "6A10_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
+    "7A5_sub_chao_co_7": {
+      "teacher": "Trà",
+      "periods": 1
     },
-    "6A10_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
+    "7A6_sub_chao_co_7": {
+      "teacher": "Minh",
+      "periods": 1
     },
-    "6A10_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
+    "7B1_sub_chao_co_7": {
+      "teacher": "Toàn",
+      "periods": 1
+    },
+    "7B2_sub_chao_co_7": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7B3_sub_chao_co_7": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "8A1_sub_chao_co_8": {
+      "teacher": "Thiện",
+      "periods": 1
+    },
+    "8A2_sub_chao_co_8": {
+      "teacher": "N.Hoa",
+      "periods": 1
+    },
+    "9A1_sub_chao_co_9": {
+      "teacher": "V.Thiện",
+      "periods": 1
+    },
+    "9A2_sub_chao_co_9": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9A3_sub_chao_co_9": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9A4_sub_chao_co_9": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "9A5_sub_chao_co_9": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A6_sub_chao_co_9": {
+      "teacher": "Hưng",
+      "periods": 1
+    },
+    "9A7_sub_chao_co_9": {
+      "teacher": "Huệ",
+      "periods": 1
+    },
+    "9B1_sub_chao_co_9": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9B2_sub_chao_co_9": {
+      "teacher": "Phương",
+      "periods": 1
+    },
+    "9B3_sub_chao_co_9": {
+      "teacher": "Nhàn",
+      "periods": 1
+    },
+    "6A1_s_178841439978754mf": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7A1_s_1788414399787508o": {
+      "teacher": "N.Hoa",
+      "periods": 4
+    },
+    "7A2_s_1788414399787tcuy": {
+      "teacher": "N.Thuận",
+      "periods": 4
+    },
+    "7A3_s_17884143997872kcl": {
+      "teacher": "P.Thuận",
+      "periods": 3
+    },
+    "7A4_s_1788414399787508o": {
+      "teacher": "Toàn",
+      "periods": 4
+    },
+    "7A5_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A6_s_1788414399787v0ec": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7B1_s_1788414399787oi7x": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "7B2_s_17884143997874eug": {
+      "teacher": "T.Quỳnh",
+      "periods": 2
+    },
+    "7B3_s_1788414399787tcuy": {
+      "teacher": "T.Hiền",
+      "periods": 4
+    },
+    "8A1_s_1788414399787h31f": {
+      "teacher": "P.T.Thúy",
+      "periods": 2
+    },
+    "8A2_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "9A1_s_17884143997877uqu": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "9A2_s_1788414399787moll": {
+      "teacher": "Hưng",
+      "periods": 2
+    },
+    "9A3_s_1788414399787e1jl": {
+      "teacher": "Khương",
+      "periods": 4
+    },
+    "9A4_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A5_s_1788414399787qjh0": {
+      "teacher": "Hải",
+      "periods": 4
+    },
+    "9A6_s_178841439978744he": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "9A7_s_1788414399787ripy": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9B1_s_178841439978744he": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9B2_s_1788414399787qjh0": {
+      "teacher": "Phương",
+      "periods": 4
+    },
+    "9B3_s_1788414399787ibl3": {
+      "teacher": "Nhàn",
+      "periods": 3
+    },
+    "6A1_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "7A4_s_1788414399787tcuy": {
+      "teacher": "T.Hiền",
+      "periods": 4
+    },
+    "7A5_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7A6_s_1788414399787508o": {
+      "teacher": "Hải",
+      "periods": 4
+    },
+    "7B1_s_1788414399787508o": {
+      "teacher": "Toàn",
+      "periods": 4
+    },
+    "7B2_s_1788414399787bdp3": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "7B3_s_1788414399787w8xh": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "8A1_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8A2_s_1788414399787fe1x": {
+      "teacher": "M.Hoa",
+      "periods": 3
+    },
+    "9A1_s_17884143997870v8r": {
+      "teacher": "M.Thương",
+      "periods": 2
+    },
+    "9A2_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9A3_s_1788414399787ripy": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "9A4_s_1788414399787gzcs": {
+      "teacher": "Thiện",
+      "periods": 1
+    },
+    "9A5_s_1788414399787e1jl": {
+      "teacher": "V.Thiện",
+      "periods": 4
+    },
+    "9A6_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "9A7_s_1788414399787e1jl": {
+      "teacher": "Khương",
+      "periods": 4
+    },
+    "9B1_s_1788414399787moll": {
+      "teacher": "Hưng",
+      "periods": 2
+    },
+    "9B2_s_1788414399787gzcs": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9B3_s_1788414399787eccz": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "6A1_s_1788414399787fwz3": {
+      "teacher": "M.Hoa",
+      "periods": 3
+    },
+    "7A1_s_17884143997874eug": {
+      "teacher": "T.Quỳnh",
+      "periods": 2
+    },
+    "7A2_s_1788414399787508o": {
+      "teacher": "D.An",
+      "periods": 4
+    },
+    "7A3_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7A4_s_1788414399787w8xh": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7A5_s_1788414399787tcuy": {
+      "teacher": "T.Hiền",
+      "periods": 4
+    },
+    "7B1_s_17884143997872kcl": {
+      "teacher": "Hóa",
+      "periods": 3
+    },
+    "7B2_s_1788414399787tcuy": {
+      "teacher": "N.Thuận",
+      "periods": 4
+    },
+    "7B3_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "8A1_s_1788414399787smi8": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "8A2_s_1788414399787h31f": {
+      "teacher": "P.T.Thúy",
+      "periods": 2
+    },
+    "9A1_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "9A2_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "9A3_s_1788414399787qjh0": {
+      "teacher": "Phương",
+      "periods": 4
+    },
+    "9A4_s_1788414399787moll": {
+      "teacher": "Lợi",
+      "periods": 2
+    },
+    "9A5_s_1788414399787eccz": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "9A6_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9B1_s_1788414399787ibl3": {
+      "teacher": "Tú",
+      "periods": 3
+    },
+    "9B2_s_1788414399787e1jl": {
+      "teacher": "Trọng",
+      "periods": 4
+    },
+    "9B3_s_1788414399787qjh0": {
+      "teacher": "Quyên",
+      "periods": 4
+    },
+    "7A1_s_1788414399787bdp3": {
+      "teacher": "T.Quỳnh",
+      "periods": 1
+    },
+    "7A3_s_1788414399787v0ec": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7A4_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7A6_s_1788414399787oi7x": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "7B1_s_1788414399787tcuy": {
+      "teacher": "N.Thuận",
+      "periods": 4
+    },
+    "7B2_s_1788414399787508o": {
+      "teacher": "Hải",
+      "periods": 4
+    },
+    "7B3_s_1788414399787508o": {
+      "teacher": "Toàn",
+      "periods": 4
+    },
+    "8A1_s_1788414399787fe1x": {
+      "teacher": "P.Thuận",
+      "periods": 3
+    },
+    "8A2_s_1788414399787smi8": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9A1_s_178841439978744he": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "9A2_s_1788414399787ibl3": {
+      "teacher": "Tú",
+      "periods": 3
+    },
+    "9A3_s_1788414399787eccz": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "9A4_s_1788414399787ripy": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "9A5_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9A6_s_1788414399787ibl3": {
+      "teacher": "Hóa",
+      "periods": 3
+    },
+    "9A7_s_1788414399787gzcs": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9B1_s_1788414399787e1jl": {
+      "teacher": "Trọng",
+      "periods": 4
+    },
+    "9B2_s_1788414399787moll": {
+      "teacher": "Lợi",
+      "periods": 2
+    },
+    "6A1_s_1788414399787oc3v": {
+      "teacher": "N.Thuận",
+      "periods": 4
+    },
+    "7A1_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7A2_s_1788414399787vlow": {
+      "teacher": "H.Trang",
+      "periods": 2
+    },
+    "7A4_s_17884143997872kcl": {
+      "teacher": "Hóa",
+      "periods": 3
+    },
+    "7A6_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7B1_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7B2_s_17884143997871j1e": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "7B3_s_1788414399787vlow": {
+      "teacher": "P.Quỳnh",
+      "periods": 2
+    },
+    "8A1_s_17884143997878267": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "8A2_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "9A1_s_1788414399787e1jl": {
+      "teacher": "V.Thiện",
+      "periods": 4
+    },
+    "9A2_s_1788414399787qjh0": {
+      "teacher": "Quyên",
+      "periods": 4
+    },
+    "9A3_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9A4_s_1788414399787ibl3": {
+      "teacher": "Nhàn",
+      "periods": 3
+    },
+    "9A5_s_1788414399787gzcs": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9A6_s_1788414399787qjh0": {
+      "teacher": "Phương",
+      "periods": 4
+    },
+    "9A7_s_178841439978744he": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "9B3_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "6A1_s_1788414399787s33l": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "7A2_s_17884143997871j1e": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A3_s_1788414399787tcuy": {
+      "teacher": "T.Hiền",
+      "periods": 4
+    },
+    "7A5_s_17884143997871j1e": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "7B1_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7B2_s_1788414399787oi7x": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "7B3_s_1788414399787v0ec": {
+      "teacher": "Hưng",
+      "periods": 1
+    },
+    "8A1_s_1788414399787s3zf": {
+      "teacher": "M.Hằng",
+      "periods": 4
+    },
+    "8A2_s_1788414399787dw7v": {
+      "teacher": "Thiện",
+      "periods": 3
+    },
+    "9A1_s_1788414399787ripy": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "9A5_s_17884143997876qqe": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9A7_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "9B2_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9B3_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "6A1_s_1788414399787hg23": {
+      "teacher": "Lụa",
+      "periods": 3
+    },
+    "7A3_s_1788414399787508o": {
+      "teacher": "D.An",
+      "periods": 4
+    },
+    "7A4_s_1788414399787vlow": {
+      "teacher": "P.Quỳnh",
+      "periods": 2
+    },
+    "7A5_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7A6_s_1788414399787tcuy": {
+      "teacher": "T.Hiền",
+      "periods": 4
+    },
+    "7B1_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7B3_s_17884143997874eug": {
+      "teacher": "Thu",
+      "periods": 2
+    },
+    "8A2_s_17884143997878267": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "9A1_s_17884143997876qqe": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "9A4_s_1788414399787eccz": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "9A6_s_1788414399787moll": {
+      "teacher": "Hưng",
+      "periods": 2
+    },
+    "9B1_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "9B3_s_1788414399787moll": {
+      "teacher": "Lợi",
+      "periods": 2
+    },
+    "7A1_s_1788414399787vlow": {
+      "teacher": "P.T.Thúy",
+      "periods": 2
+    },
+    "7A4_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A5_s_17884143997874eug": {
+      "teacher": "Thu",
+      "periods": 2
+    },
+    "7B1_s_1788414399787v0ec": {
+      "teacher": "Hưng",
+      "periods": 1
+    },
+    "7B3_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "8A1_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8A2_s_1788414399787s3zf": {
+      "teacher": "M.Hằng",
+      "periods": 4
+    },
+    "9A1_s_1788414399787ibl3": {
+      "teacher": "Nhàn",
+      "periods": 3
+    },
+    "9A2_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "9A4_s_17884143997876qqe": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "9A5_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A6_s_1788414399787e1jl": {
+      "teacher": "Khương",
+      "periods": 4
+    },
+    "9A7_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9B1_s_17884143997870v8r": {
+      "teacher": "M.Thương",
+      "periods": 2
+    },
+    "9B2_s_1788414399787ibl3": {
+      "teacher": "Tú",
+      "periods": 3
+    },
+    "9B3_s_1788414399787gzcs": {
+      "teacher": "Thiện",
+      "periods": 1
+    },
+    "6A1_s_1788414399787ofr2": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "7A1_s_1788414399787tcuy": {
+      "teacher": "V.Thiện",
+      "periods": 4
+    },
+    "7A2_s_1788414399787v0ec": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7A5_s_1788414399787w8xh": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "7A6_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7B1_s_17884143997874eug": {
+      "teacher": "T.Quỳnh",
+      "periods": 2
+    },
+    "7B2_s_17884143997872kcl": {
+      "teacher": "Hóa",
+      "periods": 3
+    },
+    "7B3_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "8A1_s_178841439978769yb": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "9A1_s_1788414399787qjh0": {
+      "teacher": "Quyên",
+      "periods": 4
+    },
+    "9A2_s_17884143997876qqe": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9A4_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9A5_s_1788414399787moll": {
+      "teacher": "Lợi",
+      "periods": 2
+    },
+    "9A7_s_1788414399787qjh0": {
+      "teacher": "Huệ",
+      "periods": 4
+    },
+    "9B2_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "9B3_s_1788414399787ripy": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "6A1_s_1788414399787ov69": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "7A1_s_17884143997872kcl": {
+      "teacher": "Minh",
+      "periods": 3
+    },
+    "7A2_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7A3_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7A5_s_17884143997872kcl": {
+      "teacher": "Hóa",
+      "periods": 3
+    },
+    "7B2_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "8A2_s_1788414399787fzrg": {
+      "teacher": "N.Hoa",
+      "periods": 4
+    },
+    "9A2_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9A3_s_1788414399787moll": {
+      "teacher": "Hưng",
+      "periods": 2
+    },
+    "9A4_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9A5_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "6A1_s_1788414399787vq7h": {
+      "teacher": "Thùy",
+      "periods": 4
+    },
+    "7A1_s_1788414399787w8xh": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7A2_s_1788414399787oi7x": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "7A3_s_1788414399787w8xh": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "7A4_s_17884143997874eug": {
+      "teacher": "T.Quỳnh",
+      "periods": 2
+    },
+    "7A5_s_1788414399787508o": {
+      "teacher": "D.An",
+      "periods": 4
+    },
+    "7A6_s_1788414399787vlow": {
+      "teacher": "Hoài",
+      "periods": 2
+    },
+    "7B2_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "8A1_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "9A1_s_1788414399787moll": {
+      "teacher": "Lợi",
+      "periods": 2
+    },
+    "9A2_s_1788414399787e1jl": {
+      "teacher": "Trọng",
+      "periods": 4
+    },
+    "9A3_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "9A4_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "9A7_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9B1_s_1788414399787qjh0": {
+      "teacher": "Huệ",
+      "periods": 4
+    },
+    "9B3_s_1788414399787e1jl": {
+      "teacher": "Khương",
+      "periods": 4
+    },
+    "7A1_s_17884143997871j1e": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A2_s_17884143997874eug": {
+      "teacher": "T.Quỳnh",
+      "periods": 2
+    },
+    "7A3_s_1788414399787oi7x": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "7A6_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7B1_s_1788414399787vlow": {
+      "teacher": "Hoài",
+      "periods": 2
+    },
+    "7B2_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7B3_s_17884143997872kcl": {
+      "teacher": "Minh",
+      "periods": 3
+    },
+    "8A2_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "9A3_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "9A4_s_1788414399787e1jl": {
+      "teacher": "Khương",
+      "periods": 4
+    },
+    "9A7_s_1788414399787eccz": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "9B2_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "9B3_s_17884143997876qqe": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "6A1_s_1788414399787eei4": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "7A2_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7A3_s_17884143997871j1e": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A4_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7A5_s_1788414399787oi7x": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "7A6_s_1788414399787bdp3": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "9A1_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9A2_s_1788414399787gzcs": {
+      "teacher": "Thiện",
+      "periods": 1
+    },
+    "9A5_s_1788414399787ibl3": {
+      "teacher": "Nhàn",
+      "periods": 3
+    },
+    "9A6_s_1788414399787gzcs": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9A7_s_1788414399787moll": {
+      "teacher": "Lợi",
+      "periods": 2
+    },
+    "9B2_s_1788414399787ripy": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "6A1_s_17884143997870c2y": {
+      "teacher": "Lương",
+      "periods": 2
+    },
+    "7A2_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A3_s_17884143997874eug": {
+      "teacher": "Thu",
+      "periods": 2
+    },
+    "7A4_s_1788414399787bdp3": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "7A6_s_17884143997871j1e": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A1_s_1788414399787eccz": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "9A6_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "9B2_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A1_s_1788414399787p35o": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "7A3_s_1788414399787vlow": {
+      "teacher": "H.Trang",
+      "periods": 2
+    },
+    "7A6_s_17884143997874eug": {
+      "teacher": "Thu",
+      "periods": 2
+    },
+    "7B3_s_1788414399787oi7x": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "8A1_s_1788414399787fzrg": {
+      "teacher": "N.Hoa",
+      "periods": 4
+    },
+    "9A3_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A4_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "9A7_s_17884143997876qqe": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9B1_s_1788414399787gzcs": {
+      "teacher": "Thiện",
+      "periods": 1
+    },
+    "9B3_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "7A1_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7A4_s_1788414399787oi7x": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "7A5_s_1788414399787bdp3": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "7B2_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "9A3_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9A4_s_1788414399787qjh0": {
+      "teacher": "Huệ",
+      "periods": 4
+    },
+    "9A5_s_17884143997870v8r": {
+      "teacher": "Lệ",
+      "periods": 2
+    },
+    "9A6_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A7_s_17884143997870zkv": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "7A1_s_1788414399787v0ec": {
+      "teacher": "Hưng",
+      "periods": 1
+    },
+    "7A6_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7B2_s_1788414399787w8xh": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "8A2_s_178841439978769yb": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "9A3_s_17884143997876qqe": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9A6_s_1788414399787ripy": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9A7_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "7A3_s_1788414399787bdp3": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "7A6_s_17884143997872kcl": {
+      "teacher": "Minh",
+      "periods": 3
+    },
+    "7B1_s_17884143997871j1e": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "8A1_s_1788414399787dw7v": {
+      "teacher": "Thiện",
+      "periods": 3
+    },
+    "8A2_s_1788414399787tx3v": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "9A2_s_1788414399787eccz": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "9A5_s_178841439978744he": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9B1_s_1788414399787ripy": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9B2_s_178841439978744he": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "7A2_s_1788414399787bdp3": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "7A5_s_1788414399787vlow": {
+      "teacher": "P.Quỳnh",
+      "periods": 2
+    },
+    "7A6_s_1788414399787w8xh": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "7B1_s_1788414399787w8xh": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "9A2_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A3_s_178841439978744he": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9A6_s_1788414399787eccz": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "9B1_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A2_s_17884143997872kcl": {
+      "teacher": "Minh",
+      "periods": 3
+    },
+    "7B1_s_1788414399787bdp3": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "7B3_s_17884143997871j1e": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "8A1_s_1788414399787tx3v": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "9A3_s_1788414399787ibl3": {
+      "teacher": "Nhàn",
+      "periods": 3
+    },
+    "9A7_s_1788414399787ibl3": {
+      "teacher": "B.Hiền",
+      "periods": 3
+    },
+    "9B1_s_1788414399787eccz": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "9B3_s_1788414399787qu01": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A4_s_1788414399787v0ec": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7B2_s_1788414399787vlow": {
+      "teacher": "H.Trang",
+      "periods": 2
+    },
+    "7B3_s_1788414399787bdp3": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8A1_s_1788414399787jdgf": {
+      "teacher": "Lương",
+      "periods": 1
+    },
+    "9A1_s_1788414399787gzcs": {
+      "teacher": "Thiện",
+      "periods": 1
+    },
+    "9A6_s_17884143997876qqe": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "9B1_s_17884143997876qqe": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9B2_s_1788414399787eccz": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "9B3_s_178841439978744he": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "6A1_s_17884143997875qtd": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "7A1_s_1788414399787oi7x": {
+      "teacher": "N.Hoa",
+      "periods": 1
+    },
+    "7A3_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7B1_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7B2_s_1788414399787v0ec": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "8A2_s_1788414399787jdgf": {
+      "teacher": "Lương",
+      "periods": 1
+    },
+    "9A2_s_178841439978744he": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "9A6_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9B3_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "7A1_s_1788414399787o1mh": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "7A2_s_1788414399787w8xh": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7A4_s_17884143997871j1e": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A5_s_1788414399787vk5i": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7B3_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "9A3_s_1788414399787gzcs": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9A5_s_1788414399787ripy": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "9B1_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9B2_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "6A1_s_1788414399787d2kg": {
+      "teacher": "Dược",
+      "periods": 1
+    },
+    "7A2_s_1788414399787o1mh": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7A3_s_1788414399787p35o": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A4_s_1788414399787zf49": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7A5_s_1788414399787v0ec": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "9A1_s_1788414399787qu01": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "9A2_s_1788414399787ripy": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9A4_s_178841439978744he": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "9A5_s_17884143997870xcl": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9B1_s_17884143997877uqu": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9B2_s_17884143997876qqe": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "6A1_sub_hdtn_6": {
+      "teacher": "P.T.Thúy",
+      "periods": 1
+    },
+    "7A1_sub_hdtn_7": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "7A2_sub_hdtn_7": {
+      "teacher": "M.Thương",
+      "periods": 1
+    },
+    "7A3_sub_hdtn_7": {
+      "teacher": "T.Thúy",
+      "periods": 1
+    },
+    "7A4_sub_hdtn_7": {
+      "teacher": "T.Quỳnh",
+      "periods": 1
+    },
+    "7A5_sub_hdtn_7": {
+      "teacher": "Trà",
+      "periods": 1
+    },
+    "7A6_sub_hdtn_7": {
+      "teacher": "Minh",
+      "periods": 1
+    },
+    "7B1_sub_hdtn_7": {
+      "teacher": "Toàn",
+      "periods": 1
+    },
+    "7B2_sub_hdtn_7": {
+      "teacher": "H.Trang",
+      "periods": 1
+    },
+    "7B3_sub_hdtn_7": {
+      "teacher": "Tiếp",
+      "periods": 1
+    },
+    "8A1_sub_hdtn_8": {
+      "teacher": "Thiện",
+      "periods": 1
+    },
+    "8A2_sub_hdtn_8": {
+      "teacher": "N.Hoa",
+      "periods": 1
+    },
+    "9A1_sub_hdtn_9": {
+      "teacher": "V.Thiện",
+      "periods": 1
+    },
+    "9A2_sub_hdtn_9": {
+      "teacher": "Dũng",
+      "periods": 1
+    },
+    "9A3_sub_hdtn_9": {
+      "teacher": "Lụa",
+      "periods": 1
+    },
+    "9A4_sub_hdtn_9": {
+      "teacher": "P.Quỳnh",
+      "periods": 1
+    },
+    "9A5_sub_hdtn_9": {
+      "teacher": "Thuý",
+      "periods": 1
+    },
+    "9A6_sub_hdtn_9": {
+      "teacher": "Hưng",
+      "periods": 1
+    },
+    "9A7_sub_hdtn_9": {
+      "teacher": "Huệ",
+      "periods": 1
+    },
+    "9B1_sub_hdtn_9": {
+      "teacher": "Hoài",
+      "periods": 1
+    },
+    "9B2_sub_hdtn_9": {
+      "teacher": "Phương",
+      "periods": 1
+    },
+    "9B3_sub_hdtn_9": {
+      "teacher": "Nhàn",
+      "periods": 1
+    },
+    "6A2_s_1788414399787d2kg": {
+      "teacher": "Liên",
+      "periods": 1
+    },
+    "6A3_s_17884143997870c2y": {
+      "teacher": "Thắm",
+      "periods": 2
+    },
+    "6A4_s_1788414399787fwz3": {
+      "teacher": "P.Thúy",
+      "periods": 3
+    },
+    "6A5_s_1788414399787vq7h": {
+      "teacher": "Thùy",
+      "periods": 4
+    },
+    "6A6_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6B1_s_1788414399787vq7h": {
+      "teacher": "Chương",
+      "periods": 4
+    },
+    "6B2_s_1788414399787fwz3": {
+      "teacher": "M.Hoa",
+      "periods": 3
+    },
+    "6B3_s_1788414399787oc3v": {
+      "teacher": "H.Loan",
+      "periods": 4
+    },
+    "8A3_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "8A4_s_1788414399787fzrg": {
+      "teacher": "Uyên",
+      "periods": 4
+    },
+    "8A5_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "8A6_s_1788414399787s3zf": {
+      "teacher": "Như",
+      "periods": 4
+    },
+    "8A7_s_1788414399787s3zf": {
+      "teacher": "Vân",
+      "periods": 4
+    },
+    "8A8_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8B1_s_1788414399787tx3v": {
+      "teacher": "B.Hằng",
+      "periods": 1
+    },
+    "8B2_s_1788414399787fe1x": {
+      "teacher": "P.Thuận",
+      "periods": 3
+    },
+    "8B3_s_1788414399787dw7v": {
+      "teacher": "Huyền",
+      "periods": 3
+    },
+    "6A2_s_17884143997870c2y": {
+      "teacher": "Thắm",
+      "periods": 2
+    },
+    "6A3_s_1788414399787hg23": {
+      "teacher": "N.Quỳnh",
+      "periods": 3
+    },
+    "6A4_s_1788414399787hg23": {
+      "teacher": "Liên",
+      "periods": 3
+    },
+    "6A6_s_1788414399787ov69": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "8A3_s_1788414399787fe1x": {
+      "teacher": "P.Thuận",
+      "periods": 3
+    },
+    "8A5_s_1788414399787fe1x": {
+      "teacher": "P.Thúy",
+      "periods": 3
+    },
+    "8A6_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8A8_s_1788414399787dw7v": {
+      "teacher": "Tôn",
+      "periods": 3
+    },
+    "8B1_s_1788414399787h31f": {
+      "teacher": "Đ.Dung",
+      "periods": 2
+    },
+    "8B2_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "6A2_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6A5_s_1788414399787oc3v": {
+      "teacher": "H.Loan",
+      "periods": 4
+    },
+    "6A6_s_1788414399787hg23": {
+      "teacher": "Huyền",
+      "periods": 3
+    },
+    "6B1_s_1788414399787fwz3": {
+      "teacher": "M.Hoa",
+      "periods": 3
+    },
+    "6B2_s_1788414399787oc3v": {
+      "teacher": "Vân",
+      "periods": 4
+    },
+    "6B3_s_1788414399787fwz3": {
+      "teacher": "P.Thúy",
+      "periods": 3
+    },
+    "8A3_s_1788414399787fzrg": {
+      "teacher": "Uyên",
+      "periods": 4
+    },
+    "8A4_s_1788414399787s3zf": {
+      "teacher": "Như",
+      "periods": 4
+    },
+    "8A5_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8A6_s_1788414399787tx3v": {
+      "teacher": "B.Hằng",
+      "periods": 1
+    },
+    "8A7_s_1788414399787fe1x": {
+      "teacher": "P.Thuận",
+      "periods": 3
+    },
+    "8B1_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "8B2_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8B3_s_1788414399787fzrg": {
+      "teacher": "T.Hằng",
+      "periods": 4
+    },
+    "6A2_s_1788414399787oc3v": {
+      "teacher": "Vân",
+      "periods": 4
+    },
+    "6A3_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6A4_s_1788414399787oc3v": {
+      "teacher": "H.Loan",
+      "periods": 4
+    },
+    "6A5_s_1788414399787s33l": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "6A6_s_17884143997870c2y": {
+      "teacher": "Lương",
+      "periods": 2
+    },
+    "6B1_s_1788414399787s33l": {
+      "teacher": "N.Quỳnh",
+      "periods": 1
+    },
+    "6B2_s_1788414399787ov69": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "8A5_s_1788414399787h31f": {
+      "teacher": "Đ.Dung",
+      "periods": 2
+    },
+    "8A6_s_1788414399787h31f": {
+      "teacher": "B.Hằng",
+      "periods": 2
+    },
+    "8A8_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "8B1_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8B2_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "8B3_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "6A2_sub_chao_co_6": {
+      "teacher": "M.Toản",
+      "periods": 1
+    },
+    "6A3_sub_chao_co_6": {
+      "teacher": "N.Quỳnh",
+      "periods": 1
+    },
+    "6A4_sub_chao_co_6": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "6A5_sub_chao_co_6": {
+      "teacher": "Lương",
+      "periods": 1
+    },
+    "6A6_sub_chao_co_6": {
+      "teacher": "Huyền",
+      "periods": 1
+    },
+    "6B1_sub_chao_co_6": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "6B2_sub_chao_co_6": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "6B3_sub_chao_co_6": {
+      "teacher": "Liên",
+      "periods": 1
+    },
+    "8A3_sub_chao_co_8": {
+      "teacher": "Đ.Dung",
+      "periods": 1
+    },
+    "8A4_sub_chao_co_8": {
+      "teacher": "B.Hiền",
+      "periods": 1
+    },
+    "8A5_sub_chao_co_8": {
+      "teacher": "T.Hằng",
+      "periods": 1
+    },
+    "8A6_sub_chao_co_8": {
+      "teacher": "Thu",
+      "periods": 1
+    },
+    "8A7_sub_chao_co_8": {
+      "teacher": "N.Dung",
+      "periods": 1
+    },
+    "8A8_sub_chao_co_8": {
+      "teacher": "B.Hằng",
+      "periods": 1
+    },
+    "8B1_sub_chao_co_8": {
+      "teacher": "Như",
+      "periods": 1
+    },
+    "8B2_sub_chao_co_8": {
+      "teacher": "Dược",
+      "periods": 1
+    },
+    "8B3_sub_chao_co_8": {
+      "teacher": "Trung",
+      "periods": 1
+    },
+    "6A2_s_1788414399787vq7h": {
+      "teacher": "Thùy",
+      "periods": 4
+    },
+    "6A3_s_1788414399787oc3v": {
+      "teacher": "H.Loan",
+      "periods": 4
+    },
+    "6A4_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6A5_s_1788414399787d2kg": {
+      "teacher": "Tôn",
+      "periods": 1
+    },
+    "6A6_s_178841439978754mf": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "6B1_s_1788414399787oc3v": {
+      "teacher": "Vân",
+      "periods": 4
+    },
+    "6B3_s_1788414399787hg23": {
+      "teacher": "Liên",
+      "periods": 3
+    },
+    "8A3_s_1788414399787s3zf": {
+      "teacher": "Như",
+      "periods": 4
+    },
+    "8A4_s_1788414399787fe1x": {
+      "teacher": "B.Hiền",
+      "periods": 3
+    },
+    "8A5_s_1788414399787fzrg": {
+      "teacher": "T.Hằng",
+      "periods": 4
+    },
+    "8A6_s_1788414399787fzrg": {
+      "teacher": "Uyên",
+      "periods": 4
+    },
+    "8A7_s_1788414399787h31f": {
+      "teacher": "B.Hằng",
+      "periods": 2
+    },
+    "8A8_s_1788414399787fe1x": {
+      "teacher": "P.Thuận",
+      "periods": 3
+    },
+    "8B1_s_178841439978769yb": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8B2_s_1788414399787dw7v": {
+      "teacher": "Huyền",
+      "periods": 3
+    },
+    "8B3_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6A4_s_17884143997870c2y": {
+      "teacher": "Thắm",
+      "periods": 2
+    },
+    "6A5_s_1788414399787fwz3": {
+      "teacher": "P.Thúy",
+      "periods": 3
+    },
+    "6A6_s_1788414399787d2kg": {
+      "teacher": "Tôn",
+      "periods": 1
+    },
+    "6B2_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "8A4_s_178841439978769yb": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8A5_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8A7_s_1788414399787dw7v": {
+      "teacher": "Dược",
+      "periods": 3
+    },
+    "8B1_s_1788414399787fzrg": {
+      "teacher": "T.Hằng",
+      "periods": 4
+    },
+    "8B2_s_1788414399787h31f": {
+      "teacher": "B.Hằng",
+      "periods": 2
+    },
+    "8B3_s_1788414399787s3zf": {
+      "teacher": "M.Hằng",
+      "periods": 4
+    },
+    "6A2_s_1788414399787fwz3": {
+      "teacher": "P.Thúy",
+      "periods": 3
+    },
+    "6A3_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6A4_s_178841439978754mf": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "6B1_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6B2_s_1788414399787d2kg": {
+      "teacher": "Tôn",
+      "periods": 1
+    },
+    "6B3_s_1788414399787vq7h": {
+      "teacher": "Chương",
+      "periods": 4
+    },
+    "8A3_s_1788414399787tx3v": {
+      "teacher": "Đ.Dung",
+      "periods": 1
+    },
+    "8A4_s_1788414399787dw7v": {
+      "teacher": "Dược",
+      "periods": 3
+    },
+    "8A5_s_1788414399787s3zf": {
+      "teacher": "Vân",
+      "periods": 4
+    },
+    "8A6_s_1788414399787fe1x": {
+      "teacher": "M.Hoa",
+      "periods": 3
+    },
+    "8A7_s_1788414399787tx3v": {
+      "teacher": "B.Hằng",
+      "periods": 1
+    },
+    "8A8_s_1788414399787fzrg": {
+      "teacher": "Uyên",
+      "periods": 4
+    },
+    "8B1_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8B2_s_1788414399787s3zf": {
+      "teacher": "M.Hằng",
+      "periods": 4
+    },
+    "6A3_s_1788414399787s33l": {
+      "teacher": "N.Quỳnh",
+      "periods": 1
+    },
+    "6A4_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6B1_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6B2_s_1788414399787hg23": {
+      "teacher": "Liên",
+      "periods": 3
+    },
+    "8A3_s_1788414399787h31f": {
+      "teacher": "Đ.Dung",
+      "periods": 2
+    },
+    "8A4_s_1788414399787jaz2": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8A5_s_1788414399787dw7v": {
+      "teacher": "Tôn",
+      "periods": 3
+    },
+    "8A6_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "8B1_s_1788414399787s3zf": {
+      "teacher": "Như",
+      "periods": 4
+    },
+    "6A2_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6A3_s_1788414399787fwz3": {
+      "teacher": "P.Thúy",
+      "periods": 3
+    },
+    "6A4_s_1788414399787vq7h": {
+      "teacher": "Mỹ",
+      "periods": 4
+    },
+    "6A5_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6A6_s_1788414399787fwz3": {
+      "teacher": "M.Hoa",
+      "periods": 3
+    },
+    "6B2_s_178841439978754mf": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "6B3_s_17884143997870c2y": {
+      "teacher": "Lương",
+      "periods": 2
+    },
+    "8A3_s_1788414399787dw7v": {
+      "teacher": "Tôn",
+      "periods": 3
+    },
+    "8A4_s_1788414399787tx3v": {
+      "teacher": "Đ.Dung",
+      "periods": 1
+    },
+    "8A7_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "8A8_s_1788414399787s3zf": {
+      "teacher": "H.Loan",
+      "periods": 4
+    },
+    "8B1_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "6A5_s_17884143997870c2y": {
+      "teacher": "Lương",
+      "periods": 2
+    },
+    "6A6_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6B2_s_1788414399787s33l": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "6B3_s_1788414399787s33l": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8A4_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "8A7_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "8B2_s_1788414399787tx3v": {
+      "teacher": "B.Hằng",
+      "periods": 1
+    },
+    "6A2_s_1788414399787hg23": {
+      "teacher": "Huyền",
+      "periods": 3
+    },
+    "6A3_s_1788414399787vq7h": {
+      "teacher": "Chương",
+      "periods": 4
+    },
+    "6A6_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6B1_s_1788414399787hg23": {
+      "teacher": "N.Quỳnh",
+      "periods": 3
+    },
+    "6B3_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8A3_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "8A4_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8A7_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8B1_s_1788414399787dw7v": {
+      "teacher": "Tôn",
+      "periods": 3
+    },
+    "8B2_s_1788414399787fzrg": {
+      "teacher": "D.An",
+      "periods": 4
+    },
+    "8B3_s_1788414399787h31f": {
+      "teacher": "Đ.Dung",
+      "periods": 2
+    },
+    "6A4_s_1788414399787ov69": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "6A6_s_1788414399787eei4": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "6B3_s_1788414399787ov69": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "8A3_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8A4_s_1788414399787h31f": {
+      "teacher": "Đ.Dung",
+      "periods": 2
+    },
+    "8A5_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8B3_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "6A4_s_1788414399787d2kg": {
+      "teacher": "Tôn",
+      "periods": 1
+    },
+    "6A5_s_1788414399787hg23": {
+      "teacher": "N.Quỳnh",
+      "periods": 3
+    },
+    "6A6_s_1788414399787vq7h": {
+      "teacher": "Thùy",
+      "periods": 4
+    },
+    "6B2_s_1788414399787vq7h": {
+      "teacher": "Chương",
+      "periods": 4
+    },
+    "6B3_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "8A5_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "8A7_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8B1_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "8B2_s_1788414399787jaz2": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "6A2_s_1788414399787s33l": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "6A3_s_1788414399787d2kg": {
+      "teacher": "Tôn",
+      "periods": 1
+    },
+    "6A4_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "8A6_s_178841439978769yb": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8A7_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "8A8_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8B1_s_1788414399787fe1x": {
+      "teacher": "B.Hiền",
+      "periods": 3
+    },
+    "8B2_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "6A2_s_178841439978754mf": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "6A6_s_1788414399787s33l": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "6B2_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6B3_s_1788414399787d2kg": {
+      "teacher": "Dược",
+      "periods": 1
+    },
+    "8A6_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "8A7_s_1788414399787fzrg": {
+      "teacher": "Uyên",
+      "periods": 4
+    },
+    "8A8_s_178841439978769yb": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8B3_s_178841439978769yb": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "6A5_s_178841439978754mf": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "6B1_s_1788414399787ov69": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "6B2_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "8A5_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "8A6_s_1788414399787jaz2": {
+      "teacher": "Tuấn",
+      "periods": 1
+    },
+    "8B1_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8B3_s_1788414399787fe1x": {
+      "teacher": "B.Hiền",
+      "periods": 3
+    },
+    "6A4_s_1788414399787eei4": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "6A5_s_1788414399787ov69": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "6B1_s_1788414399787d2kg": {
+      "teacher": "Liên",
+      "periods": 1
+    },
+    "6B2_s_17884143997870c2y": {
+      "teacher": "Lương",
+      "periods": 2
+    },
+    "6B3_s_178841439978754mf": {
+      "teacher": "Hảo",
+      "periods": 1
+    },
+    "8A3_s_178841439978769yb": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "8A4_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "8A5_s_1788414399787tx3v": {
+      "teacher": "Đ.Dung",
+      "periods": 1
+    },
+    "8A6_s_1788414399787dw7v": {
+      "teacher": "Dược",
+      "periods": 3
+    },
+    "8A8_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "6A6_s_1788414399787oc3v": {
+      "teacher": "T.Trang",
+      "periods": 4
+    },
+    "6B1_s_17884143997870c2y": {
+      "teacher": "Lương",
+      "periods": 2
+    },
+    "6B3_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "8A3_s_1788414399787a0lb": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8A8_s_17884143997878267": {
+      "teacher": "Tần",
+      "periods": 1
+    },
+    "8B3_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "6A3_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6B1_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6B3_s_1788414399787eei4": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8A3_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "8A8_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "8B3_s_1788414399787a0lb": {
+      "teacher": "Thu",
+      "periods": 1
+    },
+    "6A2_s_1788414399787tl3c": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6A3_s_178841439978754mf": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "6A4_s_1788414399787s33l": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "6A5_s_17884143997875qtd": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6B2_s_1788414399787eei4": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8A4_s_1788414399787jdgf": {
+      "teacher": "Thắm",
+      "periods": 1
+    },
+    "8A6_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "6A2_s_1788414399787eei4": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "6A3_s_1788414399787ov69": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "6A5_s_1788414399787ofr2": {
+      "teacher": "T.Anh",
+      "periods": 1
+    },
+    "6B1_s_178841439978754mf": {
+      "teacher": "Tý",
+      "periods": 1
+    },
+    "8A3_s_1788414399787jaz2": {
+      "teacher": "Lan",
+      "periods": 1
+    },
+    "8B2_s_1788414399787smi8": {
+      "teacher": "Tình",
+      "periods": 1
+    },
+    "6A3_s_1788414399787eei4": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8A7_s_1788414399787a0lb": {
+      "teacher": "Thu",
+      "periods": 1
+    },
+    "8A8_s_1788414399787h31f": {
+      "teacher": "B.Hằng",
+      "periods": 2
+    },
+    "8B2_s_178841439978769yb": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "8B3_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "6A5_s_1788414399787eei4": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "8A7_s_178841439978769yb": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8B3_s_1788414399787tx3v": {
+      "teacher": "Đ.Dung",
+      "periods": 1
+    },
+    "6A2_s_1788414399787ov69": {
+      "teacher": "Mỹ",
+      "periods": 1
+    },
+    "6B1_s_1788414399787eei4": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "8A4_s_1788414399787n1ul": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "8A5_s_178841439978769yb": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "8A6_s_1788414399787a0lb": {
+      "teacher": "Thu",
+      "periods": 1
+    },
+    "8A8_s_1788414399787tx3v": {
+      "teacher": "B.Hằng",
+      "periods": 1
+    },
+    "6A2_sub_hdtn_6": {
+      "teacher": "M.Toản",
+      "periods": 1
+    },
+    "6A3_sub_hdtn_6": {
+      "teacher": "N.Quỳnh",
+      "periods": 1
+    },
+    "6A4_sub_hdtn_6": {
+      "teacher": "D.An",
+      "periods": 1
+    },
+    "6A5_sub_hdtn_6": {
+      "teacher": "Lương",
+      "periods": 1
+    },
+    "6A6_sub_hdtn_6": {
+      "teacher": "Huyền",
+      "periods": 1
+    },
+    "6B1_sub_hdtn_6": {
+      "teacher": "T.Hà",
+      "periods": 1
+    },
+    "6B2_sub_hdtn_6": {
+      "teacher": "Hương",
+      "periods": 1
+    },
+    "6B3_sub_hdtn_6": {
+      "teacher": "Liên",
+      "periods": 1
+    },
+    "8A3_sub_hdtn_8": {
+      "teacher": "Đ.Dung",
+      "periods": 1
+    },
+    "8A4_sub_hdtn_8": {
+      "teacher": "B.Hiền",
+      "periods": 1
+    },
+    "8A5_sub_hdtn_8": {
+      "teacher": "T.Hằng",
+      "periods": 1
+    },
+    "8A6_sub_hdtn_8": {
+      "teacher": "Thu",
+      "periods": 1
+    },
+    "8A7_sub_hdtn_8": {
+      "teacher": "N.Dung",
+      "periods": 1
+    },
+    "8A8_sub_hdtn_8": {
+      "teacher": "B.Hằng",
+      "periods": 1
+    },
+    "8B1_sub_hdtn_8": {
+      "teacher": "Như",
+      "periods": 1
+    },
+    "8B2_sub_hdtn_8": {
+      "teacher": "Dược",
+      "periods": 1
+    },
+    "8B3_sub_hdtn_8": {
+      "teacher": "Trung",
+      "periods": 1
     },
     "6A10_s_1788414399787eei4": {
       "periods": 1,
       "teacher": "L.D.An"
     },
-    "6A10_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A10_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A10_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A10_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A10_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A10_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
     "6A10_s_1788414399787tl3c": {
       "periods": 1,
       "teacher": "Thuý"
-    },
-    "6A10_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A10_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A11_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A11_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A11_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A11_s_1788365139018zzfh": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A11_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A11_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A11_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A11_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
     },
     "6A11_s_1788414399787eei4": {
       "periods": 1,
       "teacher": "L.D.An"
     },
-    "6A11_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A11_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A11_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A11_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A11_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A11_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
     "6A11_s_1788414399787tl3c": {
       "periods": 1,
       "teacher": "Thuý"
-    },
-    "6A11_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A11_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A12_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A12_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A12_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A12_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A12_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A12_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A12_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
     },
     "6A12_s_1788414399787eei4": {
       "periods": 1,
       "teacher": "Hà"
     },
-    "6A12_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A12_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A12_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A12_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A12_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A12_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
     "6A12_s_1788414399787tl3c": {
       "periods": 1,
       "teacher": "Thuý"
-    },
-    "6A12_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A12_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
     },
     "6A12_sub_chao_co_6": {
       "isAuto": true,
@@ -265,3260 +2493,73 @@
       "periods": 3,
       "teacher": "Hà"
     },
-    "6A13_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A13_s_1788365139018db7t": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A13_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A13_s_1788365139018jbaj": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A13_s_1788365139018jttm": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A13_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A13_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A13_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A13_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A13_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
     "6A13_s_1788414399787eei4": {
       "periods": 1,
       "teacher": "N.Loan"
-    },
-    "6A13_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A13_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A13_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A13_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A13_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A13_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
     },
     "6A13_s_1788414399787tl3c": {
       "periods": 1,
       "teacher": "N.Loan"
     },
-    "6A13_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A13_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A1_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A1_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A1_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A1_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787eei4": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "6A1_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787tl3c": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "6A1_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A1_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A1_sub_khtn_6": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A1_sub_tin_6": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A1_sub_toan_6": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A2_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A2_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A2_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A2_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787eei4": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "6A2_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787tl3c": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "6A2_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A2_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A2_sub_khtn_6": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A2_sub_tin_6": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A2_sub_toan_6": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A3_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_1788365139018db7t": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A3_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A3_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A3_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787eei4": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "6A3_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787tl3c": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "6A3_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A3_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A3_sub_main_2": {
-      "group": "Ngữ Văn",
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A4_s_1788365139018db7t": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A4_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A4_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A4_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A4_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787eei4": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "6A4_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787tl3c": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "6A4_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A4_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A4_sub_main_3": {
-      "group": "Sử-Địa",
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A5_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_1788365139018db7t": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A5_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A5_s_1788365139018jbaj": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A5_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A5_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787eei4": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "6A5_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787tl3c": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "6A5_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A5_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A5_sub_main_4": {
-      "group": "Tiếng Anh",
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A6_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A6_s_1788365139018jbaj": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A6_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A6_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787eei4": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "6A6_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787tl3c": {
-      "periods": 1,
-      "teacher": "Thuý"
-    },
-    "6A6_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A6_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A7_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A7_s_1788365139018jbaj": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A7_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A7_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A7_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A7_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A7_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
     "6A7_s_1788414399787eei4": {
       "periods": 1,
       "teacher": "Hà"
-    },
-    "6A7_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A7_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A7_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A7_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A7_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A7_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
     },
     "6A7_s_1788414399787tl3c": {
       "periods": 1,
       "teacher": "Thuý"
     },
-    "6A7_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A7_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A8_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A8_s_1788365139018et7w": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A8_s_1788365139018jbaj": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A8_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A8_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A8_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A8_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A8_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
     "6A8_s_1788414399787eei4": {
       "periods": 1,
       "teacher": "L.D.An"
-    },
-    "6A8_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A8_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A8_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A8_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A8_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A8_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
     },
     "6A8_s_1788414399787tl3c": {
       "periods": 1,
       "teacher": "Thuý"
     },
-    "6A8_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A8_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A9_s_1788365139018655i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A9_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "6A9_s_17884143997870c2y": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A9_s_178841439978754mf": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A9_s_17884143997875qtd": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A9_s_1788414399787d2kg": {
-      "periods": 1,
-      "teacher": ""
-    },
     "6A9_s_1788414399787eei4": {
       "periods": 1,
       "teacher": "L.D.An"
-    },
-    "6A9_s_1788414399787fwz3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "6A9_s_1788414399787hg23": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A9_s_1788414399787oc3v": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "6A9_s_1788414399787ofr2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "6A9_s_1788414399787ov69": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A9_s_1788414399787s33l": {
-      "periods": 2,
-      "teacher": ""
     },
     "6A9_s_1788414399787tl3c": {
       "periods": 1,
       "teacher": "Thuý"
     },
-    "6A9_s_1788414399787uu26": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "6A9_s_1788414399787vq7h": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A1_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "7A1_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7A1_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "7A1_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A1_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A2_s_1788365139018ylo8": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A2_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7A2_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7A2_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7A2_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "7A2_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A2_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A3_s_1788365139018ylo8": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A3_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7A3_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7A3_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7A3_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "7A3_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A3_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A4_s_1788365139018ylo8": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A4_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7A4_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7A4_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7A4_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "7A4_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A4_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A5_s_1788365139018ylo8": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A5_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7A5_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7A5_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7A5_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "7A5_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A5_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A6_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A6_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7A6_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7A6_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7A6_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "7A6_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A6_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A7_s_1788365139018fo2o": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7A7_s_1788365139018uoxm": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7A7_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
     "7A7_s_17884143997871j1e": {
       "periods": 1,
       "teacher": "N.Loan"
-    },
-    "7A7_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7A7_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
     },
     "7A7_s_1788414399787p35o": {
       "periods": 1,
       "teacher": "N.Loan"
     },
-    "7A7_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7A7_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7B1_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B1_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7B1_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7B1_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7B1_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "7B1_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7B1_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7B2_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B2_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7B2_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7B2_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7B2_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "7B2_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7B2_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7B3_s_1788365139018yqzl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B3_s_1788365139018zwca": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "7B3_s_17884143997871j1e": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "7B3_s_17884143997872kcl": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "7B3_s_17884143997874eug": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787508o": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787bdp3": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787o1mh": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787oi7x": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787p35o": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "7B3_s_1788414399787tcuy": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787v0ec": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787vk5i": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787vlow": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787w8xh": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "7B3_s_1788414399787zf49": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A1_s_17883651390181n1u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A1_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A1_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A1_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "8A1_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A1_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "8A1_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A2_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A2_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A2_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A2_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A2_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A2_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8A2_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A2_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Thuý"
-    },
-    "8A2_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A3_s_17883651390181n1u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A3_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A3_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A3_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A3_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A3_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A3_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8A3_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A3_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Thuý"
-    },
-    "8A3_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A4_s_1788365139018187e": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A4_s_17883651390181n1u": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A4_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A4_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A4_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A4_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A4_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A4_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8A4_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A4_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "8A4_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A5_s_1788365139018187e": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A5_s_17883651390181n1u": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A5_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A5_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A5_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A5_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A5_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A5_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8A5_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A5_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "8A5_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A6_s_1788365139018187e": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A6_s_17883651390181n1u": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A6_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A6_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A6_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A6_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A6_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A6_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8A6_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A6_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "8A6_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A7_s_1788365139018187e": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A7_s_17883651390181n1u": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A7_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A7_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A7_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A7_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A7_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "N.Loan"
-    },
-    "8A7_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A7_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "N.Loan"
-    },
-    "8A7_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A8_s_1788365139018187e": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A8_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8A8_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A8_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A8_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A8_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "N.Loan"
-    },
-    "8A8_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8A8_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "N.Loan"
-    },
-    "8A8_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B1_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8B1_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8B1_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B1_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B1_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B1_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8B1_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B1_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Thuý"
-    },
-    "8B1_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B2_s_17883651390181n1u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8B2_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8B2_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B2_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B2_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B2_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8B2_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B2_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Thuý"
-    },
-    "8B2_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B3_s_17883651390181n1u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8B3_s_1788365139018qu70": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "8B3_s_1788365139018raop": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8B3_s_1788365139018sxfb": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B3_s_17884143997870c1q": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B3_s_178841439978769yb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B3_s_17884143997878267": {
-      "periods": 1,
-      "teacher": "L.D.An"
-    },
-    "8B3_s_1788414399787a0lb": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787dw7v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787fe1x": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787fzrg": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787h31f": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787jaz2": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787jdgf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787n1ul": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787s3zf": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "8B3_s_1788414399787smi8": {
-      "periods": 1,
-      "teacher": "Thuý"
-    },
-    "8B3_s_1788414399787tx3v": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A10_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A10_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A10_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A10_s_1788365139018xk12": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A10_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A10_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A10_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A10_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A10_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A10_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
     "9A10_s_17884143997877uqu": {
       "periods": 1,
       "teacher": "N.Loan"
-    },
-    "9A10_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
     },
     "9A10_s_1788414399787eccz": {
       "periods": 1,
       "teacher": "N.Loan"
     },
-    "9A10_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A10_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A10_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A10_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A10_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A10_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A1_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A1_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A1_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A1_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A1_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A1_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A1_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "9A1_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A1_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "9A1_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A1_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A1_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A1_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A1_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A1_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A2_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A2_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A2_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A2_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "P.T.Thúy"
-    },
-    "9A2_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A2_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Hà"
-    },
-    "9A2_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A2_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A2_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A2_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A2_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A2_sub_toan_9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A3_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A3_s_1788365139018ltcr": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A3_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A3_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A3_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A3_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A3_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A3_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A3_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A3_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "9A3_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A3_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9A3_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A3_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A3_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A3_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A3_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A3_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A4_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A4_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A4_s_1788365139018ltcr": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A4_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A4_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A4_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A4_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A4_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A4_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A4_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A4_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "9A4_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A4_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9A4_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A4_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A4_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A4_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A4_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A4_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A5_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A5_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A5_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A5_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A5_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A5_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A5_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A5_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A5_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A5_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A5_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "9A5_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A5_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9A5_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A5_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A5_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A5_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A5_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A5_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A6_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A6_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A6_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A6_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A6_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A6_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A6_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A6_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A6_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A6_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "9A6_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A6_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9A6_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A6_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A6_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A6_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A6_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A6_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A7_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A7_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A7_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A7_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A7_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A7_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A7_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A7_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A7_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A7_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tuân"
-    },
-    "9A7_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A7_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9A7_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A7_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A7_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A7_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A7_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A7_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A8_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A8_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A8_s_1788365139018xk12": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A8_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A8_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A8_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A8_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A8_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A8_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
     "9A8_s_17884143997877uqu": {
       "periods": 1,
       "teacher": "Tuân"
-    },
-    "9A8_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
     },
     "9A8_s_1788414399787eccz": {
       "periods": 1,
       "teacher": "Tần"
     },
-    "9A8_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A8_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A8_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A8_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A8_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A8_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A9_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A9_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A9_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A9_s_1788365139018xk12": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A9_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9A9_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A9_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A9_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A9_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A9_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
     "9A9_s_17884143997877uqu": {
       "periods": 1,
       "teacher": "N.Loan"
-    },
-    "9A9_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
     },
     "9A9_s_1788414399787eccz": {
       "periods": 1,
       "teacher": "N.Loan"
     },
-    "9A9_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A9_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9A9_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9A9_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9A9_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9A9_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B1_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B1_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B1_s_1788365139018ltcr": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B1_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B1_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B1_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B1_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B1_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B1_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B1_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B1_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B1_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "9B1_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B1_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9B1_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B1_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9B1_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B1_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B1_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B1_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B2_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B2_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B2_s_1788365139018ltcr": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B2_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B2_s_1788365139018o25u": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B2_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B2_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B2_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B2_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B2_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B2_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B2_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "9B2_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B2_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9B2_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B2_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9B2_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B2_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B2_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B2_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_s_178836513901854nb": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B3_s_178836513901859nn": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B3_s_1788365139018ltcr": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B3_s_1788365139018nvza": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_s_1788365139018xk12": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9B3_s_1788365139019b4k4": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "9B3_s_17884143997870v8r": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_s_17884143997870xcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B3_s_17884143997870zkv": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_s_178841439978744he": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_s_17884143997876qqe": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_s_17884143997877uqu": {
-      "periods": 1,
-      "teacher": "Tình"
-    },
-    "9B3_s_1788414399787e1jl": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B3_s_1788414399787eccz": {
-      "periods": 1,
-      "teacher": "Tần"
-    },
-    "9B3_s_1788414399787gzcs": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B3_s_1788414399787ibl3": {
-      "periods": 3,
-      "teacher": ""
-    },
-    "9B3_s_1788414399787moll": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_s_1788414399787qjh0": {
-      "periods": 4,
-      "teacher": ""
-    },
-    "9B3_s_1788414399787qu01": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "9B3_s_1788414399787ripy": {
-      "periods": 1,
-      "teacher": ""
-    },
-    "9B3_sub_chao_co_9": {
-      "isAuto": true,
-      "periods": 1,
-      "teacher": "Trung"
-    },
-    "9B3_sub_hdtn_9": {
-      "isAuto": true,
-      "periods": 3,
-      "teacher": "Trung"
-    },
-    "Class_6A10_Sub_10": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244202
-    },
-    "Class_6A1_Sub_1": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244193
-    },
-    "Class_6A2_Sub_2": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244195
-    },
-    "Class_6A3_Sub_3": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244196
-    },
-    "Class_6A4_Sub_4": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244197
-    },
-    "Class_6A5_Sub_5": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244197
-    },
-    "Class_6A6_Sub_6": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244198
-    },
-    "Class_6A7_Sub_7": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244199
-    },
-    "Class_6A8_Sub_8": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244201
-    },
-    "Class_6A9_Sub_9": {
-      "periods": 4,
-      "teacher": "",
-      "timestamp": 1788413244202
-    },
     "Kiêm nhiệm_Tình_s_1788413993235": {
       "periods": 3,
       "teacher": "Tình"
-    },
-    "PĐ_6_s_1788365139018ugo9": {
-      "periods": 0,
-      "teacher": ""
-    },
-    "PĐ_6_s_1788414399787fwz3": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_6_s_1788414399787oc3v": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_6_s_1788414399787vq7h": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_7_s_17884143997872kcl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_7_s_1788414399787508o": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_7_s_1788414399787tcuy": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_8_s_1788365139018raop": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_8_s_1788365139018sxfb": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_8_s_1788414399787fe1x": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_8_s_1788414399787fzrg": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_8_s_1788414399787s3zf": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_9_s_178836513901859nn": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_9_s_1788365139018xk12": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_9_s_1788414399787e1jl": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_9_s_1788414399787ibl3": {
-      "periods": 2,
-      "teacher": ""
-    },
-    "PĐ_9_s_1788414399787qjh0": {
-      "periods": 2,
-      "teacher": ""
     }
   },
   "classes": [
@@ -4066,7 +3107,7 @@
       ]
     }
   ],
-  "lastUpdated": 1788424183481,
+  "lastUpdated": 1788424819501,
   "subjects": [
     {
       "grade": "Kiêm nhiệm",
