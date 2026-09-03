@@ -9172,7 +9172,7 @@ function generateFetActivitiesCSV() {
     return csvContent;
 }
 
-// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Đảm bảo toàn vẹn dữ liệu 100%
+// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Chuẩn Xếp Thời Khóa Biểu THCS Việt Nam
 function generateFetFullXML() {
     syncGvcnAndHomeroom();
     const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
@@ -9187,7 +9187,7 @@ function generateFetFullXML() {
     const allSubjectsSet = new Set();
     const validActivities = [];
 
-    // Thêm từ danh mục hệ thống
+    // Pre-populate từ hệ thống
     (state.teachers || []).forEach(t => { if (t && t.shortName) allTeachersSet.add(t.shortName.trim()); });
     (state.classes || []).forEach(c => { if (c && c.name) allClassesSet.add(c.name.trim()); });
     (state.subjects || []).forEach(s => {
@@ -9197,7 +9197,7 @@ function generateFetFullXML() {
         }
     });
 
-    // Quét toàn bộ phân công thực tế để đảm bảo không bỏ sót bất kỳ GV, Lớp hay Môn học nào (như T.Anh, 6B1...)
+    // Quét toàn bộ phân công thực tế
     Object.keys(state.assignments || {}).forEach(key => {
         const parsedKey = parseAssignmentKey(key);
         const cls = parsedKey.cls;
@@ -9227,7 +9227,7 @@ function generateFetFullXML() {
         }
     });
 
-    // 2. Gom nhóm học sinh theo Khối và Lớp (Bao gồm tất cả các lớp có trong phân công)
+    // 2. Gom nhóm học sinh theo Khối và Lớp
     const yearsMap = {};
     Array.from(allClassesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
         const gradeMatch = clsName.match(/^\d+/);
@@ -9246,29 +9246,34 @@ function generateFetFullXML() {
         studentsXml += `    </Year>\n`;
     });
 
-    // 3. Danh sách môn học (Bao gồm tất cả các môn có trong phân công)
+    // 3. Danh sách môn học
     let subjectsXml = '';
     Array.from(allSubjectsSet).sort().forEach(sName => {
         subjectsXml += `    <Subject>\n      <Name>${escapeXml(sName)}</Name>\n      <Comments></Comments>\n    </Subject>\n`;
     });
 
-    // 4. Danh sách giáo viên (Bao gồm tất cả các GV có trong phân công, như T.Anh...)
+    // 4. Danh sách giáo viên
     let teachersXml = '';
     Array.from(allTeachersSet).sort().forEach(tName => {
         teachersXml += `    <Teacher>\n      <Name>${escapeXml(tName)}</Name>\n      <Comments></Comments>\n    </Teacher>\n`;
     });
 
-    // 5. Danh sách phòng học
+    // 5. Danh sách phòng học & điểm trường
+    let buildingsXml = `    <Building>\n      <Name>Khu A</Name>\n      <Comments></Comments>\n    </Building>\n`;
     let roomsXml = '';
-    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : Array.from(allClassesSet).map(c => ({ name: `P.${c}`, capacity: 45 }));
+    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : Array.from(allClassesSet).map(c => ({ name: `P.${c}`, building: 'Khu A', capacity: 45 }));
     roomsList.forEach(r => {
         roomsXml += `    <Room>\n      <Name>${escapeXml(r.name)}</Name>\n      <Building>${escapeXml(r.building || 'Khu A')}</Building>\n      <Capacity>${r.capacity || 45}</Capacity>\n      <Comments></Comments>\n    </Room>\n`;
     });
 
-    // 6. Danh sách tiết giảng (Activities)
+    // 6. Danh sách tiết giảng (Activities) & Sinh Ràng Buộc Giãn Cách / Tiết Ghim
     let activitiesXml = '';
+    let minDaysConstraintsXml = '';
+    let preferredTimesXml = '';
     let actId = 1;
     let actGroupId = 1;
+
+    const hoursOfDay = ['Tiết 1', 'Tiết 2', 'Tiết 3', 'Tiết 4', 'Tiết 5'];
 
     validActivities.forEach(act => {
         let splits = [act.periods];
@@ -9285,9 +9290,67 @@ function generateFetFullXML() {
         else if (act.periods === 2) splits = rule2.split('+').map(Number);
 
         const curGroupId = splits.length > 1 ? actGroupId++ : 0;
-        splits.forEach(dur => {
-            activitiesXml += `    <Activity>\n      <Teacher>${escapeXml(act.teacher)}</Teacher>\n      <Subject>${escapeXml(act.subName)}</Subject>\n      <Activity_Tag></Activity_Tag>\n      <Students>${escapeXml(act.cls)}</Students>\n      <Duration>${dur}</Duration>\n      <Total_Duration>${act.periods}</Total_Duration>\n      <Id>${actId++}</Id>\n      <Activity_Group_Id>${curGroupId}</Activity_Group_Id>\n      <Active>true</Active>\n      <Comments></Comments>\n    </Activity>\n`;
+        const currentGroupActIds = [];
+
+        // Xác định ca học của lớp (Sáng hay Chiều)
+        const matchedClass = (state.classes || []).find(c => c && c.name === act.cls);
+        const gradeMatch = act.cls.match(/^\d+/);
+        const grade = gradeMatch ? gradeMatch[0] : '6';
+        const isAfternoon = (matchedClass && matchedClass.session === 'chiều') || (!matchedClass && (grade === '6' || grade === '8'));
+
+        splits.forEach((dur, splitIdx) => {
+            const curActId = actId++;
+            currentGroupActIds.push(curActId);
+
+            activitiesXml += `    <Activity>\n      <Teacher>${escapeXml(act.teacher)}</Teacher>\n      <Subject>${escapeXml(act.subName)}</Subject>\n      <Activity_Tag></Activity_Tag>\n      <Students>${escapeXml(act.cls)}</Students>\n      <Duration>${dur}</Duration>\n      <Total_Duration>${act.periods}</Total_Duration>\n      <Id>${curActId}</Id>\n      <Activity_Group_Id>${curGroupId}</Activity_Group_Id>\n      <Active>true</Active>\n      <Comments></Comments>\n    </Activity>\n`;
+
+            // Tự động ghim Chào cờ vào Tiết 1 Thứ 2
+            const isCC = /^(chào cờ|hdtn_chao_co|hđtn \(chào cờ\)|chao co)$/i.test(act.subName.trim());
+            if (isCC && splitIdx === 0) {
+                const prefDay = isAfternoon ? 'C.T2' : 'S.T2';
+                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 1</Preferred_Hour>\n      <Permanently_Locked>true</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Chào Cờ Đầu Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+            }
+
+            // Tự động ghim Sinh hoạt lớp vào Tiết 4/5 Thứ 7
+            const isSHL = /^(sinh hoạt lớp|shl|hdtn_shl|hđtn \(shl\)|sinh hoat lop)$/i.test(act.subName.trim());
+            if (isSHL && splitIdx === 0) {
+                const prefDay = isAfternoon ? 'C.T7' : 'S.T7';
+                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 4</Preferred_Hour>\n      <Permanently_Locked>true</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Sinh Hoạt Lớp Cuối Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+            }
         });
+
+        // Tự động tạo ràng buộc giãn cách ngày (ConstraintMinDaysBetweenActivities) cho các môn tách buổi
+        if (currentGroupActIds.length > 1) {
+            minDaysConstraintsXml += `    <ConstraintMinDaysBetweenActivities>\n      <Weight_Percentage>98</Weight_Percentage>\n      <Consecutive_If_Same_Day>true</Consecutive_If_Same_Day>\n      <Number_of_Activities>${currentGroupActIds.length}</Number_of_Activities>\n${currentGroupActIds.map(id => `      <Activity_Id>${id}</Activity_Id>`).join('\n')}\n      <MinDays>1</MinDays>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintMinDaysBetweenActivities>\n`;
+        }
+    });
+
+    // 7. Ràng buộc Buổi Học Cho Từng Lớp (ConstraintStudentsSetNotAvailableTimes)
+    let classSessionConstraintsXml = '';
+    Array.from(allClassesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
+        const matchedClass = (state.classes || []).find(c => c && c.name === clsName);
+        const gradeMatch = clsName.match(/^\d+/);
+        const grade = gradeMatch ? gradeMatch[0] : '6';
+        const isAfternoon = (matchedClass && matchedClass.session === 'chiều') || (!matchedClass && (grade === '6' || grade === '8'));
+
+        // Lớp học sáng thì KHÔNG HỌC các buổi chiều (C.T2 -> C.T7)
+        // Lớp học chiều thì KHÔNG HỌC các buổi sáng (S.T2 -> S.T7)
+        const disabledDays = isAfternoon ? ['S.T2', 'S.T3', 'S.T4', 'S.T5', 'S.T6', 'S.T7'] : ['C.T2', 'C.T3', 'C.T4', 'C.T5', 'C.T6', 'C.T7'];
+        
+        let notAvailSlotsXml = '';
+        disabledDays.forEach(d => {
+            hoursOfDay.forEach(h => {
+                notAvailSlotsXml += `      <Not_Available_Time>\n        <Day>${d}</Day>\n        <Hour>${h}</Hour>\n      </Not_Available_Time>\n`;
+            });
+        });
+
+        classSessionConstraintsXml += `    <ConstraintStudentsSetNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Number_of_Not_Available_Times>${disabledDays.length * hoursOfDay.length}</Number_of_Not_Available_Times>\n${notAvailSlotsXml}      <Active>true</Active>\n      <Comments>Khoa ca hoc ${isAfternoon ? 'Chieu' : 'Sang'}</Comments>\n    </ConstraintStudentsSetNotAvailableTimes>\n`;
+    });
+
+    // 8. Ràng buộc Phòng Học Cố Định Cho Từng Lớp (ConstraintStudentsSetHomeRoom)
+    let homeRoomConstraintsXml = '';
+    Array.from(allClassesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
+        homeRoomConstraintsXml += `    <ConstraintStudentsSetHomeRoom>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Room>P.${escapeXml(clsName)}</Room>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintStudentsSetHomeRoom>\n`;
     });
 
     const targetFetVersion = (document.getElementById('fetVersionSelect') && document.getElementById('fetVersionSelect').value) ? document.getElementById('fetVersionSelect').value : '6.25.0';
@@ -9295,35 +9358,42 @@ function generateFetFullXML() {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <fet version="${targetFetVersion}">
   <Institution_Name>THCS Truong Hoc</Institution_Name>
-  <Comments>Tao boi FET Timetable Hub</Comments>
+  <Comments>Tao boi FET Timetable Hub - Chuan Xep TKB Viet Nam</Comments>
   <Days_List>
-    <Number_of_Days>6</Number_of_Days>
-    <Day><Name>Thu 2</Name></Day>
-    <Day><Name>Thu 3</Name></Day>
-    <Day><Name>Thu 4</Name></Day>
-    <Day><Name>Thu 5</Name></Day>
-    <Day><Name>Thu 6</Name></Day>
-    <Day><Name>Thu 7</Name></Day>
+    <Number_of_Days>12</Number_of_Days>
+    <Day><Name>S.T2</Name></Day>
+    <Day><Name>C.T2</Name></Day>
+    <Day><Name>S.T3</Name></Day>
+    <Day><Name>C.T3</Name></Day>
+    <Day><Name>S.T4</Name></Day>
+    <Day><Name>C.T4</Name></Day>
+    <Day><Name>S.T5</Name></Day>
+    <Day><Name>C.T5</Name></Day>
+    <Day><Name>S.T6</Name></Day>
+    <Day><Name>C.T6</Name></Day>
+    <Day><Name>S.T7</Name></Day>
+    <Day><Name>C.T7</Name></Day>
   </Days_List>
   <Hours_List>
-    <Number_of_Hours>10</Number_of_Hours>
-    <Hour><Name>Tiet 1 (Sang)</Name></Hour>
-    <Hour><Name>Tiet 2 (Sang)</Name></Hour>
-    <Hour><Name>Tiet 3 (Sang)</Name></Hour>
-    <Hour><Name>Tiet 4 (Sang)</Name></Hour>
-    <Hour><Name>Tiet 5 (Sang)</Name></Hour>
-    <Hour><Name>Tiet 1 (Chieu)</Name></Hour>
-    <Hour><Name>Tiet 2 (Chieu)</Name></Hour>
-    <Hour><Name>Tiet 3 (Chieu)</Name></Hour>
-    <Hour><Name>Tiet 4 (Chieu)</Name></Hour>
-    <Hour><Name>Tiet 5 (Chieu)</Name></Hour>
+    <Number_of_Hours>5</Number_of_Hours>
+    <Hour><Name>Tiết 1</Name></Hour>
+    <Hour><Name>Tiết 2</Name></Hour>
+    <Hour><Name>Tiết 3</Name></Hour>
+    <Hour><Name>Tiết 4</Name></Hour>
+    <Hour><Name>Tiết 5</Name></Hour>
   </Hours_List>
+  <Activity_Tags_List>
+    <Activity_Tag><Name>N1</Name></Activity_Tag>
+    <Activity_Tag><Name>N2</Name></Activity_Tag>
+  </Activity_Tags_List>
   <Subjects_List>
 ${subjectsXml}  </Subjects_List>
   <Teachers_List>
 ${teachersXml}  </Teachers_List>
   <Students_List>
 ${studentsXml}  </Students_List>
+  <Buildings_List>
+${buildingsXml}  </Buildings_List>
   <Rooms_List>
 ${roomsXml}  </Rooms_List>
   <Activities_List>
@@ -9333,13 +9403,23 @@ ${activitiesXml}  </Activities_List>
       <Weight_Percentage>100</Weight_Percentage>
       <Active>true</Active>
     </ConstraintBasicCompulsoryTime>
-  </Time_Constraints_List>
+    <ConstraintTeachersMaxHoursDaily>
+      <Weight_Percentage>100</Weight_Percentage>
+      <Maximum_Hours_Daily>5</Maximum_Hours_Daily>
+      <Active>true</Active>
+    </ConstraintTeachersMaxHoursDaily>
+    <ConstraintTeachersMaxGapsPerDay>
+      <Weight_Percentage>95</Weight_Percentage>
+      <Max_Gaps>1</Max_Gaps>
+      <Active>true</Active>
+    </ConstraintTeachersMaxGapsPerDay>
+${minDaysConstraintsXml}${classSessionConstraintsXml}${preferredTimesXml}  </Time_Constraints_List>
   <Space_Constraints_List>
     <ConstraintBasicCompulsorySpace>
       <Weight_Percentage>100</Weight_Percentage>
       <Active>true</Active>
     </ConstraintBasicCompulsorySpace>
-  </Space_Constraints_List>
+${homeRoomConstraintsXml}  </Space_Constraints_List>
 </fet>`;
 }
 
