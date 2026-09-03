@@ -9411,6 +9411,12 @@ function openFetExportModal() {
     );
 }
 
+window.exportFetXmlProject = exportFetXmlProject;
+window.exportFetZipPackage = exportFetZipPackage;
+window.exportSingleFetCSV = exportSingleFetCSV;
+window.openFetExportModal = openFetExportModal;
+window.exportFETCSV = exportFETCSV;
+
 // ================= EXCEL DATA IMPORT SYSTEM (STRICT VALIDATION) =================
 
 // 1.1. Nhập danh mục môn học & nhiệm vụ từ Excel
