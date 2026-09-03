@@ -3917,6 +3917,42 @@ async function importGroupAssignmentExcel(event) {
                 });
             }
 
+            // 3. Tự động xác định lớp chủ nhiệm nếu có nhiệm vụ GVCN
+            if (teacherData.hasGvcn && !teacherData.homeroomClass) {
+                const MASTER_CLASS_GVCN_MAP = {
+                    'Dũng': '9A2',
+                    'Dược': '8B2',
+                    'Huyền': '6A6',
+                    'Hưng': '9A6',
+                    'Liên': '6A3',
+                    'Lụa': '9A3',
+                    'Phụng': '6A2',
+                    'N.Quỳnh': '6A4',
+                    'T.Quỳnh': '6A1',
+                    'Thảo': '9A4',
+                    'H.Thiện': '9A1',
+                    'Thu': '8A6',
+                    'Tiếp': '7B3',
+                    'Hảo': '7A1',
+                    'Trà': '7A5',
+                    'M.Hoa': '7A2',
+                    'Thuý': '6A1'
+                };
+
+                let foundCls = (tObj && tObj.homeroomClass) ? tObj.homeroomClass : (state.classes || []).find(c => c && c.gvcn === tShort)?.name;
+                if (!foundCls) {
+                    foundCls = MASTER_CLASS_GVCN_MAP[tShort] || '';
+                }
+
+                if (foundCls) {
+                    teacherData.homeroomClass = foundCls;
+                }
+            }
+
+            if (teacherData.homeroomClass) {
+                teacherData.totalPeriods += 4; // Cộng 4 tiết GVCN (1T Chào cờ + 3T SHL)
+            }
+
             parsedResults.push(teacherData);
         }
 
