@@ -8995,10 +8995,21 @@ function createZipBlob(files) {
     return new Blob(parts, { type: 'application/zip' });
 }
 
+function escapeXml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
 // 1. Tạo nội dung CSV Môn học cho FET
 function generateFetSubjectsCSV() {
     const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
     const subjectsSet = new Set();
+
     (state.subjects || []).forEach(s => {
         if (s && s.name && s.grade !== 'Kiêm nhiệm') {
             const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim());
@@ -9007,33 +9018,79 @@ function generateFetSubjectsCSV() {
             }
         }
     });
+
+    Object.keys(state.assignments || {}).forEach(key => {
+        const parsedKey = parseAssignmentKey(key);
+        const cls = parsedKey.cls;
+        const subId = parsedKey.subId;
+        const val = state.assignments[key];
+        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
+            const sub = (state.subjects || []).find(s => s && s.id === subId);
+            const subName = sub ? sub.name.trim() : (subId || 'Môn học');
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(subName);
+            if (!excludeGDTC || !isGDTC) {
+                subjectsSet.add(subName);
+            }
+        }
+    });
+
     let content = `"Name","Comments"\n`;
     Array.from(subjectsSet).sort().forEach(subName => {
-        content += `"${subName}",""\n`;
+        content += `"${subName.replace(/"/g, '""')}",""\n`;
     });
     return content;
 }
 
 // 2. Tạo nội dung CSV Giáo viên cho FET
 function generateFetTeachersCSV() {
-    const teachersList = (state.teachers || []).filter(t => t && t.shortName);
+    const teachersMap = new Map();
+    (state.teachers || []).forEach(t => {
+        if (t && t.shortName) {
+            teachersMap.set(t.shortName.trim(), t.fullName || t.shortName);
+        }
+    });
+
+    Object.keys(state.assignments || {}).forEach(key => {
+        const parsedKey = parseAssignmentKey(key);
+        const val = state.assignments[key];
+        if (val && val.teacher && val.periods > 0 && parsedKey.cls !== 'Kiêm nhiệm') {
+            const tName = val.teacher.trim();
+            if (!teachersMap.has(tName)) {
+                teachersMap.set(tName, tName);
+            }
+        }
+    });
+
     let content = `"Name","Comments"\n`;
-    teachersList.forEach(t => {
-        content += `"${t.shortName}","${(t.fullName || t.shortName).replace(/"/g, '""')}"\n`;
+    Array.from(teachersMap.keys()).sort().forEach(tShort => {
+        const tFull = teachersMap.get(tShort) || tShort;
+        content += `"${tShort.replace(/"/g, '""')}","${tFull.replace(/"/g, '""')}"\n`;
     });
     return content;
 }
 
 // 3. Tạo nội dung CSV Khối, Lớp học và các nhóm cho FET
 function generateFetStudentsCSV() {
-    let content = `"Year","Group","Subgroup","Number of Students","Comments"\n`;
+    const classesSet = new Set();
     (state.classes || []).forEach(c => {
-        if (c && c.name) {
-            const gradeMatch = c.name.match(/^\d+/);
-            const grade = gradeMatch ? gradeMatch[0] : '6';
-            const yearName = `Khối ${grade}`;
-            content += `"${yearName}","${c.name}","",35,""\n`;
+        if (c && c.name) classesSet.add(c.name.trim());
+    });
+
+    Object.keys(state.assignments || {}).forEach(key => {
+        const parsedKey = parseAssignmentKey(key);
+        const cls = parsedKey.cls;
+        const val = state.assignments[key];
+        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
+            classesSet.add(cls.trim());
         }
+    });
+
+    let content = `"Year","Group","Subgroup","Number of Students","Comments"\n`;
+    Array.from(classesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
+        const gradeMatch = clsName.match(/^\d+/);
+        const grade = gradeMatch ? gradeMatch[0] : '6';
+        const yearName = `Khối ${grade}`;
+        content += `"${yearName}","${clsName.replace(/"/g, '""')}","",35,""\n`;
     });
     return content;
 }
@@ -9041,9 +9098,17 @@ function generateFetStudentsCSV() {
 // 4. Tạo nội dung CSV Phòng học / Tòa nhà cho FET
 function generateFetRoomsCSV() {
     let content = `"Building","Name","Capacity","Comments"\n`;
-    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : (state.classes || []).map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
+    const classesSet = new Set();
+    (state.classes || []).forEach(c => { if (c && c.name) classesSet.add(c.name.trim()); });
+    Object.keys(state.assignments || {}).forEach(key => {
+        const parsedKey = parseAssignmentKey(key);
+        const val = state.assignments[key];
+        if (val && val.teacher && val.periods > 0 && parsedKey.cls !== 'Kiêm nhiệm') classesSet.add(parsedKey.cls.trim());
+    });
+
+    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : Array.from(classesSet).map(c => ({ name: `P.${c}`, building: 'Khu A', capacity: 45 }));
     roomsList.forEach(r => {
-        content += `"${r.building || 'Khu A'}","${r.name || ''}",${r.capacity || 45},""\n`;
+        content += `"${(r.building || 'Khu A').replace(/"/g, '""')}","${(r.name || '').replace(/"/g, '""')}",${r.capacity || 45},""\n`;
     });
     return content;
 }
@@ -9069,37 +9134,37 @@ function generateFetActivitiesCSV() {
 
         if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
             const sub = (state.subjects || []).find(s => s && s.id === subId);
-            if (sub && sub.grade !== 'Kiêm nhiệm') {
-                const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(sub.name.trim());
-                if (excludeGDTC && isGDTC) {
-                    return;
-                }
+            const subName = sub ? sub.name.trim() : (subId || 'Môn học');
 
-                let split = val.periods.toString();
-                if (val.periods >= 7) {
-                    const pairs = Math.floor(val.periods / 2);
-                    const remainder = val.periods % 2;
-                    const parts = [];
-                    for (let p = 0; p < pairs; p++) parts.push('2');
-                    if (remainder > 0) parts.push('1');
-                    split = parts.join('+');
-                } else if (val.periods === 6) {
-                    split = '2+2+2';
-                } else if (val.periods === 5) {
-                    split = rule5;
-                } else if (val.periods === 4) {
-                    split = rule4;
-                } else if (val.periods === 3) {
-                    split = rule3;
-                } else if (val.periods === 2) {
-                    split = rule2;
-                }
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(subName);
+            if (excludeGDTC && isGDTC) {
+                return;
+            }
 
-                if (val.periods === 1) {
-                    csvContent += `"${cls}","${sub.name}","${val.teacher}","",1,"",,,,""\n`;
-                } else {
-                    csvContent += `"${cls}","${sub.name}","${val.teacher}","",${val.periods},"${split}",1,98,1,""\n`;
-                }
+            let split = val.periods.toString();
+            if (val.periods >= 7) {
+                const pairs = Math.floor(val.periods / 2);
+                const remainder = val.periods % 2;
+                const parts = [];
+                for (let p = 0; p < pairs; p++) parts.push('2');
+                if (remainder > 0) parts.push('1');
+                split = parts.join('+');
+            } else if (val.periods === 6) {
+                split = '2+2+2';
+            } else if (val.periods === 5) {
+                split = rule5;
+            } else if (val.periods === 4) {
+                split = rule4;
+            } else if (val.periods === 3) {
+                split = rule3;
+            } else if (val.periods === 2) {
+                split = rule2;
+            }
+
+            if (val.periods === 1) {
+                csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",1,"",,,,""\n`;
+            } else {
+                csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",${val.periods},"${split}",1,98,1,""\n`;
             }
         }
     });
@@ -9107,7 +9172,7 @@ function generateFetActivitiesCSV() {
     return csvContent;
 }
 
-// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML)
+// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Đảm bảo toàn vẹn dữ liệu 100%
 function generateFetFullXML() {
     syncGvcnAndHomeroom();
     const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
@@ -9116,60 +9181,23 @@ function generateFetFullXML() {
     const rule3 = (document.getElementById('splitRule3') && document.getElementById('splitRule3').value) ? document.getElementById('splitRule3').value : '2+1';
     const rule2 = (document.getElementById('splitRule2') && document.getElementById('splitRule2').value) ? document.getElementById('splitRule2').value : '2';
 
-    // Gom nhóm học sinh theo Khối và Lớp
-    const yearsMap = {};
-    (state.classes || []).forEach(c => {
-        if (c && c.name) {
-            const gradeMatch = c.name.match(/^\d+/);
-            const grade = gradeMatch ? gradeMatch[0] : '6';
-            const yName = `Khối ${grade}`;
-            if (!yearsMap[yName]) yearsMap[yName] = [];
-            yearsMap[yName].push(c.name);
-        }
-    });
+    // 1. Thu thập toàn bộ các đối tượng xuất hiện trong phân công
+    const allTeachersSet = new Set();
+    const allClassesSet = new Set();
+    const allSubjectsSet = new Set();
+    const validActivities = [];
 
-    let studentsXml = '';
-    Object.keys(yearsMap).sort().forEach(yName => {
-        studentsXml += `    <Year>\n      <Name>${yName}</Name>\n      <Number_of_Students>0</Number_of_Students>\n`;
-        yearsMap[yName].sort().forEach(clsName => {
-            studentsXml += `      <Group>\n        <Name>${clsName}</Name>\n        <Number_of_Students>0</Number_of_Students>\n      </Group>\n`;
-        });
-        studentsXml += `    </Year>\n`;
-    });
-
-    // Danh sách môn học
-    const subjectsSet = new Set();
+    // Thêm từ danh mục hệ thống
+    (state.teachers || []).forEach(t => { if (t && t.shortName) allTeachersSet.add(t.shortName.trim()); });
+    (state.classes || []).forEach(c => { if (c && c.name) allClassesSet.add(c.name.trim()); });
     (state.subjects || []).forEach(s => {
         if (s && s.name && s.grade !== 'Kiêm nhiệm') {
             const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim());
-            if (!excludeGDTC || !isGDTC) subjectsSet.add(s.name.trim());
-        }
-    });
-    let subjectsXml = '';
-    Array.from(subjectsSet).sort().forEach(sName => {
-        subjectsXml += `    <Subject>\n      <Name>${sName}</Name>\n    </Subject>\n`;
-    });
-
-    // Danh sách giáo viên
-    let teachersXml = '';
-    (state.teachers || []).forEach(t => {
-        if (t && t.shortName) {
-            teachersXml += `    <Teacher>\n      <Name>${t.shortName}</Name>\n    </Teacher>\n`;
+            if (!excludeGDTC || !isGDTC) allSubjectsSet.add(s.name.trim());
         }
     });
 
-    // Danh sách phòng học
-    let roomsXml = '';
-    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : (state.classes || []).map(c => ({ name: `P.${c.name}`, capacity: 45 }));
-    roomsList.forEach(r => {
-        roomsXml += `    <Room>\n      <Name>${r.name}</Name>\n      <Capacity>${r.capacity || 45}</Capacity>\n    </Room>\n`;
-    });
-
-    // Danh sách tiết giảng (Activities)
-    let activitiesXml = '';
-    let actId = 1;
-    let actGroupId = 1;
-
+    // Quét toàn bộ phân công thực tế để đảm bảo không bỏ sót bất kỳ GV, Lớp hay Môn học nào (như T.Anh, 6B1...)
     Object.keys(state.assignments || {}).forEach(key => {
         const parsedKey = parseAssignmentKey(key);
         const cls = parsedKey.cls;
@@ -9178,33 +9206,92 @@ function generateFetFullXML() {
 
         if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
             const sub = (state.subjects || []).find(s => s && s.id === subId);
-            if (sub && sub.grade !== 'Kiêm nhiệm') {
-                const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(sub.name.trim());
-                if (excludeGDTC && isGDTC) return;
+            const subName = sub ? sub.name.trim() : (subId || 'Môn học');
 
-                let splits = [val.periods];
-                if (val.periods >= 7) {
-                    const pairs = Math.floor(val.periods / 2);
-                    const remainder = val.periods % 2;
-                    splits = [];
-                    for (let p = 0; p < pairs; p++) splits.push(2);
-                    if (remainder > 0) splits.push(1);
-                } else if (val.periods === 6) splits = [2, 2, 2];
-                else if (val.periods === 5) splits = rule5.split('+').map(Number);
-                else if (val.periods === 4) splits = rule4.split('+').map(Number);
-                else if (val.periods === 3) splits = rule3.split('+').map(Number);
-                else if (val.periods === 2) splits = rule2.split('+').map(Number);
+            const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(subName);
+            if (excludeGDTC && isGDTC) return;
 
-                const curGroupId = splits.length > 1 ? actGroupId++ : 0;
-                splits.forEach(dur => {
-                    activitiesXml += `    <Activity>\n      <Teacher>${val.teacher}</Teacher>\n      <Subject>${sub.name}</Subject>\n      <Students>${cls}</Students>\n      <Duration>${dur}</Duration>\n      <Total_Duration>${val.periods}</Total_Duration>\n      <Id>${actId++}</Id>\n      <Activity_Group_Id>${curGroupId}</Activity_Group_Id>\n      <Active>true</Active>\n    </Activity>\n`;
-                });
-            }
+            const teacherName = val.teacher.trim();
+            const className = cls.trim();
+
+            allTeachersSet.add(teacherName);
+            allClassesSet.add(className);
+            allSubjectsSet.add(subName);
+
+            validActivities.push({
+                cls: className,
+                subName: subName,
+                teacher: teacherName,
+                periods: val.periods
+            });
         }
     });
 
+    // 2. Gom nhóm học sinh theo Khối và Lớp (Bao gồm tất cả các lớp có trong phân công)
+    const yearsMap = {};
+    Array.from(allClassesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
+        const gradeMatch = clsName.match(/^\d+/);
+        const grade = gradeMatch ? gradeMatch[0] : '6';
+        const yName = `Khối ${grade}`;
+        if (!yearsMap[yName]) yearsMap[yName] = [];
+        yearsMap[yName].push(clsName);
+    });
+
+    let studentsXml = '';
+    Object.keys(yearsMap).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(yName => {
+        studentsXml += `    <Year>\n      <Name>${escapeXml(yName)}</Name>\n      <Number_of_Students>0</Number_of_Students>\n      <Comments></Comments>\n`;
+        yearsMap[yName].forEach(clsName => {
+            studentsXml += `      <Group>\n        <Name>${escapeXml(clsName)}</Name>\n        <Number_of_Students>0</Number_of_Students>\n        <Comments></Comments>\n      </Group>\n`;
+        });
+        studentsXml += `    </Year>\n`;
+    });
+
+    // 3. Danh sách môn học (Bao gồm tất cả các môn có trong phân công)
+    let subjectsXml = '';
+    Array.from(allSubjectsSet).sort().forEach(sName => {
+        subjectsXml += `    <Subject>\n      <Name>${escapeXml(sName)}</Name>\n      <Comments></Comments>\n    </Subject>\n`;
+    });
+
+    // 4. Danh sách giáo viên (Bao gồm tất cả các GV có trong phân công, như T.Anh...)
+    let teachersXml = '';
+    Array.from(allTeachersSet).sort().forEach(tName => {
+        teachersXml += `    <Teacher>\n      <Name>${escapeXml(tName)}</Name>\n      <Comments></Comments>\n    </Teacher>\n`;
+    });
+
+    // 5. Danh sách phòng học
+    let roomsXml = '';
+    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : Array.from(allClassesSet).map(c => ({ name: `P.${c}`, capacity: 45 }));
+    roomsList.forEach(r => {
+        roomsXml += `    <Room>\n      <Name>${escapeXml(r.name)}</Name>\n      <Building>${escapeXml(r.building || 'Khu A')}</Building>\n      <Capacity>${r.capacity || 45}</Capacity>\n      <Comments></Comments>\n    </Room>\n`;
+    });
+
+    // 6. Danh sách tiết giảng (Activities)
+    let activitiesXml = '';
+    let actId = 1;
+    let actGroupId = 1;
+
+    validActivities.forEach(act => {
+        let splits = [act.periods];
+        if (act.periods >= 7) {
+            const pairs = Math.floor(act.periods / 2);
+            const remainder = act.periods % 2;
+            splits = [];
+            for (let p = 0; p < pairs; p++) splits.push(2);
+            if (remainder > 0) splits.push(1);
+        } else if (act.periods === 6) splits = [2, 2, 2];
+        else if (act.periods === 5) splits = rule5.split('+').map(Number);
+        else if (act.periods === 4) splits = rule4.split('+').map(Number);
+        else if (act.periods === 3) splits = rule3.split('+').map(Number);
+        else if (act.periods === 2) splits = rule2.split('+').map(Number);
+
+        const curGroupId = splits.length > 1 ? actGroupId++ : 0;
+        splits.forEach(dur => {
+            activitiesXml += `    <Activity>\n      <Teacher>${escapeXml(act.teacher)}</Teacher>\n      <Subject>${escapeXml(act.subName)}</Subject>\n      <Activity_Tag></Activity_Tag>\n      <Students>${escapeXml(act.cls)}</Students>\n      <Duration>${dur}</Duration>\n      <Total_Duration>${act.periods}</Total_Duration>\n      <Id>${actId++}</Id>\n      <Activity_Group_Id>${curGroupId}</Activity_Group_Id>\n      <Active>true</Active>\n      <Comments></Comments>\n    </Activity>\n`;
+        });
+    });
+
     return `<?xml version="1.0" encoding="UTF-8"?>
-<fet version="5.37.0">
+<fet version="6.28.0">
   <Institution_Name>THCS Truong Hoc</Institution_Name>
   <Comments>Tao boi FET Timetable Hub</Comments>
   <Days_List>
