@@ -2129,6 +2129,16 @@ function renderBatchAssignPanel(groupId) {
             cb.dataset.isPd = isPd ? 'true' : 'false';
             cb.value = c.name;
             cb.style.cssText = 'cursor: pointer;';
+
+            cb.addEventListener('change', () => {
+                const curSub = getSelectedSubject();
+                if (isGvcnSpecialSubject(curSub) && cb.checked) {
+                    // Mỗi giáo viên chỉ chủ nhiệm 1 lớp duy nhất: bỏ chọn tất cả các lớp khác
+                    document.querySelectorAll('.batch-class-cb').forEach(otherCb => {
+                        if (otherCb !== cb) otherCb.checked = false;
+                    });
+                }
+            });
             
             label.appendChild(cb);
             label.appendChild(document.createTextNode(isPd ? `${c.name} (PĐ 2T)` : c.name));
@@ -2269,6 +2279,14 @@ function onBatchSubjectChange() {
 }
 
 function toggleBatchClasses(action) {
+    const selectedSub = getSelectedSubject();
+    if (isGvcnSpecialSubject(selectedSub)) {
+        if (action !== 'none') {
+            showToast('Mỗi giáo viên chỉ được phân công chủ nhiệm 1 lớp duy nhất!', 'warning');
+            return;
+        }
+    }
+
     const checkboxes = document.querySelectorAll('.batch-class-cb');
     if (action === 'all') {
         checkboxes.forEach(cb => {
@@ -2684,23 +2702,24 @@ function confirmExecuteBatchAssignment() {
             const isGvcn = isGvcnSpecialSubject(subjectName);
 
             if (isGvcn) {
-                // Xử lý phân công GVCN trực tiếp
+                // Xử lý phân công GVCN trực tiếp: Đảm bảo 1 giáo viên chỉ chủ nhiệm tối đa 1 lớp duy nhất
+                const targetClsName = (checkedClassNames && checkedClassNames.length > 0) ? checkedClassNames[checkedClassNames.length - 1] : null;
+
+                // Giải phóng lớp chủ nhiệm cũ của giáo viên này nếu chọn lớp mới hoặc bỏ chọn
+                state.classes.forEach(clsObj => {
+                    if (clsObj.gvcn === teacher && clsObj.name !== targetClsName) {
+                        clsObj.gvcn = '';
+                    }
+                });
+
+                if (targetClsName) {
+                    const targetClsObj = state.classes.find(c => c.name === targetClsName);
+                    if (targetClsObj) targetClsObj.gvcn = teacher;
+                }
+
                 if (isEditing) {
-                    state.classes.forEach(clsObj => {
-                        const clsName = clsObj.name;
-                        const isChecked = checkedClassNames.includes(clsName);
-                        if (isChecked) {
-                            clsObj.gvcn = teacher;
-                        } else if (clsObj.gvcn === teacher) {
-                            clsObj.gvcn = '';
-                        }
-                    });
                     cancelReassignment();
                 } else {
-                    checkedClassNames.forEach(clsName => {
-                        const clsObj = state.classes.find(c => c.name === clsName);
-                        if (clsObj) clsObj.gvcn = teacher;
-                    });
                     checkedCbs.forEach(cb => cb.checked = false);
                 }
 
@@ -2821,12 +2840,13 @@ function toggleBatchEditMode() {
         showToast("Đã thoát chế độ điều chỉnh phân công.", "info");
     } else {
         startReassignment(teacher, subject);
-        showToast(`Đã bật chế độ điều chỉnh môn ${subject} cho GV ${teacher}!`, "info");
     }
 }
 
 function startReassignment(teacherShort, subjectName) {
-    editingAssignmentState = { teacher: teacherShort, subjectName: subjectName };
+    const isGvcn = isGvcnSpecialSubject(subjectName);
+    const normalizedSubName = isGvcn ? 'GVCN' : subjectName;
+    editingAssignmentState = { teacher: teacherShort, subjectName: normalizedSubName };
     
     const teacherSelect = document.getElementById('batchTeacherSelect');
     const subjectSelect = document.getElementById('batchSubjectSelect');
@@ -2838,8 +2858,13 @@ function startReassignment(teacherShort, subjectName) {
     }
     
     if (subjectSelect) {
-        subjectSelect.value = subjectName;
-        subjectSelect.dataset.value = subjectName;
+        if (isGvcn) {
+            subjectSelect.value = '⭐ GVCN (Chủ nhiệm lớp: Chào Cờ 1T + HĐTN/SHL 3T)';
+            subjectSelect.dataset.value = 'GVCN';
+        } else {
+            subjectSelect.value = subjectName;
+            subjectSelect.dataset.value = subjectName;
+        }
     }
     
     onBatchSubjectChange(); // Cập nhật gợi ý số tiết
@@ -2850,7 +2875,8 @@ function startReassignment(teacherShort, subjectName) {
     if (banner && bannerText) {
         const teacher = state.teachers.find(t => t.shortName === teacherShort);
         const fullName = teacher ? teacher.fullName : teacherShort;
-        bannerText.innerHTML = `Đang hiệu chỉnh phân công cho giáo viên <b>${fullName} (${teacherShort})</b> - Môn <b>${subjectName}</b>. Chọn/bỏ chọn các lớp học và nhấn "Lưu điều chỉnh" để hoàn tất.`;
+        const displaySub = isGvcn ? 'GVCN (Chủ nhiệm lớp: Chào cờ + HĐTN/SHL)' : subjectName;
+        bannerText.innerHTML = `Đang hiệu chỉnh phân công cho giáo viên <b>${fullName} (${teacherShort})</b> - Môn <b>${displaySub}</b>. Chọn/bỏ chọn lớp học và nhấn "Lưu điều chỉnh" để hoàn tất.`;
         banner.style.display = 'flex';
     }
 
@@ -2873,13 +2899,18 @@ function startReassignment(teacherShort, subjectName) {
     const checkboxes = document.querySelectorAll('.batch-class-cb');
     checkboxes.forEach(cb => {
         const clsName = cb.value;
-        const subObj = getSubjectForClass(clsName, subjectName);
-        if (subObj) {
-            const key = `${clsName}_${subObj.id}`;
-            const val = state.assignments[key];
-            cb.checked = !!(val && val.teacher === teacherShort && val.periods > 0);
+        if (isGvcn) {
+            const clsObj = (state.classes || []).find(c => c && c.name === clsName);
+            cb.checked = !!(clsObj && clsObj.gvcn === teacherShort);
         } else {
-            cb.checked = false;
+            const subObj = getSubjectForClass(clsName, subjectName);
+            if (subObj) {
+                const key = `${clsName}_${subObj.id}`;
+                const val = state.assignments[key];
+                cb.checked = !!(val && val.teacher === teacherShort && val.periods > 0);
+            } else {
+                cb.checked = false;
+            }
         }
     });
     
@@ -3673,13 +3704,27 @@ function renderMatrix(groupId) {
             return;
         }
 
-        // Gom nhóm theo môn học
+        // Gom nhóm theo môn học & Nhiệm vụ GVCN
         const assignmentsBySubject = {};
+        const homeroomAssignsByClass = {};
+
         teacherAssignments.forEach(a => {
-            if (!assignmentsBySubject[a.subName]) {
-                assignmentsBySubject[a.subName] = [];
+            if (isHomeroomSubject(a.subName)) {
+                if (!homeroomAssignsByClass[a.clsName]) {
+                    homeroomAssignsByClass[a.clsName] = {
+                        clsName: a.clsName,
+                        totalPeriods: 0,
+                        items: []
+                    };
+                }
+                homeroomAssignsByClass[a.clsName].totalPeriods += (a.periods || 0);
+                homeroomAssignsByClass[a.clsName].items.push(a);
+            } else {
+                if (!assignmentsBySubject[a.subName]) {
+                    assignmentsBySubject[a.subName] = [];
+                }
+                assignmentsBySubject[a.subName].push(a);
             }
-            assignmentsBySubject[a.subName].push(a);
         });
 
         const percentage = Math.min((totalAssigned / t.quota) * 100, 100);
@@ -3736,8 +3781,44 @@ function renderMatrix(groupId) {
             <div style="display: flex; flex-direction: column; gap: 12px;">
         `;
 
+        const homeroomClasses = Object.keys(homeroomAssignsByClass).sort();
+        if (homeroomClasses.length > 0) {
+            const hrTotalPeriods = homeroomClasses.reduce((sum, cls) => sum + homeroomAssignsByClass[cls].totalPeriods, 0);
+            cardHtml += `
+            <div style="display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; background: rgba(99, 102, 241, 0.08); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                <div style="display: flex; align-items: center; gap: 6px; min-width: 185px; margin-top: 4px; flex-wrap: wrap;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #a5b4fc;">⭐ Nhiệm vụ GVCN:</span>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); padding: 1px 6px; border-radius: 6px; white-space: nowrap;" title="Tổng số tiết Chủ nhiệm (Chào cờ + HĐTN/SHL)">${hrTotalPeriods}T</span>
+                    <button class="btn btn-secondary" onclick="startReassignment('${t.shortName}', 'GVCN')" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; line-height: 1; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); cursor: pointer;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                        <span class="material-icons-round" style="font-size: 0.8rem;">edit</span> Phân công lại
+                    </button>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; flex: 1;">
+            `;
+
+            homeroomClasses.forEach(clsName => {
+                const hrData = homeroomAssignsByClass[clsName];
+                let closeSpan = '';
+                if (!isLocked) {
+                    closeSpan = `<span onclick="unassignHomeroomClass('${t.shortName}', '${clsName}')" title="Hủy phân công GVCN lớp ${clsName}" class="material-icons-round" style="font-size: 0.85rem; cursor: pointer; color: rgba(255, 255, 255, 0.6); transition: var(--transition); display: inline-block; vertical-align: middle; margin-left: 6px;" onmouseover="this.style.color='#f87171'; this.style.transform='scale(1.15)';" onmouseout="this.style.color='rgba(255, 255, 255, 0.6)'; this.style.transform='scale(1)';">close</span>`;
+                }
+
+                cardHtml += `
+                <span class="assignment-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #e0e7ff; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                    Lớp <b>${clsName}</b> (${hrData.totalPeriods}T: Chào cờ 1T + SHL 3T)
+                    ${closeSpan}
+                </span>
+                `;
+            });
+
+            cardHtml += `
+                </div>
+            </div>
+            `;
+        }
+
         const subjectNames = Object.keys(assignmentsBySubject).sort();
-        if (subjectNames.length === 0) {
+        if (subjectNames.length === 0 && homeroomClasses.length === 0) {
             cardHtml += `
             <div style="padding: 8px 0; color: var(--text-muted); font-size: 0.85rem; font-style: italic; display: flex; align-items: center; gap: 6px;">
                 <span class="material-icons-round" style="font-size: 1.05rem; vertical-align: middle; color: var(--text-muted);">info_outline</span>
@@ -4036,6 +4117,41 @@ function unassignClass(clsName, subId, teacherShortName = '') {
         renderTeacherStats(state.currentUser);
         renderUnassignedSubjects(state.currentUser);
     }
+}
+
+function unassignHomeroomClass(teacherShortName, clsName) {
+    if (!teacherShortName || !clsName) return;
+    const groupId = getGroupIdOfTeacher(teacherShortName) || state.currentUser;
+    if (groupId && state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể thay đổi!", "warning");
+        return;
+    }
+
+    const clsObj = (state.classes || []).find(c => c && c.name === clsName);
+    if (clsObj && clsObj.gvcn === teacherShortName) {
+        clsObj.gvcn = '';
+    }
+
+    const tObj = (state.teachers || []).find(t => t && t.shortName === teacherShortName);
+    if (tObj && (tObj.homeroomClass === clsName || (tObj.reduction && tObj.reduction.homeroomClass === clsName))) {
+        tObj.homeroomClass = '';
+        if (tObj.reduction) {
+            tObj.reduction.homeroom = false;
+            tObj.reduction.homeroomClass = '';
+        }
+    }
+
+    syncGvcnAndHomeroom();
+    persistData();
+
+    renderMatrix(state.currentUser);
+    renderTeacherStats(state.currentUser);
+    renderUnassignedSubjects(state.currentUser);
+    renderBatchAssignPanel(state.currentUser);
+    updateClassCheckboxesState();
+
+    const tName = tObj ? tObj.fullName : teacherShortName;
+    showToast(`Đã hủy phân công GVCN lớp ${clsName} của giáo viên ${tName}!`, "info");
 }
 
 function editClassPeriods(clsName, subId, currentPeriods, teacherShortName = '') {
