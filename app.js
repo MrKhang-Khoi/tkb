@@ -2236,6 +2236,151 @@ function renderBatchAssignPanel(groupId) {
     updateClassCheckboxesState(true);
 }
 
+function renderTeacherQuickAssignPreview(teacherShort) {
+    const box = document.getElementById('batchTeacherCurrentAssignBox');
+    if (!box) return;
+
+    if (!teacherShort || teacherShort.trim() === '') {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+    }
+
+    const tObj = (state.teachers || []).find(t => t.shortName === teacherShort || t.fullName === teacherShort);
+    const shortName = tObj ? tObj.shortName : teacherShort;
+    const fullName = tObj ? tObj.fullName : teacherShort;
+    const stdQuota = tObj ? (tObj.standardQuota || 19) : 19;
+    const quota = tObj ? (tObj.quota || stdQuota) : stdQuota;
+
+    // Thu thập tất cả các phân công hiện có của giáo viên này
+    let totalAssigned = 0;
+    const assignsBySubject = {};
+    const duties = [];
+    let homeroomInfo = null;
+
+    // Kiểm tra lớp chủ nhiệm
+    const hrClass = (tObj && tObj.homeroomClass) ? tObj.homeroomClass : (state.classes || []).find(c => c && c.gvcn === shortName)?.name;
+    if (hrClass) {
+        homeroomInfo = { clsName: hrClass, periods: 4 };
+    }
+
+    Object.keys(state.assignments || {}).forEach(key => {
+        const assign = state.assignments[key];
+        if (assign && assign.teacher === shortName && assign.periods > 0) {
+            totalAssigned += assign.periods;
+            const parsedKey = parseAssignmentKey(key);
+            const clsName = parsedKey.cls;
+            const subId = parsedKey.subId;
+            const sub = (state.subjects || []).find(s => s.id === subId) || (state.globalSubjects || []).find(s => s.id === subId);
+            const subName = sub ? sub.name : subId;
+
+            if (clsName === 'Kiêm nhiệm') {
+                duties.push({ name: subName, periods: assign.periods, subId: subId });
+            } else if (!isHomeroomSubject(subName)) {
+                if (!assignsBySubject[subName]) assignsBySubject[subName] = [];
+                assignsBySubject[subName].push({ clsName: clsName, periods: assign.periods, subId: subId });
+            }
+        }
+    });
+
+    let quotaBadge = '';
+    const diff = totalAssigned - quota;
+    if (diff === 0) {
+        quotaBadge = `<span style="font-size: 0.78rem; font-weight: 700; color: #34d399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(52, 211, 153, 0.4); padding: 2px 10px; border-radius: 20px;">🎉 Đạt chuẩn (${totalAssigned}/${quota}T)</span>`;
+    } else if (diff < 0) {
+        quotaBadge = `<span style="font-size: 0.78rem; font-weight: 700; color: #fbbf24; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); padding: 2px 10px; border-radius: 20px;">⚡ Còn thiếu ${Math.abs(diff)}T (${totalAssigned}/${quota}T)</span>`;
+    } else {
+        quotaBadge = `<span style="font-size: 0.78rem; font-weight: 700; color: #f87171; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(248, 113, 113, 0.4); padding: 2px 10px; border-radius: 20px;">⚠️ Vượt định mức +${diff}T (${totalAssigned}/${quota}T)</span>`;
+    }
+
+    let assignmentsBadgesHtml = '';
+    
+    // Thẻ GVCN
+    if (homeroomInfo) {
+        assignmentsBadgesHtml += `
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.35); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; margin: 3px;">
+                <span class="material-icons-round" style="font-size: 0.95rem; color: #facc15;">star</span>
+                <span style="color: #fef08a; font-weight: 600;">GVCN Lớp ${homeroomInfo.clsName}</span>
+                <span style="color: #facc15; font-weight: 700; background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.75rem;">4T</span>
+            </div>
+        `;
+    }
+
+    // Thẻ các môn giảng dạy
+    Object.keys(assignsBySubject).forEach(subName => {
+        const items = assignsBySubject[subName];
+        const subSum = items.reduce((s, i) => s + i.periods, 0);
+        const classesStr = items.map(i => `${i.clsName} (${i.periods}T)`).join(', ');
+        assignmentsBadgesHtml += `
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; margin: 3px;">
+                <span class="material-icons-round" style="font-size: 0.95rem; color: var(--primary-light);">menu_book</span>
+                <span style="color: #fff; font-weight: 600;">Môn ${subName} (${items.length} lớp: ${classesStr})</span>
+                <span style="color: var(--primary-light); font-weight: 700; background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.75rem;">${subSum}T</span>
+            </div>
+        `;
+    });
+
+    // Thẻ nhiệm vụ kiêm nhiệm
+    duties.forEach(d => {
+        assignmentsBadgesHtml += `
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; margin: 3px;">
+                <span class="material-icons-round" style="font-size: 0.95rem; color: #fbbf24;">stars</span>
+                <span style="color: #fde68a; font-weight: 600;">${d.name}</span>
+                <span style="color: #fbbf24; font-weight: 700; background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.75rem;">${d.periods}T</span>
+            </div>
+        `;
+    });
+
+    if (!assignmentsBadgesHtml) {
+        assignmentsBadgesHtml = `<span style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">Giáo viên này chưa có phân công nào. Hãy chọn môn học và các lớp bên dưới để phân công nhanh.</span>`;
+    }
+
+    box.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 0.85rem; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);">
+                    ${shortName.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                    <span style="font-weight: 700; font-size: 0.95rem; color: #fff;">${fullName} (${shortName})</span>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">Định mức: <b style="color: #cbd5e1;">${quota}T/tuần</b></span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                ${quotaBadge}
+                <button type="button" class="btn btn-secondary" onclick="scrollToTeacherCard('${shortName}')" style="padding: 3px 8px; font-size: 0.75rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #cbd5e1;" title="Cuộn xuống xem chi tiết thẻ giáo viên">
+                    <span class="material-icons-round" style="font-size: 0.85rem;">visibility</span> Xem chi tiết
+                </button>
+            </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-right: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                <span class="material-icons-round" style="font-size: 0.9rem; color: #38bdf8;">playlist_add_check</span> Đang phụ trách:
+            </span>
+            ${assignmentsBadgesHtml}
+        </div>
+    `;
+    box.style.display = 'block';
+}
+
+function scrollToTeacherCard(shortName) {
+    if (!shortName) return;
+    const cards = document.querySelectorAll('#teacherStats .teacher-card');
+    for (const card of cards) {
+        if (card.innerText.includes(`(${shortName})`)) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.style.transition = 'all 0.3s ease';
+            card.style.boxShadow = '0 0 25px rgba(79, 70, 229, 0.8)';
+            card.style.borderColor = 'var(--primary-light)';
+            setTimeout(() => {
+                card.style.boxShadow = '';
+                card.style.borderColor = '';
+            }, 1800);
+            break;
+        }
+    }
+}
+
 function onBatchTeacherChange() {
     const teacherSelect = document.getElementById('batchTeacherSelect');
     const subjectSelect = document.getElementById('batchSubjectSelect');
@@ -2258,9 +2403,13 @@ function onBatchTeacherChange() {
 
     const shortName = selectedTeacher;
     if (!shortName) {
+        renderTeacherQuickAssignPreview('');
         updateClassCheckboxesState();
         return;
     }
+
+    // Hiển thị khung xem nhanh phân công của giáo viên này
+    renderTeacherQuickAssignPreview(shortName);
 
     const teacher = state.teachers.find(t => t.shortName === shortName);
     if (!teacher || !teacher.subjects || teacher.subjects.length === 0) {
@@ -2876,6 +3025,7 @@ function clearBatchSelections() {
         editBtn.style.display = 'none';
     }
 
+    renderTeacherQuickAssignPreview('');
     updateClassCheckboxesState();
 }
 
@@ -2918,6 +3068,7 @@ function startReassignment(teacherShort, subjectName) {
         }
     }
     
+    renderTeacherQuickAssignPreview(teacherShort);
     onBatchSubjectChange(); // Cập nhật gợi ý số tiết
     
     // Hiển thị Banner thông báo hiệu chỉnh
@@ -3513,6 +3664,315 @@ function exportGroupAssignmentExcel() {
         const filename = `Phan_Cong_Chuyen_Mon_${safeGroupName}.xlsx`;
         XLSX.writeFile(wb, filename);
         showToast(`Đã xuất file Excel phân công của ${groupName}!`, "success");
+    }
+}
+
+async function importGroupAssignmentExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    event.target.value = ''; // Reset input để có thể chọn lại cùng file nếu muốn
+
+    const groupId = state.currentUser;
+    if (groupId && state.groupLocks && state.groupLocks[groupId] && state.groupLocks[groupId].locked) {
+        showToast("Tổ chuyên môn này đã chốt và khóa phân công, không thể nạp file!", "warning");
+        return;
+    }
+
+    try {
+        const data = await file.arrayBuffer();
+        const wb = XLSX.read(data, { type: 'array' });
+        if (!wb || !wb.SheetNames || wb.SheetNames.length === 0) {
+            showToast("File Excel rỗng hoặc không hợp lệ!", "danger");
+            return;
+        }
+
+        // Ưu tiên sheet 'Phân công tổ' hoặc sheet đầu tiên
+        let targetSheetName = wb.SheetNames.find(sn => sn.toLowerCase().includes('phân công tổ') || sn.toLowerCase().includes('phân công')) || wb.SheetNames[0];
+        const ws = wb.Sheets[targetSheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+        if (!rows || rows.length < 2) {
+            showToast("File Excel không chứa dữ liệu phân công!", "warning");
+            return;
+        }
+
+        // Tự động tìm hàng tiêu đề
+        let headerRowIdx = -1;
+        let colTeacher = 1, colDuty = 3, colAssign = 4, colTotal = 5;
+
+        for (let i = 0; i < Math.min(rows.length, 10); i++) {
+            const r = rows[i] || [];
+            for (let c = 0; c < r.length; c++) {
+                const val = (r[c] || '').toString().toLowerCase();
+                if (val.includes('họ tên') || val.includes('giáo viên')) colTeacher = c;
+                if (val.includes('kiêm nhiệm')) colDuty = c;
+                if (val.includes('phân công')) colAssign = c;
+                if (val.includes('số tiết')) colTotal = c;
+            }
+            if (r.some(v => (v || '').toString().toLowerCase().includes('họ tên') || (v || '').toString().toLowerCase().includes('giáo viên'))) {
+                headerRowIdx = i;
+                break;
+            }
+        }
+
+        if (headerRowIdx === -1) {
+            headerRowIdx = 0;
+        }
+
+        const subjectAliases = {
+            't.a': 'T.Anh',
+            'tiếng anh': 'T.Anh',
+            'mỹ thuật': 'M.Thuật',
+            'm.thuật': 'M.Thuật',
+            'âm nhạc': 'Â.Nhạc',
+            'â.nhạc': 'Â.Nhạc',
+            'công nghệ': 'C.Nghệ',
+            'c.nghệ': 'C.Nghệ',
+            'tin học': 'Tin',
+            'tin': 'Tin',
+            'sinh học': 'Sinh',
+            'sinh': 'Sinh',
+            'hóa học': 'Hóa',
+            'hóa': 'Hóa',
+            'vật lý': 'Lý',
+            'lý': 'Lý',
+            'lịch sử': 'Sử',
+            'sử': 'Sử',
+            'địa lý': 'Địa',
+            'địa': 'Địa',
+            'gdcd': 'GDCD',
+            'ngữ văn': 'Văn',
+            'văn': 'Văn',
+            'gdđp': 'GDĐP'
+        };
+
+        const parsedResults = [];
+        let totalAssignCount = 0;
+
+        for (let i = headerRowIdx + 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || !row[colTeacher]) continue;
+            const teacherRawName = row[colTeacher].toString().trim();
+            if (!teacherRawName || teacherRawName.toLowerCase().includes('tổng cộng') || teacherRawName.toLowerCase().includes('toàn tổ')) continue;
+
+            // Tìm giáo viên trong danh sách
+            const tObj = (state.teachers || []).find(t => 
+                t.fullName.trim().toLowerCase() === teacherRawName.toLowerCase() ||
+                t.shortName.trim().toLowerCase() === teacherRawName.toLowerCase() ||
+                teacherRawName.toLowerCase().includes(t.shortName.toLowerCase()) ||
+                teacherRawName.toLowerCase().includes(t.fullName.toLowerCase())
+            );
+
+            if (!tObj) continue;
+
+            const tShort = tObj.shortName;
+            const teacherData = {
+                teacher: tShort,
+                fullName: tObj.fullName,
+                duties: [],
+                assignments: [],
+                homeroomClass: '',
+                totalPeriods: 0
+            };
+
+            // 1. Phân tích Kiêm nhiệm & GVCN
+            const dutyRaw = (row[colDuty] || '').toString().trim();
+            if (dutyRaw) {
+                const dutyTokens = dutyRaw.split(/[,;+]+/);
+                dutyTokens.forEach(tok => {
+                    tok = tok.trim();
+                    if (!tok) return;
+                    const dMatch = tok.match(/^([^(\d]+)(?:\((\d+)T?\))?/i);
+                    if (dMatch) {
+                        const dName = dMatch[1].trim();
+                        const dPeriods = dMatch[2] ? parseInt(dMatch[2]) : 0;
+
+                        if (dName.toLowerCase().includes('gvcn') || dName.toLowerCase().includes('chủ nhiệm')) {
+                            teacherData.hasGvcn = true;
+                        } else {
+                            const subObj = (state.subjects || []).find(s => s.name.toLowerCase() === dName.toLowerCase() && s.grade === 'Kiêm nhiệm');
+                            if (subObj) {
+                                teacherData.duties.push({
+                                    id: subObj.id,
+                                    name: subObj.name,
+                                    periods: dPeriods || subObj.periods || 0
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Phân tích phân công chuyên môn
+            const assignRaw = (row[colAssign] || '').toString().trim();
+            if (assignRaw && assignRaw.toLowerCase() !== 'chưa phân công') {
+                const subBlocks = assignRaw.split(/;|\n/);
+                subBlocks.forEach(block => {
+                    block = block.trim();
+                    if (!block) return;
+
+                    // Kiểm tra nếu block chứa thông tin GVCN dạng "GVCN: 6A1 (4T)" hoặc "Chủ nhiệm: 6A1"
+                    if (block.toLowerCase().includes('gvcn') || block.toLowerCase().includes('chủ nhiệm')) {
+                        const mCls = block.match(/([0-9A-Za-z]+)/);
+                        if (mCls) teacherData.homeroomClass = mCls[1];
+                        return;
+                    }
+
+                    const colonIdx = block.indexOf(':');
+                    if (colonIdx === -1) return;
+
+                    const rawSubName = block.substring(0, colonIdx).trim();
+                    const subNameNormalized = subjectAliases[rawSubName.toLowerCase()] || rawSubName;
+                    const classesStr = block.substring(colonIdx + 1).trim();
+
+                    const classTokens = classesStr.split(/[,+]+/);
+                    classTokens.forEach(ctok => {
+                        ctok = ctok.trim();
+                        if (!ctok) return;
+                        const cMatch = ctok.match(/([0-9A-Za-z]+)\s*(?:\(([0-9]+)\s*T?\))?/i);
+                        if (cMatch) {
+                            const clsName = cMatch[1].trim();
+                            const p = cMatch[2] ? parseInt(cMatch[2]) : 0;
+                            const gradeMatch = clsName.match(/^\d+/);
+                            const grade = gradeMatch ? gradeMatch[0] : '6';
+
+                            let subObj = (state.subjects || []).find(s => s.name.toLowerCase() === subNameNormalized.toLowerCase() && s.grade === grade);
+                            if (!subObj) {
+                                subObj = (state.subjects || []).find(s => s.name.toLowerCase().includes(subNameNormalized.toLowerCase()) && s.grade === grade);
+                            }
+
+                            if (subObj) {
+                                const periods = p > 0 ? p : (subObj.periods || 1);
+                                teacherData.assignments.push({
+                                    clsName: clsName,
+                                    subId: subObj.id,
+                                    subName: subObj.name,
+                                    periods: periods
+                                });
+                                teacherData.totalPeriods += periods;
+                                totalAssignCount++;
+                            }
+                        }
+                    });
+                });
+            }
+
+            parsedResults.push(teacherData);
+        }
+
+        if (parsedResults.length === 0) {
+            showToast("Không tìm thấy giáo viên hoặc phân công nào khớp với hệ thống!", "warning");
+            return;
+        }
+
+        // Render Confirmation Modal with Preview
+        const previewRowsHtml = parsedResults.map((t, idx) => {
+            const dutyBadges = t.duties.map(d => `<span style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">${d.name} (${d.periods}T)</span>`).join('');
+            const assignBadges = t.assignments.map(a => `<span style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); color: #c7d2fe; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin: 2px; display: inline-block;">${a.subName}: <b>${a.clsName}</b> (${a.periods}T)</span>`).join('');
+            const gvcnBadge = t.homeroomClass ? `<span style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">⭐ GVCN: ${t.homeroomClass}</span>` : '';
+
+            return `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 8px 10px; font-weight: 600; color: #fff;">${idx + 1}. ${t.fullName} (${t.teacher})</td>
+                    <td style="padding: 8px 10px;">${gvcnBadge} ${dutyBadges || '<span style="color: var(--text-muted);">-</span>'}</td>
+                    <td style="padding: 8px 10px;">${assignBadges || '<span style="color: var(--text-muted);">-</span>'}</td>
+                    <td style="padding: 8px 10px; font-weight: 700; color: #38bdf8; text-align: center;">${t.totalPeriods}T</td>
+                </tr>
+            `;
+        }).join('');
+
+        const modalBody = `
+            <div>
+                <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 12px;">
+                    Hệ thống đã nhận diện được <b>${parsedResults.length} giáo viên</b> và <b>${totalAssignCount} phân công chuyên môn</b> từ file Excel <code>${file.name}</code>:
+                </p>
+                <div style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: rgba(15, 23, 42, 0.6);">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                        <thead>
+                            <tr style="background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid var(--border); text-align: left;">
+                                <th style="padding: 8px 10px; color: var(--text-muted);">Giáo viên</th>
+                                <th style="padding: 8px 10px; color: var(--text-muted);">Kiêm nhiệm / GVCN</th>
+                                <th style="padding: 8px 10px; color: var(--text-muted);">Phân công giảng dạy</th>
+                                <th style="padding: 8px 10px; color: var(--text-muted); text-align: center;">Số tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${previewRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        const modalFooter = `
+            <button class="btn btn-secondary" onclick="closeModal()">Hủy bỏ</button>
+            <button class="btn btn-warning" id="confirmImportExcelBtn" style="display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none;">
+                <span class="material-icons-round">check_circle</span> Xác nhận nạp và phục hồi (${totalAssignCount} phân công)
+            </button>
+        `;
+
+        openModal(
+            `<span class="material-icons-round" style="color: #fbbf24; vertical-align: middle; margin-right: 6px;">upload_file</span> Xác Nhận Phục Hồi PCCM Từ Excel`,
+            modalBody,
+            modalFooter
+        );
+
+        setTimeout(() => {
+            const btn = document.getElementById('confirmImportExcelBtn');
+            if (btn) {
+                btn.onclick = () => {
+                    closeModal();
+
+                    // Áp dụng dữ liệu phân công
+                    parsedResults.forEach(t => {
+                        const tShort = t.teacher;
+                        
+                        // 1. Áp dụng kiêm nhiệm
+                        t.duties.forEach(d => {
+                            const newKey = `Kiêm nhiệm_${tShort}_${d.id}`;
+                            state.assignments[newKey] = { teacher: tShort, periods: d.periods };
+                        });
+
+                        // 2. Áp dụng GVCN nếu có
+                        if (t.homeroomClass) {
+                            const targetCls = (state.classes || []).find(c => c && c.name === t.homeroomClass);
+                            if (targetCls) {
+                                targetCls.gvcn = tShort;
+                            }
+                            const tObj = (state.teachers || []).find(teacher => teacher && teacher.shortName === tShort);
+                            if (tObj) {
+                                tObj.homeroomClass = t.homeroomClass;
+                                if (!tObj.reduction) {
+                                    tObj.reduction = { homeroom: true, homeroomClass: t.homeroomClass, leader: false, deputy: false, baby: false, other: 0 };
+                                } else {
+                                    tObj.reduction.homeroom = true;
+                                    tObj.reduction.homeroomClass = t.homeroomClass;
+                                }
+                            }
+                        }
+
+                        // 3. Áp dụng phân công giảng dạy
+                        t.assignments.forEach(a => {
+                            const assignKey = `${a.clsName}_${a.subId}`;
+                            state.assignments[assignKey] = {
+                                teacher: tShort,
+                                periods: a.periods
+                            };
+                        });
+                    });
+
+                    syncGvcnAndHomeroom();
+                    persistData();
+                    refreshActiveViews();
+
+                    showToast(`🎉 Đã phục hồi thành công ${totalAssignCount} phân công cho ${parsedResults.length} giáo viên từ file Excel!`, "success");
+                };
+            }
+        }, 50);
+
+    } catch (err) {
+        console.error("Lỗi khi đọc file Excel:", err);
+        showToast("Có lỗi xảy ra khi đọc file Excel: " + (err.message || err), "danger");
     }
 }
 
@@ -16021,8 +16481,10 @@ window.deleteAllClasses = deleteAllClasses;
 window.deleteAllGroups = deleteAllGroups;
 window.deleteAllGlobalSubjects = deleteAllGlobalSubjects;
 window.deleteAllAccounts = deleteAllAccounts;
-window.deleteAllSubjectPeriods = deleteAllSubjectPeriods;
-window.deleteAllDutySubjects = deleteAllDutySubjects;
+window.state = state;
+window.importGroupAssignmentExcel = importGroupAssignmentExcel;
+window.renderTeacherQuickAssignPreview = renderTeacherQuickAssignPreview;
+window.scrollToTeacherCard = scrollToTeacherCard;
 window.showConfirmModal = showConfirmModal;
 window.showLoadingOverlay = showLoadingOverlay;
 window.hideLoadingOverlay = hideLoadingOverlay;
