@@ -2095,6 +2095,10 @@ function renderBatchAssignPanel(groupId) {
     const savedSubjectValue = subjectSelect.value;
     const savedSubjectData = subjectSelect.dataset.value;
 
+    // Lưu lại danh sách các lớp và nhiệm vụ đang được người dùng tích chọn để KHÔNG BAO GIỜ bị mất khi đồng bộ
+    const checkedClassValues = new Set(Array.from(document.querySelectorAll('.batch-class-cb:checked')).map(cb => cb.value));
+    const checkedDutyValues = new Set(Array.from(document.querySelectorAll('.batch-duty-cb:checked')).map(cb => cb.dataset.dutyId || cb.value));
+
     classCheckboxes.innerHTML = '';
 
     // Nạp giáo viên thuộc tổ này vào datalist tùy biến kèm bộ lọc Tất cả / Chưa phân / Đã phân
@@ -2173,6 +2177,9 @@ function renderBatchAssignPanel(groupId) {
             cb.dataset.isPd = isPd ? 'true' : 'false';
             cb.value = c.name;
             cb.style.cssText = 'cursor: pointer;';
+            if (checkedClassValues.has(c.name)) {
+                cb.checked = true;
+            }
 
             cb.addEventListener('change', () => {
                 const curSub = getSelectedSubject();
@@ -2214,6 +2221,9 @@ function renderBatchAssignPanel(groupId) {
             cb.dataset.dutyId = d.id;
             cb.value = d.name;
             cb.style.cssText = 'cursor: pointer;';
+            if (checkedDutyValues.has(d.id) || checkedDutyValues.has(d.name)) {
+                cb.checked = true;
+            }
             
             label.appendChild(cb);
             label.appendChild(document.createTextNode(`${d.name} (${d.periods}T)`));
@@ -2229,7 +2239,7 @@ function renderBatchAssignPanel(groupId) {
     subjectSelect.value = savedSubjectValue;
     subjectSelect.dataset.value = savedSubjectData;
 
-    updateClassCheckboxesState();
+    updateClassCheckboxesState(true);
 }
 
 function onBatchTeacherChange() {
@@ -2986,7 +2996,7 @@ function cancelReassignment() {
     updateClassCheckboxesState();
 }
 
-function updateClassCheckboxesState() {
+function updateClassCheckboxesState(preserveManualSelections = false) {
     const teacherSelect = document.getElementById('batchTeacherSelect');
     const subjectSelect = document.getElementById('batchSubjectSelect');
     if (!teacherSelect || !subjectSelect) return;
@@ -3014,6 +3024,9 @@ function updateClassCheckboxesState() {
         const label = cb.parentElement;
         if (!label) return;
 
+        // Lưu trạng thái checked hiện tại nếu đang giữ lựa chọn của người dùng
+        const wasChecked = cb.checked;
+
         label.innerHTML = '';
         label.appendChild(cb);
         label.appendChild(document.createTextNode(` ${dutyName} (${subObj.periods}T)`));
@@ -3032,7 +3045,6 @@ function updateClassCheckboxesState() {
             cb.disabled = false; // Luôn cho phép bỏ chọn để hủy phân công
             titleStr = `Nhiệm vụ này đang được phân công cho bạn (${getTeacherFullName(selectedTeacher)}) - Click để bỏ chọn`;
         } else {
-            cb.checked = false;
             const dutyType = getDutyType(subObj.name);
 
             if (dutyType === 'global_unique') {
@@ -3040,11 +3052,13 @@ function updateClassCheckboxesState() {
                 const otherAssign = dutyAssigns.find(a => a.teacher !== selectedTeacher);
                 if (otherAssign) {
                     cb.disabled = true;
+                    cb.checked = false;
                     label.style.opacity = '0.4';
                     label.style.cursor = 'not-allowed';
                     label.appendChild(document.createTextNode(` (${otherAssign.teacher})`));
                     titleStr = `Nhiệm vụ này đã được phân công cho ${getTeacherFullName(otherAssign.teacher)}`;
                 } else {
+                    cb.checked = preserveManualSelections ? wasChecked : false;
                     titleStr = `Nhiệm vụ này chưa được phân công`;
                 }
             } else if (dutyType === 'group_unique') {
@@ -3059,16 +3073,19 @@ function updateClassCheckboxesState() {
                 
                 if (sameGroupAssign) {
                     cb.disabled = true;
+                    cb.checked = false;
                     label.style.opacity = '0.4';
                     label.style.cursor = 'not-allowed';
                     label.appendChild(document.createTextNode(` (${sameGroupAssign.teacher})`));
                     titleStr = `Nhiệm vụ này đã được phân công cho ${getTeacherFullName(sameGroupAssign.teacher)} cùng tổ`;
                 } else {
+                    cb.checked = preserveManualSelections ? wasChecked : false;
                     titleStr = `Nhiệm vụ này chưa được phân công`;
                 }
             } else {
                 // Phân công tự do nhiều người: không khóa
                 cb.disabled = false;
+                cb.checked = preserveManualSelections ? wasChecked : false;
                 if (dutyAssigns.length > 0) {
                     const assignNames = dutyAssigns.map(a => getTeacherFullName(a.teacher)).join(', ');
                     titleStr = `Nhiệm vụ này đã được phân công cho: ${assignNames}`;
@@ -3089,6 +3106,9 @@ function updateClassCheckboxesState() {
         
         const label = cb.parentElement;
         if (!label) return;
+
+        // Lưu lại trạng thái người dùng đã chọn trước đó
+        const wasChecked = cb.checked;
 
         label.innerHTML = '';
         label.appendChild(cb);
@@ -3158,7 +3178,7 @@ function updateClassCheckboxesState() {
                     titleStr = `Lớp ${clsName} đang do ${getTeacherFullName(selectedTeacher)} chủ nhiệm - Bấm để thay đổi`;
                 }
             } else {
-                cb.checked = false;
+                cb.checked = preserveManualSelections ? wasChecked : false;
                 cb.disabled = false;
                 label.style.opacity = '1';
                 label.style.cursor = 'pointer';
@@ -3197,7 +3217,8 @@ function updateClassCheckboxesState() {
                 }
             }
         } else {
-            cb.checked = false;
+            // Lớp chưa phân công: nếu người dùng đã tự tay tích chọn, BẢO TOÀN LỰA CHỌN đó
+            cb.checked = preserveManualSelections ? wasChecked : false;
             titleStr = `Môn ${selectedSubject} của lớp ${clsName} chưa được phân công`;
         }
 
