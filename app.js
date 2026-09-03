@@ -3769,6 +3769,23 @@ function extractHomeroomClassFromText(text, allClasses) {
 window.onExcelModalGvcnChange = function(idx, newCls) {
     if (!window._currentExcelParsedResults || !window._currentExcelParsedResults[idx]) return;
     const t = window._currentExcelParsedResults[idx];
+    
+    if (newCls) {
+        // Kiểm tra xem lớp này có đang bị trùng với giáo viên khác trong bảng không
+        const conflictTeacher = window._currentExcelParsedResults.find((other, oIdx) => oIdx !== idx && other.homeroomClass === newCls);
+        if (conflictTeacher) {
+            showToast(`⚠️ Cảnh báo: Lớp ${newCls} hiện đang được chọn cho giáo viên "${conflictTeacher.fullName}". Vui lòng điều chỉnh để mỗi lớp chỉ có 1 GVCN duy nhất!`, "warning");
+        } else {
+            // Kiểm tra xem lớp này có GVCN cũ ở tổ khác không
+            const clsObj = (state.classes || []).find(c => c && c.name === newCls);
+            if (clsObj && clsObj.gvcn && clsObj.gvcn !== t.teacher) {
+                const oldTeacherObj = (state.teachers || []).find(teacher => teacher && teacher.shortName === clsObj.gvcn);
+                const oldName = oldTeacherObj ? oldTeacherObj.fullName : clsObj.gvcn;
+                showToast(`ℹ️ Lớp ${newCls} hiện do "${oldName}" chủ nhiệm. Lưu sẽ chuyển quyền chủ nhiệm sang "${t.fullName}".`, "info");
+            }
+        }
+    }
+
     t.homeroomClass = newCls || '';
     if (newCls) {
         t.hasGvcn = true;
@@ -4017,14 +4034,16 @@ async function importGroupAssignmentExcel(event) {
             // Dropdown cho phép tổ trưởng chọn hoặc đổi lớp chủ nhiệm trực tiếp trên Modal
             const classOptionsHtml = allClassesList.map(clsName => {
                 const selected = t.homeroomClass === clsName ? 'selected' : '';
-                return `<option value="${clsName}" ${selected}>Lớp ${clsName}</option>`;
+                const clsObj = (state.classes || []).find(c => c && c.name === clsName);
+                const otherGvcn = (clsObj && clsObj.gvcn && clsObj.gvcn !== t.teacher) ? ` (Đang CN: ${clsObj.gvcn})` : '';
+                return `<option value="${clsName}" ${selected}>Lớp ${clsName}${otherGvcn}</option>`;
             }).join('');
 
             const isMissingClass = t.hasGvcn && !t.homeroomClass;
             const gvcnControlHtml = `
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;">
                     <span style="font-size: 0.75rem; color: #facc15; font-weight: 600;">⭐ GVCN:</span>
-                    <select class="form-control form-control-sm excel-modal-gvcn-select" data-idx="${idx}" style="width: 120px; padding: 2px 6px; font-size: 0.75rem; height: 26px; background: rgba(15, 23, 42, 0.85); border: 1px solid ${isMissingClass ? '#f59e0b' : 'rgba(255,255,255,0.2)'}; color: #fff; border-radius: 4px;" onchange="window.onExcelModalGvcnChange(${idx}, this.value)">
+                    <select class="form-control form-control-sm excel-modal-gvcn-select" data-idx="${idx}" style="width: 135px; padding: 2px 6px; font-size: 0.75rem; height: 26px; background: rgba(15, 23, 42, 0.85); border: 1px solid ${isMissingClass ? '#f59e0b' : 'rgba(255,255,255,0.2)'}; color: #fff; border-radius: 4px;" onchange="window.onExcelModalGvcnChange(${idx}, this.value)">
                         <option value="">-- Không CN --</option>
                         ${classOptionsHtml}
                     </select>
@@ -4089,6 +4108,19 @@ async function importGroupAssignmentExcel(event) {
             const btn = document.getElementById('confirmImportExcelBtn');
             if (btn) {
                 btn.onclick = () => {
+                    // 1. Kiểm tra chặn trùng lớp chủ nhiệm giữa các giáo viên trong danh sách
+                    const usedClasses = {};
+                    for (let i = 0; i < parsedResults.length; i++) {
+                        const t = parsedResults[i];
+                        if (t.homeroomClass) {
+                            if (usedClasses[t.homeroomClass]) {
+                                showToast(`⚠️ Lỗi: Lớp ${t.homeroomClass} bị trùng chủ nhiệm giữa "${usedClasses[t.homeroomClass].fullName}" và "${t.fullName}". Mỗi lớp chỉ được phép có 1 GVCN duy nhất! Vui lòng chọn lại.`, "danger");
+                                return;
+                            }
+                            usedClasses[t.homeroomClass] = t;
+                        }
+                    }
+
                     closeModal();
 
                     // Áp dụng dữ liệu phân công
