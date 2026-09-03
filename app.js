@@ -794,8 +794,6 @@ function executeFirebasePersist() {
         Object.keys(sanitizedGroupLocks).forEach(k => {
             updates[`groupLocks/${k}`] = sanitizedGroupLocks[k];
         });
-        if (state.classes && state.classes.length > 0) updates['classes'] = state.classes;
-        if (state.teachers && state.teachers.length > 0) updates['teachers'] = state.teachers;
         updates['lastUpdated'] = newTimestamp;
 
         db.ref("school_data").update(updates).catch(err => {
