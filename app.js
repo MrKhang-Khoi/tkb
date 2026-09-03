@@ -1534,12 +1534,12 @@ function getSelectedSubject() {
 // Helper lấy danh sách môn học do tổ chuyên môn phụ trách (Ưu tiên tuyệt đối môn do Admin gán cho tổ)
 function getGroupAssignedSubjects(groupId) {
     if (!groupId) return [];
-    const groupObj = state.groups.find(g => g && g.id === groupId);
-    if (!groupObj) return [];
+    const { canonicalId, groupName, groupObj } = resolveGroupCanonicalInfo(groupId);
+    if (!groupObj && !canonicalId && !groupName) return [];
 
     const assignedSet = new Set();
     // 1. Môn được gán trực tiếp cho tổ trong groupObj.subjects
-    if (groupObj.subjects && Array.isArray(groupObj.subjects)) {
+    if (groupObj && groupObj.subjects && Array.isArray(groupObj.subjects)) {
         groupObj.subjects.forEach(s => {
             if (s && typeof s === 'string' && s.trim()) {
                 assignedSet.add(s.trim());
@@ -1549,7 +1549,7 @@ function getGroupAssignedSubjects(groupId) {
 
     // 2. Môn trong globalSubjects được gán groupId hoặc group name
     (state.globalSubjects || []).forEach(gs => {
-        if (gs && (gs.groupId === groupId || gs.group === groupId || gs.group === groupObj.name)) {
+        if (gs && (gs.groupId === canonicalId || gs.group === canonicalId || gs.group === groupName || (gs.groupId && gs.groupId.toLowerCase() === (groupName || '').toLowerCase()))) {
             if (gs.name && typeof gs.name === 'string' && gs.name.trim()) {
                 assignedSet.add(gs.name.trim());
             }
@@ -1674,35 +1674,55 @@ function initSearchableDropdown(inputId, menuId, items, onSelectCallback) {
 
     renderDropdownItems(input, menu, items);
 
+    if (input._dropdownInitialized) {
+        return; // Tránh gắn trùng lặp event listeners nhiều lần
+    }
+    input._dropdownInitialized = true;
+
     // Click to show dropdown
     input.addEventListener('focus', (e) => {
         e.stopPropagation();
         document.querySelectorAll('.searchable-select .dropdown-menu').forEach(m => m.style.display = 'none');
+        const curItems = input.dropdownItems || [];
+        const filterVal = input.value.toLowerCase().trim();
+        const filtered = filterVal ? curItems.filter(item => 
+            (item.label || '').toLowerCase().includes(filterVal) || 
+            (item.value || '').toLowerCase().includes(filterVal)
+        ) : curItems;
+        renderDropdownItems(input, menu, filtered);
         menu.style.display = 'block';
     });
 
     input.addEventListener('click', (e) => {
         e.stopPropagation();
         document.querySelectorAll('.searchable-select .dropdown-menu').forEach(m => m.style.display = 'none');
+        const curItems = input.dropdownItems || [];
+        const filterVal = input.value.toLowerCase().trim();
+        const filtered = filterVal ? curItems.filter(item => 
+            (item.label || '').toLowerCase().includes(filterVal) || 
+            (item.value || '').toLowerCase().includes(filterVal)
+        ) : curItems;
+        renderDropdownItems(input, menu, filtered);
         menu.style.display = 'block';
     });
 
     // Input to filter and check for dataset value reset
     input.addEventListener('input', () => {
+        const curItems = input.dropdownItems || [];
         if (input.dataset.value) {
-            const currentItem = items.find(item => item.value === input.dataset.value);
+            const currentItem = curItems.find(item => item.value === input.dataset.value);
             if (!currentItem || currentItem.label !== input.value) {
                 input.dataset.value = '';
-                if (onSelectCallback) {
-                    onSelectCallback('');
+                if (input.onSelectCallback) {
+                    input.onSelectCallback('');
                 }
             }
         }
 
         const filterVal = input.value.toLowerCase().trim();
-        const filtered = items.filter(item => 
-            item.label.toLowerCase().includes(filterVal) || 
-            item.value.toLowerCase().includes(filterVal)
+        const filtered = curItems.filter(item => 
+            (item.label || '').toLowerCase().includes(filterVal) || 
+            (item.value || '').toLowerCase().includes(filterVal)
         );
         renderDropdownItems(input, menu, filtered);
         menu.style.display = 'block';
