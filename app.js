@@ -625,13 +625,11 @@ function initFirebase() {
                     state.teachers = data.teachers.filter(t => t && !t.isPlaceholder && t.id !== '__empty_teacher__');
                 }
                 
-                // Deep merge assignments để không bao giờ bị ghi đè mất phân công của các tổ khác
+                // Cập nhật assignments chuẩn từ Firebase
                 if (data.assignments && typeof data.assignments === 'object') {
-                    const remoteAssignments = desanitizeObjectKeysFromFirebase(data.assignments);
-                    state.assignments = {
-                        ...(state.assignments || {}),
-                        ...remoteAssignments
-                    };
+                    state.assignments = desanitizeObjectKeysFromFirebase(data.assignments);
+                } else if (data.assignments === null || data.assignments === undefined) {
+                    state.assignments = {};
                 }
 
                 state.timetable = (data.timetable && typeof data.timetable === 'object') ? desanitizeObjectKeysFromFirebase(data.timetable) : (state.timetable || {});
@@ -788,12 +786,10 @@ function executeFirebasePersist() {
         const sanitizedGroupLocks = sanitizeObjectKeysForFirebase(state.groupLocks || {});
         
         const updates = {};
-        Object.keys(sanitizedAssignments).forEach(k => {
-            updates[`assignments/${k}`] = sanitizedAssignments[k];
-        });
-        Object.keys(sanitizedGroupLocks).forEach(k => {
-            updates[`groupLocks/${k}`] = sanitizedGroupLocks[k];
-        });
+        updates['assignments'] = sanitizedAssignments;
+        updates['groupLocks'] = sanitizedGroupLocks;
+        updates['teachers'] = (state.teachers && state.teachers.length > 0) ? state.teachers : [{ id: '__empty_teacher__', fullName: '', shortName: '', isPlaceholder: true }];
+        updates['classes'] = (state.classes && state.classes.length > 0) ? state.classes : [{ id: '__empty_class__', name: '', grade: '', isPlaceholder: true }];
         updates['lastUpdated'] = newTimestamp;
 
         db.ref("school_data").update(updates).catch(err => {
@@ -2757,16 +2753,19 @@ function confirmExecuteBatchAssignment() {
                 // Xử lý phân công GVCN trực tiếp: Đảm bảo 1 giáo viên chỉ chủ nhiệm tối đa 1 lớp duy nhất
                 const targetClsName = (checkedClassNames && checkedClassNames.length > 0) ? checkedClassNames[checkedClassNames.length - 1] : null;
 
-                // Giải phóng lớp chủ nhiệm cũ của giáo viên này nếu chọn lớp mới hoặc bỏ chọn
+                // 1. Giải phóng lớp chủ nhiệm cũ của giáo viên này nếu chọn lớp mới hoặc bỏ chọn
                 state.classes.forEach(clsObj => {
                     if (clsObj.gvcn === teacher && clsObj.name !== targetClsName) {
                         clsObj.gvcn = '';
                     }
                 });
 
+                // 2. Nếu gán cho lớp mới, đặt GVCN mới cho lớp
                 if (targetClsName) {
                     const targetClsObj = state.classes.find(c => c.name === targetClsName);
-                    if (targetClsObj) targetClsObj.gvcn = teacher;
+                    if (targetClsObj) {
+                        targetClsObj.gvcn = teacher;
+                    }
                 }
 
                 if (isEditing) {
@@ -5205,42 +5204,47 @@ function syncGvcnAndHomeroom() {
 
     ensureHomeroomSubjects();
 
-    // 1. Đồng bộ xuôi từ giáo viên sang lớp học
-    const teacherGvcnMap = {};
+    // 1. Đồng bộ 2 chiều chuẩn xác giữa danh sách lớp và giáo viên
+    const classToTeacherMap = {};
+    state.classes.forEach(c => {
+        if (c && c.name && c.gvcn && c.gvcn.trim() !== '') {
+            classToTeacherMap[c.name] = c.gvcn.trim();
+        }
+    });
+
     state.teachers.forEach(t => {
-        const hrClass = (t.reduction && t.reduction.homeroom && t.reduction.homeroomClass) ? t.reduction.homeroomClass : (t.homeroomClass || '');
-        if (hrClass) {
-            teacherGvcnMap[hrClass] = t.shortName;
-            t.homeroomClass = hrClass;
+        // Tìm lớp mà giáo viên này đang làm chủ nhiệm
+        let assignedClass = Object.keys(classToTeacherMap).find(clsName => classToTeacherMap[clsName] === t.shortName);
+        if (!assignedClass && t.homeroomClass && !classToTeacherMap[t.homeroomClass]) {
+            // Nếu giáo viên có homeroomClass nhưng lớp chưa có gvcn, gán vào lớp
+            assignedClass = t.homeroomClass;
+            const targetCls = state.classes.find(c => c.name === assignedClass);
+            if (targetCls) {
+                targetCls.gvcn = t.shortName;
+                classToTeacherMap[assignedClass] = t.shortName;
+            }
+        }
+
+        if (assignedClass) {
+            t.homeroomClass = assignedClass;
             if (!t.reduction) {
-                t.reduction = { homeroom: true, homeroomClass: hrClass, leader: false, deputy: false, baby: false, other: 0 };
+                t.reduction = { homeroom: true, homeroomClass: assignedClass, leader: false, deputy: false, baby: false, other: 0 };
             } else {
                 t.reduction.homeroom = true;
-                t.reduction.homeroomClass = hrClass;
+                t.reduction.homeroomClass = assignedClass;
+            }
+        } else {
+            t.homeroomClass = '';
+            if (t.reduction) {
+                t.reduction.homeroom = false;
+                t.reduction.homeroomClass = '';
             }
         }
     });
 
-    // Cập nhật gvcn của lớp
+    // Cập nhật lại gvcn trên toàn bộ danh sách lớp
     state.classes.forEach(c => {
-        if (teacherGvcnMap[c.name]) {
-            c.gvcn = teacherGvcnMap[c.name];
-        }
-    });
-
-    // 2. Đồng bộ ngược từ lớp học sang giáo viên
-    state.classes.forEach(c => {
-        if (c.gvcn) {
-            const t = state.teachers.find(teacher => teacher.shortName.trim().toLowerCase() === c.gvcn.trim().toLowerCase());
-            if (t) {
-                t.homeroomClass = c.name;
-                if (!t.reduction) {
-                    t.reduction = { homeroom: false, homeroomClass: '', leader: false, deputy: false, baby: false, other: 0 };
-                }
-                t.reduction.homeroom = true;
-                t.reduction.homeroomClass = c.name;
-            }
-        }
+        c.gvcn = classToTeacherMap[c.name] || '';
     });
 
     // 3. Tính toán lại định mức thực tế cho tất cả giáo viên (bảo toàn định mức chuẩn riêng, giảm 4 nếu chủ nhiệm)
