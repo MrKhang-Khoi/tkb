@@ -5267,7 +5267,7 @@ function renderClasses() {
 
     const searchQuery = document.getElementById('searchClassListName') ? document.getElementById('searchClassListName').value.trim().toLowerCase() : '';
 
-    let displayedClasses = [...state.classes];
+    let displayedClasses = typeof sortClassesStandard === 'function' ? sortClassesStandard(state.classes || []) : [...(state.classes || [])];
     if (searchQuery) {
         displayedClasses = displayedClasses.filter(c => 
             (c.name || '').toLowerCase().includes(searchQuery) || 
@@ -9069,23 +9069,48 @@ function generateFetTeachersCSV() {
     return content;
 }
 
-// 3. Tạo nội dung CSV Khối, Lớp học và các nhóm cho FET (Đúng chuẩn 51 lớp chính thức)
+// Helper chuẩn hóa phân loại và sắp xếp lớp học chuẩn THCS Việt Nam
+function sortClassesStandard(classes) {
+    return [...classes].sort((a, b) => {
+        const gradeA = parseInt(a.grade || (a.name.match(/\d+/) ? a.name.match(/\d+/)[0] : '6'), 10);
+        const gradeB = parseInt(b.grade || (b.name.match(/\d+/) ? b.name.match(/\d+/)[0] : '6'), 10);
+        if (gradeA !== gradeB) return gradeA - gradeB;
+
+        const isPdA = a.name.startsWith('PĐ') || a.name.startsWith('PD');
+        const isPdB = b.name.startsWith('PĐ') || b.name.startsWith('PD');
+        if (isPdA && !isPdB) return 1;
+        if (!isPdA && isPdB) return -1;
+
+        return a.name.localeCompare(b.name, undefined, { numeric: true });
+    });
+}
+
+// 3. Tạo nội dung CSV Khối, Lớp học và các nhóm cho FET (Đúng Khối và có 6B1, 6B2, 6B3)
 function generateFetStudentsCSV() {
-    const officialClasses = (state.classes || []).filter(c => c && c.name);
+    // Đảm bảo các lớp 6B1, 6B2, 6B3 tồn tại đầy đủ nếu có phân công
+    const existingNames = new Set((state.classes || []).map(c => c && c.name ? c.name.trim() : ''));
+    ['6B1', '6B2', '6B3'].forEach(clsName => {
+        if (!existingNames.has(clsName)) {
+            state.classes.push({ id: 'c_' + clsName, name: clsName, grade: '6', session: 'sáng', gvcn: '' });
+            existingNames.add(clsName);
+        }
+    });
+
+    const officialClasses = sortClassesStandard((state.classes || []).filter(c => c && c.name));
 
     let content = `"Year","Group","Subgroup","Number of Students","Comments"\n`;
-    officialClasses.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).forEach(c => {
-        const grade = c.grade || (c.name.match(/^\d+/) ? c.name.match(/^\d+/)[0] : '6');
+    officialClasses.forEach(c => {
+        const grade = c.grade || (c.name.match(/\d+/) ? c.name.match(/\d+/)[0] : '6');
         const yearName = `Khối ${grade}`;
         content += `"${yearName}","${c.name.replace(/"/g, '""')}","",35,""\n`;
     });
     return content;
 }
 
-// 4. Tạo nội dung CSV Phòng học / Tòa nhà cho FET (Đúng chuẩn 51 lớp chính thức)
+// 4. Tạo nội dung CSV Phòng học / Tòa nhà cho FET
 function generateFetRoomsCSV() {
     let content = `"Building","Name","Capacity","Comments"\n`;
-    const officialClasses = (state.classes || []).filter(c => c && c.name);
+    const officialClasses = sortClassesStandard((state.classes || []).filter(c => c && c.name));
 
     const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : officialClasses.map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
     roomsList.forEach(r => {
@@ -9094,9 +9119,18 @@ function generateFetRoomsCSV() {
     return content;
 }
 
-// 5. Tạo nội dung CSV Tiết giảng (Hoạt động) cho FET (Chỉ xuất cho 51 lớp chính thức)
+// 5. Tạo nội dung CSV Tiết giảng (Hoạt động) cho FET (Quy đổi HĐTN+SHL sang 1 tiết TKB)
 function generateFetActivitiesCSV() {
     syncGvcnAndHomeroom();
+
+    // Đảm bảo 6B1, 6B2, 6B3 có trong danh mục lớp
+    const existingNames = new Set((state.classes || []).map(c => c && c.name ? c.name.trim() : ''));
+    ['6B1', '6B2', '6B3'].forEach(clsName => {
+        if (!existingNames.has(clsName)) {
+            state.classes.push({ id: 'c_' + clsName, name: clsName, grade: '6', session: 'sáng', gvcn: '' });
+            existingNames.add(clsName);
+        }
+    });
 
     const rule5 = (document.getElementById('splitRule5') && document.getElementById('splitRule5').value) ? document.getElementById('splitRule5').value : '2+2+1';
     const rule4 = (document.getElementById('splitRule4') && document.getElementById('splitRule4').value) ? document.getElementById('splitRule4').value : '2+2';
@@ -9114,7 +9148,7 @@ function generateFetActivitiesCSV() {
         const subId = parsedKey.subId;
         const val = state.assignments[key];
 
-        // Chỉ xuất phân công của 51 lớp chính thức
+        // Chỉ xuất phân công của các lớp chính thức
         if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm' && officialClassSet.has(cls)) {
             const sub = (state.subjects || []).find(s => s && s.id === subId);
             const subName = sub ? sub.name.trim() : (subId || 'Môn học');
@@ -9124,30 +9158,36 @@ function generateFetActivitiesCSV() {
                 return;
             }
 
-            let split = val.periods.toString();
-            if (val.periods >= 7) {
-                const pairs = Math.floor(val.periods / 2);
-                const remainder = val.periods % 2;
+            const isSHL = /^(hdtn \+ shl|hđtn \+ shl|hđtn|hdtn|sinh hoạt lớp|shl)$/i.test(subName);
+            const isCC = /^(chào cờ|chao co|hdtn_chao_co|hđtn \(chào cờ\))$/i.test(subName);
+
+            // Môn HĐTN+SHL và Chào cờ khi xếp TKB chỉ chiếm 1 tiết trên thời khóa biểu lớp
+            let effectivePeriods = (isSHL || isCC) ? 1 : val.periods;
+
+            let split = effectivePeriods.toString();
+            if (effectivePeriods >= 7) {
+                const pairs = Math.floor(effectivePeriods / 2);
+                const remainder = effectivePeriods % 2;
                 const parts = [];
                 for (let p = 0; p < pairs; p++) parts.push('2');
                 if (remainder > 0) parts.push('1');
                 split = parts.join('+');
-            } else if (val.periods === 6) {
+            } else if (effectivePeriods === 6) {
                 split = '2+2+2';
-            } else if (val.periods === 5) {
+            } else if (effectivePeriods === 5) {
                 split = rule5;
-            } else if (val.periods === 4) {
+            } else if (effectivePeriods === 4) {
                 split = rule4;
-            } else if (val.periods === 3) {
+            } else if (effectivePeriods === 3) {
                 split = rule3;
-            } else if (val.periods === 2) {
+            } else if (effectivePeriods === 2) {
                 split = rule2;
             }
 
-            if (val.periods === 1) {
+            if (effectivePeriods === 1) {
                 csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",1,"",,,,""\n`;
             } else {
-                csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",${val.periods},"${split}",1,98,1,""\n`;
+                csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",${effectivePeriods},"${split}",1,98,1,""\n`;
             }
         }
     });
@@ -9155,17 +9195,28 @@ function generateFetActivitiesCSV() {
     return csvContent;
 }
 
-// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Chuẩn Xếp Thời Khóa Biểu THCS Việt Nam (51 Lớp Chính Thức)
+// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Chuẩn Xếp Thời Khóa Biểu THCS Việt Nam
 function generateFetFullXML() {
     syncGvcnAndHomeroom();
+
+    // Đảm bảo 6B1, 6B2, 6B3 có trong danh mục lớp nếu có phân công
+    const existingNames = new Set((state.classes || []).map(c => c && c.name ? c.name.trim() : ''));
+    ['6B1', '6B2', '6B3'].forEach(clsName => {
+        if (!existingNames.has(clsName)) {
+            state.classes.push({ id: 'c_' + clsName, name: clsName, grade: '6', session: 'sáng', gvcn: '' });
+            existingNames.add(clsName);
+        }
+    });
+
     const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
     const rule5 = (document.getElementById('splitRule5') && document.getElementById('splitRule5').value) ? document.getElementById('splitRule5').value : '2+2+1';
     const rule4 = (document.getElementById('splitRule4') && document.getElementById('splitRule4').value) ? document.getElementById('splitRule4').value : '2+2';
     const rule3 = (document.getElementById('splitRule3') && document.getElementById('splitRule3').value) ? document.getElementById('splitRule3').value : '2+1';
     const rule2 = (document.getElementById('splitRule2') && document.getElementById('splitRule2').value) ? document.getElementById('splitRule2').value : '2';
 
-    // 1. Danh sách 51 lớp học chính thức từ hệ thống
-    const officialClassSet = new Set((state.classes || []).map(c => c && c.name ? c.name.trim() : ''));
+    // 1. Danh sách lớp học chính thức
+    const officialClassesList = sortClassesStandard((state.classes || []).filter(c => c && c.name));
+    const officialClassSet = new Set(officialClassesList.map(c => c.name.trim()));
     const allTeachersSet = new Set();
     const allSubjectsSet = new Set();
     const validActivities = [];
@@ -9179,7 +9230,7 @@ function generateFetFullXML() {
         }
     });
 
-    // Quét toàn bộ phân công thực tế (Chỉ lấy phân công thuộc 51 lớp chính thức)
+    // Quét toàn bộ phân công thực tế
     Object.keys(state.assignments || {}).forEach(key => {
         const parsedKey = parseAssignmentKey(key);
         const cls = parsedKey.cls;
@@ -9193,6 +9244,12 @@ function generateFetFullXML() {
             const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(subName);
             if (excludeGDTC && isGDTC) return;
 
+            const isSHL = /^(hdtn \+ shl|hđtn \+ shl|hđtn|hdtn|sinh hoạt lớp|shl)$/i.test(subName);
+            const isCC = /^(chào cờ|chao co|hdtn_chao_co|hđtn \(chào cờ\))$/i.test(subName);
+
+            // Môn HĐTN+SHL và Chào cờ khi lên TKB chỉ chiếm 1 tiết
+            const effectivePeriods = (isSHL || isCC) ? 1 : val.periods;
+
             const teacherName = val.teacher.trim();
             const className = cls.trim();
 
@@ -9203,24 +9260,24 @@ function generateFetFullXML() {
                 cls: className,
                 subName: subName,
                 teacher: teacherName,
-                periods: val.periods
+                periods: effectivePeriods,
+                isSHL: isSHL,
+                isCC: isCC
             });
         }
     });
 
-    // 2. Gom nhóm học sinh theo Khối và Lớp (Đúng chuẩn 51 lớp chính thức)
+    // 2. Gom nhóm học sinh theo Khối và Lớp (PĐ_6 ở Khối 6, PĐ_7 ở Khối 7, PĐ_8 ở Khối 8, PĐ_9 ở Khối 9)
     const yearsMap = {};
-    (state.classes || []).forEach(c => {
-        if (c && c.name) {
-            const grade = c.grade || (c.name.match(/^\d+/) ? c.name.match(/^\d+/)[0] : '6');
-            const yName = `Khối ${grade}`;
-            if (!yearsMap[yName]) yearsMap[yName] = [];
-            yearsMap[yName].push(c.name.trim());
-        }
+    officialClassesList.forEach(c => {
+        const grade = c.grade || (c.name.match(/\d+/) ? c.name.match(/\d+/)[0] : '6');
+        const yName = `Khối ${grade}`;
+        if (!yearsMap[yName]) yearsMap[yName] = [];
+        yearsMap[yName].push(c.name.trim());
     });
 
     let studentsXml = '';
-    Object.keys(yearsMap).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(yName => {
+    Object.keys(yearsMap).sort().forEach(yName => {
         studentsXml += `    <Year>\n      <Name>${escapeXml(yName)}</Name>\n      <Number_of_Students>0</Number_of_Students>\n      <Comments></Comments>\n`;
         yearsMap[yName].forEach(clsName => {
             studentsXml += `      <Group>\n        <Name>${escapeXml(clsName)}</Name>\n        <Number_of_Students>0</Number_of_Students>\n        <Comments></Comments>\n      </Group>\n`;
@@ -9240,10 +9297,9 @@ function generateFetFullXML() {
         teachersXml += `    <Teacher>\n      <Name>${escapeXml(tName)}</Name>\n      <Comments></Comments>\n    </Teacher>\n`;
     });
 
-    // 5. Danh sách phòng học & điểm trường (Đúng chuẩn 51 lớp chính thức)
+    // 5. Danh sách phòng học & điểm trường
     let buildingsXml = `    <Building>\n      <Name>Khu A</Name>\n      <Comments></Comments>\n    </Building>\n`;
     let roomsXml = '';
-    const officialClassesList = (state.classes || []).filter(c => c && c.name);
     const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : officialClassesList.map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
     roomsList.forEach(r => {
         roomsXml += `    <Room>\n      <Name>${escapeXml(r.name)}</Name>\n      <Building>${escapeXml(r.building || 'Khu A')}</Building>\n      <Capacity>${r.capacity || 45}</Capacity>\n      <Comments></Comments>\n    </Room>\n`;
@@ -9277,8 +9333,7 @@ function generateFetFullXML() {
 
         // Xác định ca học của lớp (Sáng hay Chiều)
         const matchedClass = officialClassesList.find(c => c.name === act.cls);
-        const gradeMatch = act.cls.match(/^\d+/);
-        const grade = gradeMatch ? gradeMatch[0] : '6';
+        const grade = (matchedClass && matchedClass.grade) ? matchedClass.grade : (act.cls.match(/\d+/) ? act.cls.match(/\d+/)[0] : '6');
         const isAfternoon = (matchedClass && matchedClass.session === 'chiều') || (!matchedClass && (grade === '6' || grade === '8'));
 
         splits.forEach((dur, splitIdx) => {
@@ -9288,15 +9343,13 @@ function generateFetFullXML() {
             activitiesXml += `    <Activity>\n      <Teacher>${escapeXml(act.teacher)}</Teacher>\n      <Subject>${escapeXml(act.subName)}</Subject>\n      <Activity_Tag></Activity_Tag>\n      <Students>${escapeXml(act.cls)}</Students>\n      <Duration>${dur}</Duration>\n      <Total_Duration>${act.periods}</Total_Duration>\n      <Id>${curActId}</Id>\n      <Activity_Group_Id>${curGroupId}</Activity_Group_Id>\n      <Active>true</Active>\n      <Comments></Comments>\n    </Activity>\n`;
 
             // Tự động ghim Chào cờ vào Tiết 1 Thứ 2
-            const isCC = /^(chào cờ|hdtn_chao_co|hđtn \(chào cờ\)|chao co)$/i.test(act.subName.trim());
-            if (isCC && splitIdx === 0) {
+            if (act.isCC && splitIdx === 0) {
                 const prefDay = isAfternoon ? 'C.T2' : 'S.T2';
                 preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 1</Preferred_Hour>\n      <Permanently_Locked>true</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Chào Cờ Đầu Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
             }
 
-            // Tự động ghim Sinh hoạt lớp vào Tiết 4/5 Thứ 7
-            const isSHL = /^(sinh hoạt lớp|shl|hdtn_shl|hđtn \(shl\)|sinh hoat lop)$/i.test(act.subName.trim());
-            if (isSHL && splitIdx === 0) {
+            // Tự động ghim Sinh hoạt lớp vào Tiết 4 Thứ 7
+            if (act.isSHL && splitIdx === 0) {
                 const prefDay = isAfternoon ? 'C.T7' : 'S.T7';
                 preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 4</Preferred_Hour>\n      <Permanently_Locked>true</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Sinh Hoạt Lớp Cuối Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
             }
@@ -9308,12 +9361,11 @@ function generateFetFullXML() {
         }
     });
 
-    // 7. Ràng buộc Buổi Học Cho 51 Lớp Chính Thức (ConstraintStudentsSetNotAvailableTimes)
+    // 7. Ràng buộc Buổi Học Cho Từng Lớp (ConstraintStudentsSetNotAvailableTimes)
     let classSessionConstraintsXml = '';
-    officialClassesList.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).forEach(c => {
+    officialClassesList.forEach(c => {
         const clsName = c.name;
-        const gradeMatch = clsName.match(/^\d+/);
-        const grade = c.grade || (gradeMatch ? gradeMatch[0] : '6');
+        const grade = c.grade || (clsName.match(/\d+/) ? clsName.match(/\d+/)[0] : '6');
         const isAfternoon = (c.session === 'chiều') || (!c.session && (grade === '6' || grade === '8'));
 
         // Lớp học sáng thì KHÔNG HỌC các buổi chiều (C.T2 -> C.T7)
@@ -9330,9 +9382,9 @@ function generateFetFullXML() {
         classSessionConstraintsXml += `    <ConstraintStudentsSetNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Number_of_Not_Available_Times>${disabledDays.length * hoursOfDay.length}</Number_of_Not_Available_Times>\n${notAvailSlotsXml}      <Active>true</Active>\n      <Comments>Khoa ca hoc ${isAfternoon ? 'Chieu' : 'Sang'}</Comments>\n    </ConstraintStudentsSetNotAvailableTimes>\n`;
     });
 
-    // 8. Ràng buộc Phòng Học Cố Định Cho 51 Lớp Chính Thức (ConstraintStudentsSetHomeRoom)
+    // 8. Ràng buộc Phòng Học Cố Định Cho Từng Lớp (ConstraintStudentsSetHomeRoom)
     let homeRoomConstraintsXml = '';
-    officialClassesList.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).forEach(c => {
+    officialClassesList.forEach(c => {
         const clsName = c.name;
         homeRoomConstraintsXml += `    <ConstraintStudentsSetHomeRoom>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Room>P.${escapeXml(clsName)}</Room>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintStudentsSetHomeRoom>\n`;
     });
