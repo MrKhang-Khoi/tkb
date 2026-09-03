@@ -4068,23 +4068,44 @@ function clearAllGroupAssignments() {
         `<p>Bạn có chắc chắn muốn xóa <b>TẤT CẢ</b> phân công giảng dạy của <b>${groupTeachers.length}</b> giáo viên trong tổ?</p>
          <p style="color: #f87171; font-size: 0.82rem; margin-top: 6px;">⚠️ Hành động này không thể hoàn tác!</p>`,
         () => {
-            const teacherShortNames = groupTeachers.map(t => t.shortName);
+            const teacherShortNames = new Set(groupTeachers.map(t => t.shortName));
             
             let hasChange = false;
             Object.keys(state.assignments).forEach(key => {
                 const assign = state.assignments[key];
-                if (assign && teacherShortNames.includes(assign.teacher)) {
-                    if (key.startsWith('Kiêm nhiệm_')) {
-                        delete state.assignments[key];
-                    } else {
-                        state.assignments[key].teacher = '';
-                        state.assignments[key].periods = 0;
-                    }
+                if (assign && teacherShortNames.has(assign.teacher)) {
+                    state.assignments[key].teacher = '';
+                    state.assignments[key].periods = 0;
+                    delete state.assignments[key];
                     hasChange = true;
                 }
             });
+
+            // Xóa phân công GVCN của toàn bộ giáo viên trong tổ
+            (state.classes || []).forEach(c => {
+                if (c && c.gvcn && teacherShortNames.has(c.gvcn)) {
+                    c.gvcn = '';
+                    hasChange = true;
+                }
+            });
+
+            groupTeachers.forEach(t => {
+                if (t.homeroomClass) {
+                    t.homeroomClass = '';
+                    hasChange = true;
+                }
+                if (t.reduction) {
+                    t.reduction.homeroom = false;
+                    t.reduction.homeroomClass = '';
+                }
+            });
+
+            // Làm sạch các ô tích chọn trên giao diện phân công nhanh
+            document.querySelectorAll('.batch-class-cb').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.batch-duty-cb').forEach(cb => cb.checked = false);
             
             if (hasChange) {
+                syncGvcnAndHomeroom();
                 persistData();
                 refreshActiveViews();
                 showToast("Đã xóa tất cả phân công của tổ viên thành công!", "success");
@@ -4120,17 +4141,41 @@ function clearTeacherAssignments(teacherShortName) {
             Object.keys(state.assignments).forEach(key => {
                 const assign = state.assignments[key];
                 if (assign && assign.teacher === teacherShortName) {
-                    if (key.startsWith('Kiêm nhiệm_')) {
-                        delete state.assignments[key];
-                    } else {
-                        state.assignments[key].teacher = '';
-                        state.assignments[key].periods = 0;
-                    }
+                    state.assignments[key].teacher = '';
+                    state.assignments[key].periods = 0;
+                    delete state.assignments[key];
                     hasChange = true;
                 }
             });
+
+            // Xóa phân công GVCN của giáo viên này nếu có
+            (state.classes || []).forEach(c => {
+                if (c && c.gvcn === teacherShortName) {
+                    c.gvcn = '';
+                    hasChange = true;
+                }
+            });
+
+            if (teacher) {
+                if (teacher.homeroomClass) {
+                    teacher.homeroomClass = '';
+                    hasChange = true;
+                }
+                if (teacher.reduction) {
+                    teacher.reduction.homeroom = false;
+                    teacher.reduction.homeroomClass = '';
+                }
+            }
+
+            // Nếu giáo viên này đang được chọn ở mục 1 Phân công nhanh, hủy tích chọn các ô lớp
+            const selectedTeacher = getSelectedTeacher();
+            if (selectedTeacher === teacherShortName) {
+                document.querySelectorAll('.batch-class-cb').forEach(cb => cb.checked = false);
+                document.querySelectorAll('.batch-duty-cb').forEach(cb => cb.checked = false);
+            }
             
             if (hasChange) {
+                syncGvcnAndHomeroom();
                 persistData();
                 refreshActiveViews();
                 showToast(`Đã xóa tất cả phân công của giáo viên ${teacherName}!`, "success");
@@ -4166,21 +4211,50 @@ function unassignClass(clsName, subId, teacherShortName = '') {
         syncRelatedHomeroomSubject(clsName, subId, '');
     }
     
-    // Also clean up old format key if it exists and belongs to this teacher
+    // Xóa định dạng cũ nếu có
     if (clsName === 'Kiêm nhiệm' && teacherShortName) {
         const oldKey = `Kiêm nhiệm_${subId}`;
         if (state.assignments[oldKey] && state.assignments[oldKey].teacher === teacherShortName) {
+            state.assignments[oldKey].teacher = '';
+            state.assignments[oldKey].periods = 0;
             delete state.assignments[oldKey];
             hasAction = true;
         }
     }
 
+    // Nếu là môn chào cờ / HĐTN hoặc GVCN, kiểm tra và hủy liên kết
+    const subObj = (state.subjects || []).find(s => s && s.id === subId);
+    if (subObj && isHomeroomSubject(subObj.name)) {
+        const clsObj = (state.classes || []).find(c => c && c.name === clsName);
+        if (clsObj && clsObj.gvcn === currentTeacher) {
+            clsObj.gvcn = '';
+            hasAction = true;
+        }
+        const tObj = (state.teachers || []).find(t => t && t.shortName === currentTeacher);
+        if (tObj && tObj.homeroomClass === clsName) {
+            tObj.homeroomClass = '';
+            if (tObj.reduction) {
+                tObj.reduction.homeroom = false;
+                tObj.reduction.homeroomClass = '';
+            }
+            hasAction = true;
+        }
+    }
+
+    // Hủy tích chọn ô tương ứng trên giao diện phân công nhanh nếu đang mở
+    const cb = Array.from(document.querySelectorAll('.batch-class-cb')).find(c => c.value === clsName);
+    if (cb && getSelectedTeacher() === currentTeacher) {
+        cb.checked = false;
+    }
+    const dutyCb = Array.from(document.querySelectorAll('.batch-duty-cb')).find(d => d.dataset.dutyId === subId || d.value === clsName);
+    if (dutyCb && getSelectedTeacher() === currentTeacher) {
+        dutyCb.checked = false;
+    }
+
     if (hasAction) {
+        syncGvcnAndHomeroom();
         persistData();
-        
-        renderMatrix(state.currentUser);
-        renderTeacherStats(state.currentUser);
-        renderUnassignedSubjects(state.currentUser);
+        refreshActiveViews();
     }
 }
 
@@ -4206,14 +4280,32 @@ function unassignHomeroomClass(teacherShortName, clsName) {
         }
     }
 
+    // Xóa phân công môn Chào cờ và HĐTN/SHL của lớp này
+    Object.keys(state.assignments).forEach(key => {
+        if (key.startsWith(`${clsName}_`)) {
+            const assign = state.assignments[key];
+            if (assign && (assign.teacher === teacherShortName || !assign.teacher)) {
+                const subId = key.substring(clsName.length + 1);
+                const subObj = (state.subjects || []).find(s => s && s.id === subId);
+                const isHr = (subObj && isHomeroomSubject(subObj.name)) || isHomeroomSubject(subId) || subId.toLowerCase().includes('chao_co') || subId.toLowerCase().includes('hdtn') || subId.toLowerCase().includes('shl') || subId.toLowerCase().includes('cc');
+                if (isHr) {
+                    state.assignments[key].teacher = '';
+                    state.assignments[key].periods = 0;
+                    delete state.assignments[key];
+                }
+            }
+        }
+    });
+
+    // Bỏ tích ô chọn lớp này nếu đang mở phân công GVCN
+    const cb = Array.from(document.querySelectorAll('.batch-class-cb')).find(c => c.value === clsName);
+    if (cb && getSelectedTeacher() === teacherShortName) {
+        cb.checked = false;
+    }
+
     syncGvcnAndHomeroom();
     persistData();
-
-    renderMatrix(state.currentUser);
-    renderTeacherStats(state.currentUser);
-    renderUnassignedSubjects(state.currentUser);
-    renderBatchAssignPanel(state.currentUser);
-    updateClassCheckboxesState();
+    refreshActiveViews();
 
     const tName = tObj ? tObj.fullName : teacherShortName;
     showToast(`Đã hủy phân công GVCN lớp ${clsName} của giáo viên ${tName}!`, "info");
@@ -5187,9 +5279,9 @@ function syncGvcnAndHomeroom() {
                         }
                     }
                 } else {
-                    // Nếu lớp không có GVCN, giải phóng phân công nếu đó là phân công tự động
-                    if (currentAssign && currentAssign.teacher && currentAssign.isAuto) {
-                        state.assignments[key] = { teacher: '', periods: 0 };
+                    // Nếu lớp không có GVCN, giải phóng toàn bộ phân công môn Chào cờ & HĐTN/SHL của lớp này
+                    if (currentAssign) {
+                        delete state.assignments[key];
                     }
                 }
             }
