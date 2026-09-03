@@ -3723,6 +3723,48 @@ function findExactTeacherMatch(rawName, groupId = null) {
     return null;
 }
 
+// Trích xuất chính xác tên lớp chủ nhiệm từ chuỗi ghi chú (ví dụ: GVCN(8A4)(5T), GVCN(9A5)(5T), GVCN(7A4), GVCN: 8A4...)
+function extractHomeroomClassFromText(text, allClasses) {
+    if (!text) return null;
+    const str = text.toString().trim();
+    if (!str.toLowerCase().includes('gvcn') && !str.toLowerCase().includes('chủ nhiệm')) return null;
+
+    const classList = allClasses && allClasses.length > 0 ? allClasses : (state.classes || []);
+    const sortedClasses = [...classList].map(c => c.name).sort((a, b) => b.length - a.length);
+
+    // 1. So khớp trực tiếp với danh sách lớp hiện có của trường
+    for (const clsName of sortedClasses) {
+        const escaped = clsName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Khớp GVCN(8A4) hoặc GVCN (8A4) hoặc GVCN: 8A4 hoặc GVCN 8A4
+        const regex = new RegExp(`(?:gvcn|chủ\\s*nhiệm)[^a-zA-Z0-9]*\\(?\\s*${escaped}\\b`, 'i');
+        if (regex.test(str)) {
+            return clsName;
+        }
+        const regexParen = new RegExp(`(?:gvcn|chủ\\s*nhiệm)\\s*\\(\\s*${escaped}\\s*\\)`, 'i');
+        if (regexParen.test(str)) {
+            return clsName;
+        }
+    }
+
+    // 2. Mẫu tổng quát: GVCN(8A4) hoặc GVCN: 8A4
+    const m = str.match(/(?:gvcn|chủ\s*nhiệm)\s*\(?\s*([0-9]+[A-Za-z]+[0-9]*)/i);
+    if (m && m[1]) {
+        const foundCls = classList.find(c => c && c.name.toLowerCase() === m[1].toLowerCase());
+        if (foundCls) return foundCls.name;
+    }
+
+    // 3. Viết tắt dạng 2 chữ số: GVCN(76) -> 7A6
+    const mShort = str.match(/(?:gvcn|chủ\s*nhiệm)\s*\(\s*(\d)(\d)\s*\)/i);
+    if (mShort) {
+        const grade = mShort[1];
+        const num = mShort[2];
+        const foundCls = classList.find(c => c && (c.name.toLowerCase() === `${grade}a${num}`.toLowerCase() || c.name.toLowerCase() === `${grade}b${num}`.toLowerCase()));
+        if (foundCls) return foundCls.name;
+    }
+
+    return null;
+}
+
 async function importGroupAssignmentExcel(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -3834,6 +3876,13 @@ async function importGroupAssignmentExcel(event) {
             // 1. Phân tích Kiêm nhiệm & GVCN
             const dutyRaw = (row[colDuty] || '').toString().trim();
             if (dutyRaw) {
+                // Kiểm tra xem có ghi cụ thể lớp chủ nhiệm trong cột Kiêm nhiệm không (ví dụ: GVCN(8A4)(5T), GVCN(9A5)(5T), GVCN(7A4)...)
+                const explicitCls = extractHomeroomClassFromText(dutyRaw, state.classes);
+                if (explicitCls) {
+                    teacherData.homeroomClass = explicitCls;
+                    teacherData.hasGvcn = true;
+                }
+
                 const dutyTokens = dutyRaw.split(/[,;+]+/);
                 dutyTokens.forEach(tok => {
                     tok = tok.trim();
@@ -3846,6 +3895,10 @@ async function importGroupAssignmentExcel(event) {
                         if (dName.toLowerCase().includes('gvcn') || dName.toLowerCase().includes('chủ nhiệm')) {
                             teacherData.hasGvcn = true;
                             teacherData.gvcnDutyStr = tok;
+                            if (!teacherData.homeroomClass) {
+                                const clsInTok = extractHomeroomClassFromText(tok, state.classes);
+                                if (clsInTok) teacherData.homeroomClass = clsInTok;
+                            }
                         } else {
                             const subObj = (state.subjects || []).find(s => s.name.toLowerCase() === dName.toLowerCase() && s.grade === 'Kiêm nhiệm');
                             if (subObj) {
@@ -3870,10 +3923,13 @@ async function importGroupAssignmentExcel(event) {
 
                     // Kiểm tra nếu block chứa thông tin GVCN dạng "GVCN: 6A1 (4T)" hoặc "Chủ nhiệm: 6A1"
                     if (block.toLowerCase().includes('gvcn') || block.toLowerCase().includes('chủ nhiệm')) {
-                        const mCls = block.match(/([0-9A-Za-z]+)/);
+                        const mCls = extractHomeroomClassFromText(block, state.classes) || block.match(/([0-9A-Za-z]+)/)?.[1];
                         if (mCls) {
-                            teacherData.homeroomClass = mCls[1];
-                            teacherData.hasGvcn = true;
+                            const foundCls = (state.classes || []).find(c => c && c.name.toLowerCase() === mCls.toLowerCase());
+                            if (foundCls) {
+                                teacherData.homeroomClass = foundCls.name;
+                                teacherData.hasGvcn = true;
+                            }
                         }
                         return;
                     }
@@ -3917,38 +3973,7 @@ async function importGroupAssignmentExcel(event) {
                 });
             }
 
-            // 3. Tự động xác định lớp chủ nhiệm nếu có nhiệm vụ GVCN
-            if (teacherData.hasGvcn && !teacherData.homeroomClass) {
-                const MASTER_CLASS_GVCN_MAP = {
-                    'Dũng': '9A2',
-                    'Dược': '8B2',
-                    'Huyền': '6A6',
-                    'Hưng': '9A6',
-                    'Liên': '6A3',
-                    'Lụa': '9A3',
-                    'Phụng': '6A2',
-                    'N.Quỳnh': '6A4',
-                    'T.Quỳnh': '6A1',
-                    'Thảo': '9A4',
-                    'H.Thiện': '9A1',
-                    'Thu': '8A6',
-                    'Tiếp': '7B3',
-                    'Hảo': '7A1',
-                    'Trà': '7A5',
-                    'M.Hoa': '7A2',
-                    'Thuý': '6A1'
-                };
-
-                let foundCls = (tObj && tObj.homeroomClass) ? tObj.homeroomClass : (state.classes || []).find(c => c && c.gvcn === tShort)?.name;
-                if (!foundCls) {
-                    foundCls = MASTER_CLASS_GVCN_MAP[tShort] || '';
-                }
-
-                if (foundCls) {
-                    teacherData.homeroomClass = foundCls;
-                }
-            }
-
+            // 3. Xử lý tính số tiết GVCN nếu đã xác định được lớp chủ nhiệm rõ ràng từ file
             if (teacherData.homeroomClass) {
                 teacherData.totalPeriods += 4; // Cộng 4 tiết GVCN (1T Chào cờ + 3T SHL)
             }
@@ -4031,6 +4056,13 @@ async function importGroupAssignmentExcel(event) {
 
                         // 2. Áp dụng GVCN nếu có
                         if (t.homeroomClass) {
+                            // Xóa lớp chủ nhiệm cũ của giáo viên này nếu có
+                            (state.classes || []).forEach(c => {
+                                if (c && c.gvcn === tShort && c.name !== t.homeroomClass) {
+                                    c.gvcn = '';
+                                }
+                            });
+
                             const targetCls = (state.classes || []).find(c => c && c.name === t.homeroomClass);
                             if (targetCls) {
                                 targetCls.gvcn = tShort;
@@ -4043,6 +4075,21 @@ async function importGroupAssignmentExcel(event) {
                                 } else {
                                     tObj.reduction.homeroom = true;
                                     tObj.reduction.homeroomClass = t.homeroomClass;
+                                }
+                            }
+                        } else if (!t.hasGvcn) {
+                            // Nếu trong file không có nhiệm vụ GVCN, xóa phân công GVCN cũ
+                            (state.classes || []).forEach(c => {
+                                if (c && c.gvcn === tShort) {
+                                    c.gvcn = '';
+                                }
+                            });
+                            const tObj = (state.teachers || []).find(teacher => teacher && teacher.shortName === tShort);
+                            if (tObj) {
+                                tObj.homeroomClass = '';
+                                if (tObj.reduction) {
+                                    tObj.reduction.homeroom = false;
+                                    tObj.reduction.homeroomClass = '';
                                 }
                             }
                         }
@@ -16579,6 +16626,7 @@ window.deleteAllGlobalSubjects = deleteAllGlobalSubjects;
 window.deleteAllAccounts = deleteAllAccounts;
 window.state = state;
 window.findExactTeacherMatch = findExactTeacherMatch;
+window.extractHomeroomClassFromText = extractHomeroomClassFromText;
 window.importGroupAssignmentExcel = importGroupAssignmentExcel;
 window.renderTeacherQuickAssignPreview = renderTeacherQuickAssignPreview;
 window.scrollToTeacherCard = scrollToTeacherCard;
