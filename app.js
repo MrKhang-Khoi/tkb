@@ -4981,17 +4981,18 @@ function isHomeroomSubject(subName) {
            isGvcnSpecialSubject(subName);
 }
 
-// Đảm bảo mỗi khối lớp đều có sẵn môn Chào Cờ (1T) và HĐTN + SHL (3T) trong state.subjects
+// Đảm bảo chỉ khi lớp có phân công GVCN thì mới tự động tạo môn Chào Cờ (1T) và HĐTN + SHL (3T) nếu chưa có
 function ensureHomeroomSubjects() {
     if (!state.subjects) state.subjects = [];
     if (!state.classes) state.classes = [];
 
-    const grades = [...new Set(state.classes.map(c => c.grade).filter(Boolean))];
-    if (grades.length === 0) {
-        ['6', '7', '8', '9'].forEach(g => grades.push(g));
-    }
+    // Chỉ tự động tạo khi có lớp học thực sự được phân công GVCN
+    const classesWithGvcn = state.classes.filter(c => c && c.gvcn && c.grade);
+    if (classesWithGvcn.length === 0) return;
 
-    grades.forEach(grade => {
+    const activeGrades = [...new Set(classesWithGvcn.map(c => c.grade).filter(Boolean))];
+
+    activeGrades.forEach(grade => {
         // 1. Kiểm tra môn Chào Cờ
         let chaoCo = state.subjects.find(s => s && s.grade === grade && s.name && (s.name.toLowerCase().includes('chào cờ') || s.name.toLowerCase() === 'cc'));
         if (!chaoCo) {
