@@ -9069,51 +9069,32 @@ function generateFetTeachersCSV() {
     return content;
 }
 
-// 3. Tạo nội dung CSV Khối, Lớp học và các nhóm cho FET
+// 3. Tạo nội dung CSV Khối, Lớp học và các nhóm cho FET (Đúng chuẩn 51 lớp chính thức)
 function generateFetStudentsCSV() {
-    const classesSet = new Set();
-    (state.classes || []).forEach(c => {
-        if (c && c.name) classesSet.add(c.name.trim());
-    });
-
-    Object.keys(state.assignments || {}).forEach(key => {
-        const parsedKey = parseAssignmentKey(key);
-        const cls = parsedKey.cls;
-        const val = state.assignments[key];
-        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
-            classesSet.add(cls.trim());
-        }
-    });
+    const officialClasses = (state.classes || []).filter(c => c && c.name);
 
     let content = `"Year","Group","Subgroup","Number of Students","Comments"\n`;
-    Array.from(classesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
-        const gradeMatch = clsName.match(/^\d+/);
-        const grade = gradeMatch ? gradeMatch[0] : '6';
+    officialClasses.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).forEach(c => {
+        const grade = c.grade || (c.name.match(/^\d+/) ? c.name.match(/^\d+/)[0] : '6');
         const yearName = `Khối ${grade}`;
-        content += `"${yearName}","${clsName.replace(/"/g, '""')}","",35,""\n`;
+        content += `"${yearName}","${c.name.replace(/"/g, '""')}","",35,""\n`;
     });
     return content;
 }
 
-// 4. Tạo nội dung CSV Phòng học / Tòa nhà cho FET
+// 4. Tạo nội dung CSV Phòng học / Tòa nhà cho FET (Đúng chuẩn 51 lớp chính thức)
 function generateFetRoomsCSV() {
     let content = `"Building","Name","Capacity","Comments"\n`;
-    const classesSet = new Set();
-    (state.classes || []).forEach(c => { if (c && c.name) classesSet.add(c.name.trim()); });
-    Object.keys(state.assignments || {}).forEach(key => {
-        const parsedKey = parseAssignmentKey(key);
-        const val = state.assignments[key];
-        if (val && val.teacher && val.periods > 0 && parsedKey.cls !== 'Kiêm nhiệm') classesSet.add(parsedKey.cls.trim());
-    });
+    const officialClasses = (state.classes || []).filter(c => c && c.name);
 
-    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : Array.from(classesSet).map(c => ({ name: `P.${c}`, building: 'Khu A', capacity: 45 }));
+    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : officialClasses.map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
     roomsList.forEach(r => {
         content += `"${(r.building || 'Khu A').replace(/"/g, '""')}","${(r.name || '').replace(/"/g, '""')}",${r.capacity || 45},""\n`;
     });
     return content;
 }
 
-// 5. Tạo nội dung CSV Tiết giảng (Hoạt động) cho FET
+// 5. Tạo nội dung CSV Tiết giảng (Hoạt động) cho FET (Chỉ xuất cho 51 lớp chính thức)
 function generateFetActivitiesCSV() {
     syncGvcnAndHomeroom();
 
@@ -9123,6 +9104,7 @@ function generateFetActivitiesCSV() {
     const rule2 = (document.getElementById('splitRule2') && document.getElementById('splitRule2').value) ? document.getElementById('splitRule2').value : '2';
 
     const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
+    const officialClassSet = new Set((state.classes || []).map(c => c && c.name ? c.name.trim() : ''));
 
     let csvContent = `"Students Sets","Subject","Teachers","Activity Tags","Total Duration","Split Duration","Min Days","Weight","Consecutive","Comments"\n`;
 
@@ -9132,7 +9114,8 @@ function generateFetActivitiesCSV() {
         const subId = parsedKey.subId;
         const val = state.assignments[key];
 
-        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
+        // Chỉ xuất phân công của 51 lớp chính thức
+        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm' && officialClassSet.has(cls)) {
             const sub = (state.subjects || []).find(s => s && s.id === subId);
             const subName = sub ? sub.name.trim() : (subId || 'Môn học');
 
@@ -9172,7 +9155,7 @@ function generateFetActivitiesCSV() {
     return csvContent;
 }
 
-// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Chuẩn Xếp Thời Khóa Biểu THCS Việt Nam
+// 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Chuẩn Xếp Thời Khóa Biểu THCS Việt Nam (51 Lớp Chính Thức)
 function generateFetFullXML() {
     syncGvcnAndHomeroom();
     const excludeGDTC = document.getElementById('excludeGDTCForFET') ? document.getElementById('excludeGDTCForFET').checked : true;
@@ -9181,15 +9164,14 @@ function generateFetFullXML() {
     const rule3 = (document.getElementById('splitRule3') && document.getElementById('splitRule3').value) ? document.getElementById('splitRule3').value : '2+1';
     const rule2 = (document.getElementById('splitRule2') && document.getElementById('splitRule2').value) ? document.getElementById('splitRule2').value : '2';
 
-    // 1. Thu thập toàn bộ các đối tượng xuất hiện trong phân công
+    // 1. Danh sách 51 lớp học chính thức từ hệ thống
+    const officialClassSet = new Set((state.classes || []).map(c => c && c.name ? c.name.trim() : ''));
     const allTeachersSet = new Set();
-    const allClassesSet = new Set();
     const allSubjectsSet = new Set();
     const validActivities = [];
 
     // Pre-populate từ hệ thống
     (state.teachers || []).forEach(t => { if (t && t.shortName) allTeachersSet.add(t.shortName.trim()); });
-    (state.classes || []).forEach(c => { if (c && c.name) allClassesSet.add(c.name.trim()); });
     (state.subjects || []).forEach(s => {
         if (s && s.name && s.grade !== 'Kiêm nhiệm') {
             const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(s.name.trim());
@@ -9197,14 +9179,14 @@ function generateFetFullXML() {
         }
     });
 
-    // Quét toàn bộ phân công thực tế
+    // Quét toàn bộ phân công thực tế (Chỉ lấy phân công thuộc 51 lớp chính thức)
     Object.keys(state.assignments || {}).forEach(key => {
         const parsedKey = parseAssignmentKey(key);
         const cls = parsedKey.cls;
         const subId = parsedKey.subId;
         const val = state.assignments[key];
 
-        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm') {
+        if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm' && officialClassSet.has(cls)) {
             const sub = (state.subjects || []).find(s => s && s.id === subId);
             const subName = sub ? sub.name.trim() : (subId || 'Môn học');
 
@@ -9215,7 +9197,6 @@ function generateFetFullXML() {
             const className = cls.trim();
 
             allTeachersSet.add(teacherName);
-            allClassesSet.add(className);
             allSubjectsSet.add(subName);
 
             validActivities.push({
@@ -9227,14 +9208,15 @@ function generateFetFullXML() {
         }
     });
 
-    // 2. Gom nhóm học sinh theo Khối và Lớp
+    // 2. Gom nhóm học sinh theo Khối và Lớp (Đúng chuẩn 51 lớp chính thức)
     const yearsMap = {};
-    Array.from(allClassesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
-        const gradeMatch = clsName.match(/^\d+/);
-        const grade = gradeMatch ? gradeMatch[0] : '6';
-        const yName = `Khối ${grade}`;
-        if (!yearsMap[yName]) yearsMap[yName] = [];
-        yearsMap[yName].push(clsName);
+    (state.classes || []).forEach(c => {
+        if (c && c.name) {
+            const grade = c.grade || (c.name.match(/^\d+/) ? c.name.match(/^\d+/)[0] : '6');
+            const yName = `Khối ${grade}`;
+            if (!yearsMap[yName]) yearsMap[yName] = [];
+            yearsMap[yName].push(c.name.trim());
+        }
     });
 
     let studentsXml = '';
@@ -9258,10 +9240,11 @@ function generateFetFullXML() {
         teachersXml += `    <Teacher>\n      <Name>${escapeXml(tName)}</Name>\n      <Comments></Comments>\n    </Teacher>\n`;
     });
 
-    // 5. Danh sách phòng học & điểm trường
+    // 5. Danh sách phòng học & điểm trường (Đúng chuẩn 51 lớp chính thức)
     let buildingsXml = `    <Building>\n      <Name>Khu A</Name>\n      <Comments></Comments>\n    </Building>\n`;
     let roomsXml = '';
-    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : Array.from(allClassesSet).map(c => ({ name: `P.${c}`, building: 'Khu A', capacity: 45 }));
+    const officialClassesList = (state.classes || []).filter(c => c && c.name);
+    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : officialClassesList.map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
     roomsList.forEach(r => {
         roomsXml += `    <Room>\n      <Name>${escapeXml(r.name)}</Name>\n      <Building>${escapeXml(r.building || 'Khu A')}</Building>\n      <Capacity>${r.capacity || 45}</Capacity>\n      <Comments></Comments>\n    </Room>\n`;
     });
@@ -9293,7 +9276,7 @@ function generateFetFullXML() {
         const currentGroupActIds = [];
 
         // Xác định ca học của lớp (Sáng hay Chiều)
-        const matchedClass = (state.classes || []).find(c => c && c.name === act.cls);
+        const matchedClass = officialClassesList.find(c => c.name === act.cls);
         const gradeMatch = act.cls.match(/^\d+/);
         const grade = gradeMatch ? gradeMatch[0] : '6';
         const isAfternoon = (matchedClass && matchedClass.session === 'chiều') || (!matchedClass && (grade === '6' || grade === '8'));
@@ -9325,13 +9308,13 @@ function generateFetFullXML() {
         }
     });
 
-    // 7. Ràng buộc Buổi Học Cho Từng Lớp (ConstraintStudentsSetNotAvailableTimes)
+    // 7. Ràng buộc Buổi Học Cho 51 Lớp Chính Thức (ConstraintStudentsSetNotAvailableTimes)
     let classSessionConstraintsXml = '';
-    Array.from(allClassesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
-        const matchedClass = (state.classes || []).find(c => c && c.name === clsName);
+    officialClassesList.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).forEach(c => {
+        const clsName = c.name;
         const gradeMatch = clsName.match(/^\d+/);
-        const grade = gradeMatch ? gradeMatch[0] : '6';
-        const isAfternoon = (matchedClass && matchedClass.session === 'chiều') || (!matchedClass && (grade === '6' || grade === '8'));
+        const grade = c.grade || (gradeMatch ? gradeMatch[0] : '6');
+        const isAfternoon = (c.session === 'chiều') || (!c.session && (grade === '6' || grade === '8'));
 
         // Lớp học sáng thì KHÔNG HỌC các buổi chiều (C.T2 -> C.T7)
         // Lớp học chiều thì KHÔNG HỌC các buổi sáng (S.T2 -> S.T7)
@@ -9347,9 +9330,10 @@ function generateFetFullXML() {
         classSessionConstraintsXml += `    <ConstraintStudentsSetNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Number_of_Not_Available_Times>${disabledDays.length * hoursOfDay.length}</Number_of_Not_Available_Times>\n${notAvailSlotsXml}      <Active>true</Active>\n      <Comments>Khoa ca hoc ${isAfternoon ? 'Chieu' : 'Sang'}</Comments>\n    </ConstraintStudentsSetNotAvailableTimes>\n`;
     });
 
-    // 8. Ràng buộc Phòng Học Cố Định Cho Từng Lớp (ConstraintStudentsSetHomeRoom)
+    // 8. Ràng buộc Phòng Học Cố Định Cho 51 Lớp Chính Thức (ConstraintStudentsSetHomeRoom)
     let homeRoomConstraintsXml = '';
-    Array.from(allClassesSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(clsName => {
+    officialClassesList.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).forEach(c => {
+        const clsName = c.name;
         homeRoomConstraintsXml += `    <ConstraintStudentsSetHomeRoom>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Room>P.${escapeXml(clsName)}</Room>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintStudentsSetHomeRoom>\n`;
     });
 
