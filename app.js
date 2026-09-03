@@ -783,13 +783,15 @@ function executeFirebasePersist() {
     state.lastUpdated = newTimestamp;
 
     if (state.currentUser && state.currentUser !== 'admin') {
-        // Tổ trưởng: Chỉ cập nhật nhánh phân công & trạng thái khóa của tổ mình để tránh ghi đè dữ liệu toàn cục
+        // Tổ trưởng: Cập nhật phân công, trạng thái khóa, lớp học (GVCN) và giáo viên (định mức)
         const sanitizedAssignments = sanitizeObjectKeysForFirebase(state.assignments || {});
         const sanitizedGroupLocks = sanitizeObjectKeysForFirebase(state.groupLocks || {});
         
         db.ref("school_data").update({
             assignments: sanitizedAssignments,
             groupLocks: sanitizedGroupLocks,
+            classes: (state.classes && state.classes.length > 0) ? state.classes : [{ id: '__empty_class__', name: '', grade: '', isPlaceholder: true }],
+            teachers: (state.teachers && state.teachers.length > 0) ? state.teachers : [{ id: '__empty_teacher__', fullName: '', shortName: '', isPlaceholder: true }],
             lastUpdated: newTimestamp
         }).catch(err => {
             console.error("Lỗi cập nhật phân công lên Firebase:", err);
@@ -1874,15 +1876,27 @@ function getSubjectForClass(clsName, subName) {
     if (!clsObj) return null;
     const grade = clsObj.grade;
 
-    // 1. Kiểm tra xem môn học có áp dụng cho loại lớp học này không
+    // 1. Nếu là phân công GVCN (Chủ nhiệm lớp)
+    if (isGvcnSpecialSubject(subName)) {
+        if (isPhuDaoClass(clsName)) return null; // Lớp phụ đạo không có GVCN
+        return {
+            id: `gvcn_virtual_${grade}`,
+            name: 'GVCN (Chào Cờ 1T + HĐTN/SHL 3T)',
+            grade: grade,
+            periods: 4,
+            isGvcnVirtual: true
+        };
+    }
+
+    // 2. Kiểm tra xem môn học có áp dụng cho loại lớp học này không
     if (!isSubjectApplicableForClass(clsName, subName)) {
         return null;
     }
 
-    // 2. Tìm môn học khớp chính xác tên môn và khối
+    // 3. Tìm môn học khớp chính xác tên môn và khối
     let sub = (state.subjects || []).find(s => s && s.name.toLowerCase() === subName.toLowerCase() && s.grade === grade);
 
-    // 3. Nếu là lớp Phụ đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9...)
+    // 4. Nếu là lớp Phụ đạo (PĐ_6, PĐ_7, PĐ_8, PĐ_9...)
     if (isPhuDaoClass(clsName)) {
         if (sub) {
             return {
@@ -2066,6 +2080,15 @@ function renderBatchAssignPanel(groupId) {
             value: name,
             label: name
         }));
+    }
+
+    // Luôn bổ sung tùy chọn phân công GVCN (Chủ nhiệm lớp) ở đầu danh sách cho tổ trưởng
+    const gvcnOption = {
+        value: 'GVCN',
+        label: '⭐ GVCN (Chủ nhiệm lớp: Chào Cờ 1T + HĐTN/SHL 3T)'
+    };
+    if (!subjectItems.some(item => isGvcnSpecialSubject(item.value))) {
+        subjectItems.unshift(gvcnOption);
     }
 
     initSearchableDropdown('batchSubjectSelect', 'batchSubjectMenu', subjectItems, (val) => {
@@ -2584,7 +2607,7 @@ function confirmExecuteBatchAssignment() {
         return;
     }
 
-    const { teacher, subjectName, isDutySubject, dutySubObj, customPeriods, checkedDutyList, checkedClassList, isEditing } = pendingBatchAssignmentData;
+    const { teacher, subjectName, isDutySubject, dutySubObj, customPeriods, checkedDutyList, checkedClassList, isEditing, newlyAddedPeriods } = pendingBatchAssignmentData;
     const periodsInput = document.getElementById('batchPeriodsInput');
 
     // 1. Áp dụng các nhiệm vụ kiêm nhiệm
@@ -2658,8 +2681,31 @@ function confirmExecuteBatchAssignment() {
         } else {
             const checkedCbs = Array.from(document.querySelectorAll('.batch-class-cb:checked'));
             const checkedClassNames = checkedCbs.map(cb => cb.value);
+            const isGvcn = isGvcnSpecialSubject(subjectName);
 
-            if (isEditing) {
+            if (isGvcn) {
+                // Xử lý phân công GVCN trực tiếp
+                if (isEditing) {
+                    state.classes.forEach(clsObj => {
+                        const clsName = clsObj.name;
+                        const isChecked = checkedClassNames.includes(clsName);
+                        if (isChecked) {
+                            clsObj.gvcn = teacher;
+                        } else if (clsObj.gvcn === teacher) {
+                            clsObj.gvcn = '';
+                        }
+                    });
+                    cancelReassignment();
+                } else {
+                    checkedClassNames.forEach(clsName => {
+                        const clsObj = state.classes.find(c => c.name === clsName);
+                        if (clsObj) clsObj.gvcn = teacher;
+                    });
+                    checkedCbs.forEach(cb => cb.checked = false);
+                }
+
+                syncGvcnAndHomeroom();
+            } else if (isEditing) {
                 state.classes.forEach(clsObj => {
                     const clsName = clsObj.name;
                     const subObj = getSubjectForClass(clsName, subjectName);
@@ -2681,6 +2727,7 @@ function confirmExecuteBatchAssignment() {
                     }
                 });
                 cancelReassignment();
+                syncGvcnAndHomeroom();
             } else {
                 checkedCbs.forEach(cb => {
                     const clsName = cb.value;
@@ -2694,6 +2741,7 @@ function confirmExecuteBatchAssignment() {
                 });
 
                 checkedCbs.forEach(cb => cb.checked = false);
+                syncGvcnAndHomeroom();
             }
         }
     }
@@ -3008,6 +3056,40 @@ function updateClassCheckboxesState() {
             label.style.cursor = 'not-allowed';
             label.appendChild(document.createTextNode(' (Không học)'));
             titleStr = `Lớp ${clsName} không học môn ${selectedSubject}`;
+            label.title = titleStr;
+            cb.title = titleStr;
+            return;
+        }
+
+        const isGvcn = isGvcnSpecialSubject(selectedSubject);
+        if (isGvcn) {
+            const clsObj = (state.classes || []).find(c => c && c.name === clsName);
+            const currentGvcn = (clsObj && clsObj.gvcn) ? clsObj.gvcn.trim() : '';
+
+            if (currentGvcn) {
+                if (currentGvcn.toLowerCase() !== (selectedTeacher || '').toLowerCase()) {
+                    cb.disabled = true;
+                    cb.checked = false;
+                    label.style.opacity = '0.4';
+                    label.style.cursor = 'not-allowed';
+                    label.appendChild(document.createTextNode(` (${currentGvcn})`));
+                    titleStr = `Lớp ${clsName} đã có GVCN là: ${getTeacherFullName(currentGvcn)}`;
+                } else {
+                    cb.checked = true;
+                    cb.disabled = false;
+                    label.style.opacity = '1';
+                    label.style.cursor = 'pointer';
+                    label.appendChild(document.createTextNode(' (Đang CN)'));
+                    titleStr = `Lớp ${clsName} đang do ${getTeacherFullName(selectedTeacher)} chủ nhiệm - Bấm để thay đổi`;
+                }
+            } else {
+                cb.checked = false;
+                cb.disabled = false;
+                label.style.opacity = '1';
+                label.style.cursor = 'pointer';
+                titleStr = `Phân công GVCN lớp ${clsName} cho ${getTeacherFullName(selectedTeacher)}`;
+            }
+
             label.title = titleStr;
             cb.title = titleStr;
             return;
@@ -4741,6 +4823,18 @@ function renderNewGroupSubjectsCheckboxes() {
     // No-op since we simplified Section 1.2
 }
 
+// Kiểm tra xem tên môn có phải là môn/nhiệm vụ GVCN không
+function isGvcnSpecialSubject(subName) {
+    if (!subName) return false;
+    const nameLower = subName.toLowerCase().trim();
+    return nameLower === 'gvcn' || 
+           nameLower.startsWith('gvcn') || 
+           nameLower.includes('chủ nhiệm') || 
+           nameLower === 'chủ nhiệm lớp' || 
+           nameLower === 'nhiệm vụ gvcn' ||
+           nameLower.includes('giáo viên chủ nhiệm');
+}
+
 // Hàm phát hiện các môn liên quan đến GVCN và các tiết sinh hoạt/chào cờ
 function isHomeroomSubject(subName) {
     if (!subName) return false;
@@ -4750,7 +4844,49 @@ function isHomeroomSubject(subName) {
            nameLower.includes('hđtn') || 
            nameLower.includes('shl') || 
            nameLower.includes('sinh hoạt lớp') || 
-           nameLower.includes('sinh hoạt');
+           nameLower.includes('sinh hoạt') ||
+           isGvcnSpecialSubject(subName);
+}
+
+// Đảm bảo mỗi khối lớp đều có sẵn môn Chào Cờ (1T) và HĐTN + SHL (3T) trong state.subjects
+function ensureHomeroomSubjects() {
+    if (!state.subjects) state.subjects = [];
+    if (!state.classes) state.classes = [];
+
+    const grades = [...new Set(state.classes.map(c => c.grade).filter(Boolean))];
+    if (grades.length === 0) {
+        ['6', '7', '8', '9'].forEach(g => grades.push(g));
+    }
+
+    grades.forEach(grade => {
+        // 1. Kiểm tra môn Chào Cờ
+        let chaoCo = state.subjects.find(s => s && s.grade === grade && s.name && (s.name.toLowerCase().includes('chào cờ') || s.name.toLowerCase() === 'cc'));
+        if (!chaoCo) {
+            chaoCo = {
+                id: `sub_chao_co_${grade}`,
+                name: 'Chào Cờ',
+                grade: grade,
+                periods: 1
+            };
+            state.subjects.push(chaoCo);
+        } else if (!chaoCo.periods || chaoCo.periods <= 0) {
+            chaoCo.periods = 1;
+        }
+
+        // 2. Kiểm tra môn HĐTN + SHL
+        let hdtn = state.subjects.find(s => s && s.grade === grade && s.name && (s.name.toLowerCase().includes('hđtn') || s.name.toLowerCase().includes('shl') || s.name.toLowerCase().includes('sinh hoạt')));
+        if (!hdtn) {
+            hdtn = {
+                id: `sub_hdtn_${grade}`,
+                name: 'HĐTN + SHL',
+                grade: grade,
+                periods: 3
+            };
+            state.subjects.push(hdtn);
+        } else if (!hdtn.periods || hdtn.periods <= 0) {
+            hdtn.periods = 3;
+        }
+    });
 }
 
 function syncRelatedHomeroomSubject(clsName, subId, teacher) {
@@ -4765,7 +4901,8 @@ function syncRelatedHomeroomSubject(clsName, subId, teacher) {
         if (teacher) {
             state.assignments[otherKey] = {
                 teacher: teacher,
-                periods: otherSub.periods
+                periods: otherSub.periods,
+                isAuto: true
             };
         } else {
             if (state.assignments[otherKey]) {
@@ -4781,6 +4918,8 @@ function syncGvcnAndHomeroom() {
     if (!state.classes) state.classes = [];
     if (!state.subjects) state.subjects = [];
     if (!state.assignments) state.assignments = {};
+
+    ensureHomeroomSubjects();
 
     // 1. Đồng bộ xuôi từ giáo viên sang lớp học
     const teacherGvcnMap = {};
@@ -4833,12 +4972,12 @@ function syncGvcnAndHomeroom() {
 
     // 4. Đồng bộ tự động phân công môn Chào cờ & HĐTN + SHL cho GVCN của lớp (Hỗ trợ Manual Override)
     state.classes.forEach(c => {
-        const classGvcn = c.gvcn;
+        const classGvcn = c.gvcn ? c.gvcn.trim() : '';
         
         // Tìm các môn cấu hình cho khối lớp này
         const gradeSubjects = state.subjects.filter(s => s.grade === c.grade);
         gradeSubjects.forEach(sub => {
-            if (isHomeroomSubject(sub.name)) {
+            if (isHomeroomSubject(sub.name) && !isGvcnSpecialSubject(sub.name)) {
                 const key = `${c.name}_${sub.id}`;
                 const currentAssign = state.assignments[key];
                 
@@ -4848,7 +4987,7 @@ function syncGvcnAndHomeroom() {
                         if (!currentAssign || currentAssign.teacher !== classGvcn) {
                             state.assignments[key] = {
                                 teacher: classGvcn,
-                                periods: sub.periods,
+                                periods: sub.periods || (sub.name.toLowerCase().includes('chào cờ') ? 1 : 3),
                                 isAuto: true
                             };
                         }
@@ -7713,6 +7852,9 @@ function handleFilesUpload(event) {
 // Đã xóa hàm generateDemoMerge() để tránh ghi đè dữ liệu thật
 
 function exportFETCSV() {
+    // Luôn tự động đồng bộ GVCN và môn Chào cờ / HĐTN + SHL trước khi xuất CSV cho FET
+    syncGvcnAndHomeroom();
+
     const rule5 = (document.getElementById('splitRule5') && document.getElementById('splitRule5').value) ? document.getElementById('splitRule5').value : '2+2+1';
     const rule4 = (document.getElementById('splitRule4') && document.getElementById('splitRule4').value) ? document.getElementById('splitRule4').value : '2+2';
     const rule3 = (document.getElementById('splitRule3') && document.getElementById('splitRule3').value) ? document.getElementById('splitRule3').value : '2+1';
