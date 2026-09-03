@@ -3573,12 +3573,32 @@ function exportGroupAssignmentExcel() {
         const hasHdtnShl = rawTeachingAssignments.some(a => a.subName && (a.subName.toLowerCase().includes('hđtn') || a.subName.toLowerCase().includes('shl')));
         const isGvcn = (hasChaoCo && hasHdtnShl) || (t.reduction && t.reduction.homeroom && t.reduction.homeroomClass) || (t.homeroomClass);
 
-        if (isGvcn) {
+        let hrClass = t.homeroomClass || '';
+        if (!hrClass) {
+            const clsObj = (state.classes || []).find(c => c && c.gvcn === t.shortName);
+            if (clsObj) hrClass = clsObj.name;
+        }
+        if (!hrClass && t.reduction && t.reduction.homeroomClass) {
+            hrClass = t.reduction.homeroomClass;
+        }
+        if (!hrClass) {
+            const hrAssign = rawTeachingAssignments.find(a => isHomeroomSubject(a.subName));
+            if (hrAssign) hrClass = hrAssign.clsName;
+        }
+
+        if (hrClass) {
+            kiemNhiemList.push(`GVCN(${hrClass})(5T)`);
+        } else if (isGvcn) {
             kiemNhiemList.push("GVCN (5T)");
         }
 
+        const dutyMap = {};
         dutyAssignments.forEach(a => {
-            kiemNhiemList.push(`${a.subName} (${a.periods}T)`);
+            if (!dutyMap[a.subName]) dutyMap[a.subName] = 0;
+            dutyMap[a.subName] += (a.periods || 0);
+        });
+        Object.keys(dutyMap).forEach(subName => {
+            kiemNhiemList.push(`${subName} (${dutyMap[subName]}T)`);
         });
 
         const kiemNhiemStr = kiemNhiemList.join(', ') || '';
@@ -4256,13 +4276,33 @@ function exportAllAssignmentsExcel() {
         const hasHdtnShl = rawTeachingAssignments.some(a => a.subName && (a.subName.toLowerCase().includes('hđtn') || a.subName.toLowerCase().includes('shl')));
         const isGvcn = (hasChaoCo && hasHdtnShl) || (t.reduction && t.reduction.homeroom && t.reduction.homeroomClass) || (t.homeroomClass);
 
-        if (isGvcn) {
+        let hrClass = t.homeroomClass || '';
+        if (!hrClass) {
+            const clsObj = (state.classes || []).find(c => c && c.gvcn === t.shortName);
+            if (clsObj) hrClass = clsObj.name;
+        }
+        if (!hrClass && t.reduction && t.reduction.homeroomClass) {
+            hrClass = t.reduction.homeroomClass;
+        }
+        if (!hrClass) {
+            const hrAssign = rawTeachingAssignments.find(a => isHomeroomSubject(a.subName));
+            if (hrAssign) hrClass = hrAssign.clsName;
+        }
+
+        if (hrClass) {
+            kiemNhiemList.push(`GVCN(${hrClass})(5T)`);
+        } else if (isGvcn) {
             kiemNhiemList.push("GVCN (5T)");
         }
 
         // Thêm các nhiệm vụ kiêm nhiệm từ danh sách phân công
+        const dutyMap = {};
         dutyAssignments.forEach(a => {
-            kiemNhiemList.push(`${a.subName} (${a.periods}T)`);
+            if (!dutyMap[a.subName]) dutyMap[a.subName] = 0;
+            dutyMap[a.subName] += (a.periods || 0);
+        });
+        Object.keys(dutyMap).forEach(subName => {
+            kiemNhiemList.push(`${subName} (${dutyMap[subName]}T)`);
         });
 
         const kiemNhiemStr = kiemNhiemList.join(', ') || '';
