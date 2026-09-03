@@ -9290,8 +9290,10 @@ function generateFetFullXML() {
         });
     });
 
+    const targetFetVersion = (document.getElementById('fetVersionSelect') && document.getElementById('fetVersionSelect').value) ? document.getElementById('fetVersionSelect').value : '6.25.0';
+
     return `<?xml version="1.0" encoding="UTF-8"?>
-<fet version="6.28.0">
+<fet version="${targetFetVersion}">
   <Institution_Name>THCS Truong Hoc</Institution_Name>
   <Comments>Tao boi FET Timetable Hub</Comments>
   <Days_List>
