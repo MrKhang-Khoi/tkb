@@ -3765,6 +3765,25 @@ function extractHomeroomClassFromText(text, allClasses) {
     return null;
 }
 
+// Xử lý khi tổ trưởng thay đổi lớp chủ nhiệm trực tiếp trên Modal Preview
+window.onExcelModalGvcnChange = function(idx, newCls) {
+    if (!window._currentExcelParsedResults || !window._currentExcelParsedResults[idx]) return;
+    const t = window._currentExcelParsedResults[idx];
+    t.homeroomClass = newCls || '';
+    if (newCls) {
+        t.hasGvcn = true;
+    }
+
+    // Tính lại tổng số tiết
+    const basePeriods = (t.assignments || []).reduce((sum, a) => sum + (a.periods || 0), 0);
+    t.totalPeriods = basePeriods + (newCls ? 4 : 0);
+
+    const cellPeriods = document.getElementById(`modal-t-periods-${idx}`);
+    if (cellPeriods) {
+        cellPeriods.innerText = `${t.totalPeriods}T`;
+    }
+};
+
 async function importGroupAssignmentExcel(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -3986,35 +4005,63 @@ async function importGroupAssignmentExcel(event) {
             return;
         }
 
-        // Render Confirmation Modal with Preview
+        window._currentExcelParsedResults = parsedResults;
+
+        const allClassesList = (state.classes || []).map(c => c.name).filter(Boolean);
+
+        // Render Confirmation Modal with Preview & Editable Homeroom dropdowns
         const previewRowsHtml = parsedResults.map((t, idx) => {
             const dutyBadges = t.duties.map(d => `<span style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">${d.name} (${d.periods}T)</span>`).join('');
             const assignBadges = t.assignments.map(a => `<span style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); color: #c7d2fe; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin: 2px; display: inline-block;">${a.subName}: <b>${a.clsName}</b> (${a.periods}T)</span>`).join('');
-            const gvcnBadge = t.homeroomClass ? `<span style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">⭐ GVCN: ${t.homeroomClass}</span>` : (t.hasGvcn ? `<span style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); color: #facc15; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">⭐ ${t.gvcnDutyStr || 'GVCN (5T)'}</span>` : '');
+
+            // Dropdown cho phép tổ trưởng chọn hoặc đổi lớp chủ nhiệm trực tiếp trên Modal
+            const classOptionsHtml = allClassesList.map(clsName => {
+                const selected = t.homeroomClass === clsName ? 'selected' : '';
+                return `<option value="${clsName}" ${selected}>Lớp ${clsName}</option>`;
+            }).join('');
+
+            const isMissingClass = t.hasGvcn && !t.homeroomClass;
+            const gvcnControlHtml = `
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;">
+                    <span style="font-size: 0.75rem; color: #facc15; font-weight: 600;">⭐ GVCN:</span>
+                    <select class="form-control form-control-sm excel-modal-gvcn-select" data-idx="${idx}" style="width: 120px; padding: 2px 6px; font-size: 0.75rem; height: 26px; background: rgba(15, 23, 42, 0.85); border: 1px solid ${isMissingClass ? '#f59e0b' : 'rgba(255,255,255,0.2)'}; color: #fff; border-radius: 4px;" onchange="window.onExcelModalGvcnChange(${idx}, this.value)">
+                        <option value="">-- Không CN --</option>
+                        ${classOptionsHtml}
+                    </select>
+                    ${isMissingClass ? `<span style="background: rgba(245, 158, 11, 0.25); border: 1px solid #f59e0b; color: #fbbf24; font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 600;">⚠️ Chưa chọn lớp</span>` : ''}
+                </div>
+            `;
 
             return `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
                     <td style="padding: 8px 10px; font-weight: 600; color: #fff;">${idx + 1}. ${t.fullName} (${t.teacher})</td>
-                    <td style="padding: 8px 10px;">${gvcnBadge} ${dutyBadges || '<span style="color: var(--text-muted);">-</span>'}</td>
+                    <td style="padding: 8px 10px;">
+                        ${t.hasGvcn || t.homeroomClass ? gvcnControlHtml : ''}
+                        ${dutyBadges || (t.hasGvcn || t.homeroomClass ? '' : '<span style="color: var(--text-muted);">-</span>')}
+                    </td>
                     <td style="padding: 8px 10px;">${assignBadges || '<span style="color: var(--text-muted);">-</span>'}</td>
-                    <td style="padding: 8px 10px; font-weight: 700; color: #38bdf8; text-align: center;">${t.totalPeriods}T</td>
+                    <td id="modal-t-periods-${idx}" style="padding: 8px 10px; font-weight: 700; color: #38bdf8; text-align: center;">${t.totalPeriods}T</td>
                 </tr>
             `;
         }).join('');
 
         const modalBody = `
             <div>
-                <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 12px;">
+                <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 8px;">
                     Hệ thống đã nhận diện được <b>${parsedResults.length} giáo viên</b> và <b>${totalAssignCount} phân công chuyên môn</b> từ file Excel <code>${file.name}</code>:
                 </p>
+                <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 6px; padding: 6px 12px; margin-bottom: 10px; font-size: 0.8rem; color: #c7d2fe; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons-round" style="font-size: 1rem; color: #818cf8;">info</span>
+                    <span>Tổ trưởng có thể <b>chọn hoặc điều chỉnh trực tiếp lớp chủ nhiệm</b> cho từng giáo viên ngay tại bảng dưới đây trước khi lưu.</span>
+                </div>
                 <div style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: rgba(15, 23, 42, 0.6);">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
                         <thead>
                             <tr style="background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid var(--border); text-align: left;">
-                                <th style="padding: 8px 10px; color: var(--text-muted);">Giáo viên</th>
-                                <th style="padding: 8px 10px; color: var(--text-muted);">Kiêm nhiệm / GVCN</th>
-                                <th style="padding: 8px 10px; color: var(--text-muted);">Phân công giảng dạy</th>
-                                <th style="padding: 8px 10px; color: var(--text-muted); text-align: center;">Số tiết</th>
+                                <th style="padding: 8px 10px; color: var(--text-muted); width: 25%;">Giáo viên</th>
+                                <th style="padding: 8px 10px; color: var(--text-muted); width: 30%;">Kiêm nhiệm / GVCN</th>
+                                <th style="padding: 8px 10px; color: var(--text-muted); width: 35%;">Phân công giảng dạy</th>
+                                <th style="padding: 8px 10px; color: var(--text-muted); text-align: center; width: 10%;">Số tiết</th>
                             </tr>
                         </thead>
                         <tbody>
