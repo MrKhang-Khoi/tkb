@@ -75,7 +75,7 @@ const actDef = {};
 });
 
 // 4. Phân tích vị trí tiết đã xếp (Placements)
-const placed = {};
+let placed = {};
 const starts = [...fetContent.matchAll(/<ConstraintActivityPreferredStartingTime>[\s\S]*?<Activity_Id>(\d+)<\/Activity_Id>[\s\S]*?<Preferred_Day>(.*?)<\/Preferred_Day>[\s\S]*?<Preferred_Hour>(.*?)<\/Preferred_Hour>[\s\S]*?<\/ConstraintActivityPreferredStartingTime>/g)];
 starts.forEach(m => {
   placed[m[1]] = { day: m[2], hour: m[3] };
@@ -87,12 +87,54 @@ rooms.forEach(m => {
 });
 
 const totalActivities = Object.keys(actDef).length;
-const totalPlaced = Object.keys(placed).length;
+let totalPlaced = Object.keys(placed).length;
 
-console.log('📊 Tổng số hoạt động: ' + totalActivities + ' | Đã xếp vị trí: ' + totalPlaced);
-if (totalPlaced === 0) {
-  console.warn('⚠️ Tệp FET này chưa có dữ liệu lịch đã xếp (ConstraintActivityPreferredStartingTime).');
-  console.warn('   Vui lòng chọn tệp kết quả từ FET: *_data_and_timetable.fet để kiểm định đầy đủ!');
+console.log('📊 Số hoạt động trong tệp gốc: ' + totalActivities + ' | Đã xếp vị trí: ' + totalPlaced);
+
+// Nếu chưa đủ tiết (ví dụ là tệp cấu hình đầu vào), tự động tìm tệp kết quả từ FET
+if (totalPlaced < totalActivities) {
+  const baseName = path.basename(targetFetFile, path.extname(targetFetFile));
+  const userProfile = process.env.USERPROFILE || '';
+  const companionCandidates = [
+    args[1],
+    path.join(path.dirname(targetFetFile), baseName + '_data_and_timetable.fet'),
+    path.join(path.dirname(targetFetFile), baseName + '_activities.xml'),
+    path.join(userProfile, 'fet-results', 'timetables', baseName + '-single', baseName + '_data_and_timetable.fet'),
+    path.join(userProfile, 'fet-results', 'timetables', baseName + '-single', baseName + '_activities.xml'),
+    path.join(userProfile, 'fet-results', 'timetables', baseName, baseName + '_data_and_timetable.fet'),
+    path.join(userProfile, 'fet-results', 'timetables', baseName, baseName + '_activities.xml'),
+    path.join(userProfile, 'fet-results', 'timetables', 'THCS_TKB_FET-single', 'THCS_TKB_FET_data_and_timetable.fet'),
+    path.join(userProfile, 'fet-results', 'timetables', 'THCS_TKB_FET-single', 'THCS_TKB_FET_activities.xml')
+  ].filter(p => p && fs.existsSync(p));
+
+  if (companionCandidates.length > 0) {
+    const companion = companionCandidates[0];
+    console.log('\n💡 PHÁT HIỆN TỆP KẾT QUẢ FET: ' + companion);
+    console.log('   (Tự động liên kết thời khóa biểu hoàn chỉnh để kiểm định chính xác 100%)');
+    const compContent = fs.readFileSync(companion, 'utf8');
+
+    if (companion.endsWith('.xml')) {
+      const xmlActs = [...compContent.matchAll(/<Activity>[\s\S]*?<Id>(\d+)<\/Id>[\s\S]*?<Day>(.*?)<\/Day>[\s\S]*?<Hour>(.*?)<\/Hour>(?:[\s\S]*?<Room>(.*?)<\/Room>)?[\s\S]*?<\/Activity>/g)];
+      xmlActs.forEach(m => {
+        placed[m[1]] = { day: m[2], hour: m[3], room: m[4] || '' };
+      });
+    } else {
+      const compStarts = [...compContent.matchAll(/<ConstraintActivityPreferredStartingTime>[\s\S]*?<Activity_Id>(\d+)<\/Activity_Id>[\s\S]*?<Preferred_Day>(.*?)<\/Preferred_Day>[\s\S]*?<Preferred_Hour>(.*?)<\/Preferred_Hour>[\s\S]*?<\/ConstraintActivityPreferredStartingTime>/g)];
+      compStarts.forEach(m => {
+        placed[m[1]] = { day: m[2], hour: m[3] };
+      });
+      const compRooms = [...compContent.matchAll(/<ConstraintActivityPreferredRoom>[\s\S]*?<Activity_Id>(\d+)<\/Activity_Id>[\s\S]*?<Room>(.*?)<\/Room>[\s\S]*?<\/ConstraintActivityPreferredRoom>/g)];
+      compRooms.forEach(m => {
+        if (placed[m[1]]) placed[m[1]].room = m[2];
+      });
+    }
+    totalPlaced = Object.keys(placed).length;
+    console.log('✅ Đã nạp thành công: ' + totalPlaced + '/' + totalActivities + ' tiết giảng!\n');
+  } else {
+    console.warn('\n⚠️ CHÚ Ý: Tệp FET này là tệp cấu hình đầu vào, chỉ có ' + totalPlaced + '/' + totalActivities + ' tiết gán sẵn.');
+    console.warn('   FET khi xếp xong sẽ lưu kết quả vào: fet-results\\timetables\\' + baseName + '-single\\' + baseName + '_data_and_timetable.fet');
+    console.warn('   Vui lòng chọn tệp đó hoặc truyền tệp đó vào tham số để kiểm định đầy đủ!\n');
+  }
 }
 
 const hoursOrder = ['Tiết 1', 'Tiết 2', 'Tiết 3', 'Tiết 4', 'Tiết 5'];
