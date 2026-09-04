@@ -272,6 +272,109 @@ leaders.forEach(l => {
 });
 
 // =========================================================================
+// KIỂM ĐỊNH 6: ĐỒNG BỘ CƠ CẤU TIẾT HỌC CÁC THỨ TRONG TUẦN CHO TỪNG LỚP
+// (K8,9: T2=4t, T3=4t, T4=5t, T5=5t, T6=5t, T7=4t -> 27t)
+// (K6,7: T2=4t, T3=4t, T4=4t, T5=5t, T6=5t, T7=4t -> 26t)
+// =========================================================================
+const dailyDistributionErrors = [];
+const monP5Errors = [];
+const ccShlErrors = [];
+
+const morningClasses = [
+  '6A1', '6A13', '7A1', '7A2', '7A3', '7A4', '7A5', '7A6', '7A7', '7B1', '7B2', '7B3',
+  '8A1', '8A7', '8A8', '9A1', '9A2', '9A3', '9A4', '9A5', '9A6', '9A7', '9A8', '9A9', '9A10', '9B1', '9B2', '9B3'
+];
+
+if (totalPlaced === totalActivities && totalPlaced > 0) {
+  const classDailyCount = {};
+  Object.entries(placed).forEach(([id, p]) => {
+    const act = actDef[id];
+    if (!act || act.students.startsWith('PĐ')) return;
+    const cls = act.students;
+    const realDay = p.day.split('.')[1];
+    if (!classDailyCount[cls]) classDailyCount[cls] = { T2: 0, T3: 0, T4: 0, T5: 0, T6: 0, T7: 0 };
+    classDailyCount[cls][realDay] = (classDailyCount[cls][realDay] || 0) + act.duration;
+
+    // Kiểm tra Tiết 5 Thứ 2
+    if (realDay === 'T2' && p.hour === 'Tiết 5') {
+      const isMorning = morningClasses.includes(cls);
+      monP5Errors.push({
+        class: cls,
+        session: isMorning ? 'Sáng' : 'Chiều',
+        teacher: act.teacher,
+        subject: act.subject,
+        details: 'Học ' + act.subject + ' (' + act.teacher + ') tại Tiết 5 Thứ 2' + (!isMorning ? ' (ngay sau tiết Chào cờ!)' : '')
+      });
+    }
+
+    // Kiểm tra vị trí Chào Cờ & HĐTN+SHL
+    const isMorning = morningClasses.includes(cls);
+    if (act.subject === 'Chào Cờ') {
+      const expected = isMorning ? 'S.T2 Tiết 1' : 'C.T2 Tiết 4';
+      const actual = p.day + ' ' + p.hour;
+      if (actual !== expected) {
+        ccShlErrors.push({ class: cls, subject: 'Chào Cờ', expected, actual });
+      }
+    }
+    if (act.subject.includes('SHL')) {
+      const expected = isMorning ? 'S.T7 Tiết 4' : 'C.T7 Tiết 4';
+      const actual = p.day + ' ' + p.hour;
+      if (actual !== expected) {
+        ccShlErrors.push({ class: cls, subject: act.subject, expected, actual });
+      }
+    }
+  });
+
+  Object.entries(classDailyCount).forEach(([cls, counts]) => {
+    const isK89 = cls.startsWith('8') || cls.startsWith('9');
+    const expected = isK89
+      ? { T2: 4, T3: 4, T4: 5, T5: 5, T6: 5, T7: 4, total: 27 }
+      : { T2: 4, T3: 4, T4: 4, T5: 5, T6: 5, T7: 4, total: 26 };
+
+    const diffs = [];
+    ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'].forEach(d => {
+      if (counts[d] !== expected[d]) {
+        diffs.push(d.replace('T', 'Thứ ') + ': ' + counts[d] + '/' + expected[d] + 't');
+      }
+    });
+
+    if (diffs.length > 0) {
+      dailyDistributionErrors.push({
+        class: cls,
+        block: isK89 ? 'Khối 8, 9' : 'Khối 6, 7',
+        diffs: diffs.join(', ')
+      });
+    }
+  });
+}
+
+// Kiểm tra cấu hình ràng buộc giờ cấm trong file FET
+const configDistributionErrors = [];
+const studentConstraints = [...fetContent.matchAll(/<ConstraintStudentsSetNotAvailableTimes>([\s\S]*?)<\/ConstraintStudentsSetNotAvailableTimes>/g)];
+studentConstraints.forEach(sc => {
+  const m = sc[1].match(/<Students>(.*?)<\/Students>/);
+  if (!m || m[1].startsWith('PĐ')) return;
+  const cls = m[1];
+  const isK89 = cls.startsWith('8') || cls.startsWith('9');
+  const isMorning = morningClasses.includes(cls);
+  const prefix = isMorning ? 'S.' : 'C.';
+  const times = [...sc[1].matchAll(/<Day>(.*?)<\/Day>\s*<Hour>(.*?)<\/Hour>/g)].map(t => t[1] + ' ' + t[2]);
+
+  if (!times.includes(prefix + 'T2 Tiết 5')) {
+    configDistributionErrors.push({ class: cls, error: 'Chưa khóa Tiết 5 Thứ 2 (nguy cơ học 5 tiết thứ 2!)' });
+  }
+  if (!times.includes(prefix + 'T3 Tiết 5')) {
+    configDistributionErrors.push({ class: cls, error: 'Chưa khóa Tiết 5 Thứ 3 (nguy cơ học 5 tiết thứ 3!)' });
+  }
+  if (!times.includes(prefix + 'T7 Tiết 5')) {
+    configDistributionErrors.push({ class: cls, error: 'Chưa khóa Tiết 5 Thứ 7 (chưa tan sớm thứ 7!)' });
+  }
+  if (isK89 && times.includes(prefix + 'T4 Tiết 5')) {
+    configDistributionErrors.push({ class: cls, error: 'Bị khóa nhầm Tiết 5 Thứ 4 (làm Thứ 4 chỉ học 4 tiết thay vì 5 tiết!)' });
+  }
+});
+
+// =========================================================================
 // IN BÁO CÁO KẾT QUẢ KIỂM ĐỊNH RA MÀN HÌNH CONSOLE
 // =========================================================================
 console.log('\n--- 1. KIỂM TRA MÔN HỌC KHÔNG QUÁ 2 TIẾT/NGÀY ---');
@@ -311,6 +414,40 @@ leaderStatus.forEach(l => {
   const icon = l.isOff ? '✅' : '❌';
   console.log('   ' + icon + ' Tổ trưởng ' + l.teacher.padEnd(8) + ': ' + (l.isOff ? 'NGHỈ TRỌN VẸN THỨ 7' : ('DẠY ' + l.satPeriods + ' TIẾT (' + l.details + ')')));
 });
+
+console.log('\n--- 6. KIỂM TRA ĐỒNG BỘ TIẾT HỌC CÁC THỨ (T2:4t, T3:4t, T4:5t/4t, T5:5t, T6:5t, T7:4t) ---');
+if (configDistributionErrors.length === 0) {
+  console.log('✅ ĐẠT 100% (Cấu hình FET): Toàn bộ 24 lớp Khối 8, 9 và 23 lớp Khối 6, 7 đã khóa đúng chuẩn!');
+} else {
+  console.log('❌ PHÁT HIỆN ' + configDistributionErrors.length + ' LỖI CẤU HÌNH TRÊN FILE FET:');
+  configDistributionErrors.slice(0, 10).forEach(e => console.log('   - Lớp ' + e.class + ': ' + e.error));
+  if (configDistributionErrors.length > 10) console.log('   ... và ' + (configDistributionErrors.length - 10) + ' lỗi khác.');
+}
+if (totalPlaced === totalActivities && totalPlaced > 0) {
+  if (dailyDistributionErrors.length === 0) {
+    console.log('✅ ĐẠT 100% (Xếp lịch thực tế): 100% các lớp có số tiết mỗi ngày chuẩn xác từng thứ!');
+  } else {
+    console.log('❌ PHÁT HIỆN ' + dailyDistributionErrors.length + ' LỚP CÓ SỐ TIẾT SAI LỆCH TRÊN TKB:');
+    dailyDistributionErrors.slice(0, 10).forEach(e => console.log('   - Lớp ' + e.class + ' (' + e.block + '): ' + e.diffs));
+    if (dailyDistributionErrors.length > 10) console.log('   ... và ' + (dailyDistributionErrors.length - 10) + ' lớp khác.');
+  }
+}
+
+console.log('\n--- 7. KIỂM TRA KHÔNG CÓ TIẾT HỌC VÀO TIẾT 5 THỨ 2 (TAN TRƯỜNG SAU CHÀO CỜ CHIỀU) ---');
+if (monP5Errors.length === 0) {
+  console.log('✅ ĐẠT 100%: 100% các lớp đều NGHỈ Tiết 5 Thứ 2 (Chào cờ Tiết 4 xong là tan trường, tuyệt đối không học môn khác!).');
+} else {
+  console.log('❌ CẢNH BÁO NGUY HIỂM: PHÁT HIỆN ' + monP5Errors.length + ' LỚP HỌC VÀO TIẾT 5 THỨ 2:');
+  monP5Errors.forEach(e => console.log('   - Lớp ' + e.class + ' (' + e.session + '): ' + e.details));
+}
+
+console.log('\n--- 8. KIỂM TRA VỊ TRÍ CHÀO CỜ & HĐTN+SHL ---');
+if (ccShlErrors.length === 0) {
+  console.log('✅ ĐẠT 100%: Sáng Chào cờ Tiết 1 T2; Chiều Chào cờ Tiết 4 T2; Toàn trường SHL Tiết 4 T7!');
+} else {
+  console.log('❌ PHÁT HIỆN ' + ccShlErrors.length + ' TIẾT CHÀO CỜ / SHL XẾP SAI VỊ TRÍ:');
+  ccShlErrors.forEach(e => console.log('   - Lớp ' + e.class + ' ' + e.subject + ': Thực tế ' + e.actual + ' (Kỳ vọng: ' + e.expected + ')'));
+}
 
 // =========================================================================
 // TỔNG HỢP VÀ XUẤT FILE EXCEL NGÀY NGHỈ GIÁO VIÊN
@@ -382,8 +519,12 @@ const summaryRows = [
   { 'Hạng Mục Kiểm Định': 'Không quá 2 tiết/môn/ngày', 'Kết Quả': max2Errors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + max2Errors.length + ' vi phạm)') },
   { 'Hạng Mục Kiểm Định': 'Không trùng phòng chức năng (Tin, Nhạc)', 'Kết Quả': roomErrors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + roomErrors.length + ' xung đột)') },
   { 'Hạng Mục Kiểm Định': 'Nghỉ ít nhất 1 tiết khi đổi điểm trường', 'Kết Quả': buildingErrors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + buildingErrors.length + ' vi phạm)') },
-  { 'Hạng Mục Kiểm Định': 'Khóa cứng Tiết 5 Thứ 7', 'Kết Quả': satP5Errors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + satP5Errors.length + ' chưa khóa)') },
+  { 'Hạng Mục Kiểm Định': 'Khóa cứng Tiết 5 Thứ 7 (Tan sớm)', 'Kết Quả': satP5Errors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + satP5Errors.length + ' chưa khóa)') },
   { 'Hạng Mục Kiểm Định': '5 Tổ trưởng chuyên môn nghỉ Thứ 7', 'Kết Quả': leaderStatus.every(l => l.isOff) ? 'ĐẠT 100% (5/5 Tổ trưởng nghỉ T7)' : 'CÓ VI PHẠM' },
+  { 'Hạng Mục Kiểm Định': 'Cơ cấu tiết các thứ (T2:4, T3:4, T4:5/4, T5:5, T6:5, T7:4) [Cấu hình]', 'Kết Quả': configDistributionErrors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + configDistributionErrors.length + ' lớp sai cấu hình)') },
+  { 'Hạng Mục Kiểm Định': 'Phân bổ số tiết TKB thực tế (K8,9: 27t; K6,7: 26t)', 'Kết Quả': (totalPlaced === totalActivities && totalPlaced > 0) ? (dailyDistributionErrors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + dailyDistributionErrors.length + ' lớp lệch tiết)')) : 'Chưa xếp xong TKB' },
+  { 'Hạng Mục Kiểm Định': 'Nghỉ Tiết 5 Thứ 2 (Tan trường sau Chào cờ chiều)', 'Kết Quả': monP5Errors.length === 0 ? 'ĐẠT 100%' : ('CẢNH BÁO NGUY HIỂM (' + monP5Errors.length + ' lớp học tiết 5)') },
+  { 'Hạng Mục Kiểm Định': 'Vị trí Chào cờ (T1/T4 T2) & SHL (Tiết 4 T7)', 'Kết Quả': ccShlErrors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + ccShlErrors.length + ' vị trí sai)') },
   { 'Hạng Mục Kiểm Định': '', 'Kết Quả': '' },
   { 'Hạng Mục Kiểm Định': 'THỐNG KÊ PHÂN BỔ NGÀY NGHỈ', 'Kết Quả': 'SỐ GIÁO VIÊN ĐƯỢC NGHỈ' },
   { 'Hạng Mục Kiểm Định': 'Thứ 2', 'Kết Quả': dayOffSummary['Thứ 2'] + ' giáo viên' },
