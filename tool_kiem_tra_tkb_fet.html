@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Công Cụ Kiểm Định Thời Khóa Biểu FET & Xuất Ngày Nghỉ Giáo Viên</title>
+  <script src="lib/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+      --info: #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { background: #0b0f19; color: var(--text-main); min-height: 100vh; padding: 24px 16px; }
+    .container { max-width: 1280px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .brand h1 { font-size: 1.35rem; font-weight: 700; color: #fff; }
+    .brand p { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Drop Zone */
+    .dropzone {
+      border: 2px dashed #4f46e5;
+      background: rgba(79, 70, 229, 0.04);
+      border-radius: 16px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      background: rgba(79, 70, 229, 0.12);
+      border-color: #818cf8;
+      transform: translateY(-2px);
+    }
+    .dropzone-icon { font-size: 40px; margin-bottom: 8px; }
+    .dropzone h3 { font-size: 1.1rem; margin-bottom: 6px; }
+    .dropzone p { font-size: 0.85rem; color: var(--text-muted); }
+    .file-input { display: none; }
+
+    /* Stats & KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s ease;
+    }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+    .kpi-status { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+    }
+    .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-info { background: rgba(56,189,248,0.15); color: var(--info); border: 1px solid rgba(56,189,248,0.3); }
+
+    /* Action Bar */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; border: none; outline: none;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-success:hover { background: #047857; }
+
+    /* Filter & Search */
+    .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .search-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 0.88rem; min-width: 200px;
+    }
+    .search-box:focus { border-color: var(--primary); outline: none; }
+    .select-filter {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 0.88rem;
+    }
+
+    /* Table Container */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .table-wrapper { overflow-x: auto; max-height: 520px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+    th {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 12px 14px; color: var(--text-muted);
+      font-weight: 600; border-bottom: 1px solid var(--card-border);
+      position: sticky; top: 0; z-index: 2;
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .cell-off {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399; font-weight: 700; text-align: center; border-radius: 6px;
+    }
+    .cell-leader {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24; font-weight: 600;
+    }
+    .violation-card {
+      background: var(--danger-bg);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 14px 18px; border-radius: 10px; margin-bottom: 16px;
+    }
+    .violation-title { font-weight: 700; color: #f87171; margin-bottom: 6px; font-size: 0.95rem; }
+    .violation-item { font-size: 0.85rem; color: #fca5a5; margin-left: 18px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <h1>FET TIMETABLE AUDITOR & DAYS OFF ANALYZER</h1>
+        <p>Công cụ kiểm định ràng buộc sư phạm & xuất danh sách ngày nghỉ giáo viên</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-success" id="exportExcelBtn" onclick="exportToExcel()" disabled>
+        📥 Xuất Excel Ngày Nghỉ (.xlsx)
+      </button>
+    </div>
+  </header>
+
+  <!-- Upload Area -->
+  <div class="dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <div class="dropzone-icon">📂</div>
+    <h3>Kéo & Thả Tệp FET Vào Đây Hoặc Nhấp Để Chọn Tệp</h3>
+    <p>Hỗ trợ tệp <code>.fet</code> kết quả thời khóa biểu (ví dụ: <code>THCS_TKB_FET_Project_V13_data_and_timetable.fet</code>)</p>
+    <input type="file" id="fileInput" class="file-input" accept=".fet,.xml" onchange="handleFileSelect(event)">
+  </div>
+
+  <!-- Violations Alert (if any) -->
+  <div id="violationsContainer" style="display: none;"></div>
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card">
+      <div class="kpi-title">Môn Học (Tối Đa 2 Tiết/Ngày)</div>
+      <div class="kpi-status" id="kpiMax2">
+        <span class="status-badge badge-info">Chờ nạp tệp...</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Phòng Chức Năng (Tin, Nhạc)</div>
+      <div class="kpi-status" id="kpiRooms">
+        <span class="status-badge badge-info">Chờ nạp tệp...</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Di Chuyển Điểm Trường (≥1 Tiết)</div>
+      <div class="kpi-status" id="kpiBuilding">
+        <span class="status-badge badge-info">Chờ nạp tệp...</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Khóa Cứng Tiết 5 Thứ 7</div>
+      <div class="kpi-status" id="kpiSatP5">
+        <span class="status-badge badge-info">Chờ nạp tệp...</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">5 Tổ Trưởng Nghỉ Thứ 7</div>
+      <div class="kpi-status" id="kpiLeaders">
+        <span class="status-badge badge-info">Chờ nạp tệp...</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Tổng Số Giáo Viên / Tiết</div>
+      <div class="kpi-status" id="kpiStats">
+        <span class="status-badge badge-info">-- / --</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action & Filter Bar -->
+  <div class="action-bar" id="actionBar" style="display: none;">
+    <h2 style="font-size: 1.15rem;">📋 Danh Sách Ngày Nghỉ Giáo Viên</h2>
+    <div class="filter-group">
+      <input type="text" id="searchInput" class="search-box" placeholder="🔍 Tìm kiếm giáo viên..." oninput="applyFilters()">
+      <select id="dayFilter" class="select-filter" onchange="applyFilters()">
+        <option value="ALL">Tất cả ngày nghỉ</option>
+        <option value="Thứ 2">Nghỉ Thứ 2</option>
+        <option value="Thứ 3">Nghỉ Thứ 3</option>
+        <option value="Thứ 4">Nghỉ Thứ 4</option>
+        <option value="Thứ 5">Nghỉ Thứ 5</option>
+        <option value="Thứ 6">Nghỉ Thứ 6</option>
+        <option value="Thứ 7">Nghỉ Thứ 7</option>
+        <option value="LEADER">5 Tổ trưởng chuyên môn</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table Container -->
+  <div class="table-card" id="tableCard" style="display: none;">
+    <div class="table-wrapper">
+      <table id="teachersTable">
+        <thead>
+          <tr>
+            <th style="width: 50px;">STT</th>
+            <th>Tên Giáo Viên</th>
+            <th>Chức Vụ / Ghi Chú</th>
+            <th style="text-align: center;">Tổng Tiết</th>
+            <th style="text-align: center;">Thứ 2</th>
+            <th style="text-align: center;">Thứ 3</th>
+            <th style="text-align: center;">Thứ 4</th>
+            <th style="text-align: center;">Thứ 5</th>
+            <th style="text-align: center;">Thứ 6</th>
+            <th style="text-align: center;">Thứ 7</th>
+            <th style="text-align: center;">Số Ngày Nghỉ</th>
+            <th>Chi Tiết Ngày Nghỉ</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let auditResult = null;
+  const LEADERS = ['Lợi', 'M.Hằng', 'T.Thúy', 'Tình', 'Tú'];
+
+  // Drag & Drop Setup
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  function handleFileSelect(e) {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+  }
+
+  function processFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const xml = e.target.result;
+      dropZone.innerHTML = '<div class="dropzone-icon">✅</div><h3>Đã nạp: ' + file.name + '</h3><p>Nhấp hoặc kéo tệp khác để thay thế</p>';
+      auditResult = runAudit(xml, file.name);
+      renderAuditUI(auditResult);
+    };
+    reader.readAsText(file);
+  }
+
+  function runAudit(fetContent, fileName) {
+    const roomsMatch = fetContent.match(/<Rooms_List>([\s\S]*?)<\/Rooms_List>/);
+    const roomToBuilding = {};
+    if (roomsMatch) {
+      (roomsMatch[1].match(/<Room>[\s\S]*?<\/Room>/g) || []).forEach(r => {
+        const n = (r.match(/<Name>(.*?)<\/Name>/) || [])[1];
+        const b = (r.match(/<Building>(.*?)<\/Building>/) || [])[1];
+        if (n && b) roomToBuilding[n] = b;
+      });
+    }
+
+    const homeRooms = fetContent.match(/<ConstraintStudentsSetHomeRoom>[\s\S]*?<\/ConstraintStudentsSetHomeRoom>/g) || [];
+    const classToBuilding = {};
+    homeRooms.forEach(hr => {
+      const cls = (hr.match(/<Students>(.*?)<\/Students>/) || [])[1];
+      const room = (hr.match(/<Room>(.*?)<\/Room>/) || [])[1];
+      if (cls && room) classToBuilding[cls] = roomToBuilding[room] || 'Điểm trường 3';
+    });
+
+    const actDef = {};
+    (fetContent.match(/<Activity>[\s\S]*?<\/Activity>/g) || []).forEach(a => {
+      const id = (a.match(/<Id>(\d+)<\/Id>/) || [])[1];
+      const t = (a.match(/<Teacher>(.*?)<\/Teacher>/) || [])[1] || '';
+      const subj = (a.match(/<Subject>(.*?)<\/Subject>/) || [])[1] || '';
+      const st = (a.match(/<Students>(.*?)<\/Students>/) || [])[1] || '';
+      const dur = parseInt((a.match(/<Duration>(\d+)<\/Duration>/) || [])[1] || '1', 10);
+      if (id) {
+        actDef[id] = { id, teacher: t, subject: subj, students: st, duration: dur, campus: classToBuilding[st] || 'Điểm trường 3' };
+      }
+    });
+
+    const placed = {};
+    const starts = [...fetContent.matchAll(/<ConstraintActivityPreferredStartingTime>[\s\S]*?<Activity_Id>(\d+)<\/Activity_Id>[\s\S]*?<Preferred_Day>(.*?)<\/Preferred_Day>[\s\S]*?<Preferred_Hour>(.*?)<\/Preferred_Hour>[\s\S]*?<\/ConstraintActivityPreferredStartingTime>/g)];
+    starts.forEach(m => {
+      placed[m[1]] = { day: m[2], hour: m[3] };
+    });
+
+    const rooms = [...fetContent.matchAll(/<ConstraintActivityPreferredRoom>[\s\S]*?<Activity_Id>(\d+)<\/Activity_Id>[\s\S]*?<Room>(.*?)<\/Room>[\s\S]*?<\/ConstraintActivityPreferredRoom>/g)];
+    rooms.forEach(m => {
+      if (placed[m[1]]) placed[m[1]].room = m[2];
+    });
+
+    const hoursOrder = ['Tiết 1', 'Tiết 2', 'Tiết 3', 'Tiết 4', 'Tiết 5'];
+    const dayList = ['S.T2', 'C.T2', 'S.T3', 'C.T3', 'S.T4', 'C.T4', 'S.T5', 'C.T5', 'S.T6', 'C.T6', 'S.T7', 'C.T7'];
+
+    // 1. Max 2 periods/subject/day
+    const max2Errors = [];
+    const classDaySubj = {};
+    Object.entries(placed).forEach(([id, p]) => {
+      const act = actDef[id];
+      if (!act) return;
+      const realDay = p.day.split('.')[1];
+      const c = act.students;
+      const s = act.subject;
+      if (!classDaySubj[c]) classDaySubj[c] = {};
+      if (!classDaySubj[c][realDay]) classDaySubj[c][realDay] = {};
+      classDaySubj[c][realDay][s] = (classDaySubj[c][realDay][s] || 0) + act.duration;
+    });
+
+    Object.entries(classDaySubj).forEach(([c, days]) => {
+      Object.entries(days).forEach(([d, subjs]) => {
+        Object.entries(subjs).forEach(([s, count]) => {
+          if (count > 2) {
+            max2Errors.push({ class: c, day: d.replace('T', 'Thứ '), subject: s, periods: count });
+          }
+        });
+      });
+    });
+
+    // 2. Room conflicts
+    const roomErrors = [];
+    const roomSlotUsage = {};
+    Object.entries(placed).forEach(([id, p]) => {
+      if (!p.room) return;
+      const slot = p.day + ' ' + p.hour;
+      const key = slot + '__' + p.room;
+      if (!roomSlotUsage[key]) roomSlotUsage[key] = [];
+      roomSlotUsage[key].push({ id, act: actDef[id] });
+    });
+
+    Object.entries(roomSlotUsage).forEach(([key, list]) => {
+      if (list.length > 1) {
+        const parts = key.split('__');
+        roomErrors.push({
+          slot: parts[0],
+          room: parts[1],
+          count: list.length,
+          details: list.map(x => (x.act ? (x.act.students + ' [' + x.act.teacher + ' - ' + x.act.subject + ']') : 'Unknown')).join(' TRÙNG VỚI ')
+        });
+      }
+    });
+
+    // 3. Building change gap
+    const buildingErrors = [];
+    const allTeachers = [...new Set(Object.values(actDef).map(x => x.teacher))].filter(Boolean);
+    allTeachers.forEach(t => {
+      dayList.forEach(d => {
+        const periodsInSession = [];
+        Object.entries(placed).forEach(([id, p]) => {
+          const act = actDef[id];
+          if (act && act.teacher === t && p.day === d) {
+            const hIdx = hoursOrder.indexOf(p.hour);
+            const campus = (p.room && roomToBuilding[p.room]) ? roomToBuilding[p.room] : act.campus;
+            for (let k = 0; k < act.duration; k++) {
+              periodsInSession.push({
+                hourIdx: hIdx + k,
+                hour: hoursOrder[hIdx + k] || p.hour,
+                campus,
+                class: act.students,
+                subject: act.subject
+              });
+            }
+          }
+        });
+        periodsInSession.sort((a, b) => a.hourIdx - b.hourIdx);
+        for (let i = 0; i < periodsInSession.length - 1; i++) {
+          const cur = periodsInSession[i];
+          const next = periodsInSession[i + 1];
+          if (cur.campus !== next.campus) {
+            const gap = next.hourIdx - cur.hourIdx - 1;
+            if (gap < 1) {
+              buildingErrors.push({
+                teacher: t,
+                session: d,
+                from: cur.hour + ' (' + cur.campus + ' - ' + cur.class + ')',
+                to: next.hour + ' (' + next.campus + ' - ' + next.class + ')',
+                gap
+              });
+            }
+          }
+        }
+      });
+    });
+
+    // 4. Saturday Period 5 empty
+    const satP5Errors = [];
+    Object.entries(placed).forEach(([id, p]) => {
+      const act = actDef[id];
+      if (act && !act.students.startsWith('PĐ') && p.day.endsWith('.T7') && p.hour === 'Tiết 5') {
+        satP5Errors.push({ class: act.students, teacher: act.teacher, subject: act.subject });
+      }
+    });
+
+    // 5. Leaders off Saturday
+    const leaderStatus = [];
+    LEADERS.forEach(l => {
+      let satPeriods = 0;
+      Object.entries(placed).forEach(([id, p]) => {
+        const act = actDef[id];
+        if (act && act.teacher === l && p.day.endsWith('.T7')) {
+          satPeriods += act.duration;
+        }
+      });
+      leaderStatus.push({ teacher: l, satPeriods, isOff: satPeriods === 0 });
+    });
+
+    // Teachers Days Off Matrix
+    const teachersList = [...fetContent.matchAll(/<Teacher>[\s\S]*?<Name>(.*?)<\/Name>[\s\S]*?<\/Teacher>/g)].map(m => m[1]).filter(t => !t.includes("Điểm") && t.trim() !== "");
+    const teacherSchedule = {};
+    teachersList.forEach(t => teacherSchedule[t] = { T2: 0, T3: 0, T4: 0, T5: 0, T6: 0, T7: 0, total: 0 });
+
+    Object.entries(placed).forEach(([id, p]) => {
+      const act = actDef[id];
+      if (!act) return;
+      const t = act.teacher;
+      const dayName = p.day.split('.')[1];
+      if (teacherSchedule[t] && teacherSchedule[t][dayName] !== undefined) {
+        teacherSchedule[t][dayName] += act.duration;
+        teacherSchedule[t].total += act.duration;
+      }
+    });
+
+    const teacherRows = [];
+    teachersList.forEach((t, idx) => {
+      const s = teacherSchedule[t];
+      const daysOff = [];
+      ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'].forEach(d => {
+        if (s[d] === 0) daysOff.push(d.replace('T', 'Thứ '));
+      });
+
+      const isLeader = LEADERS.includes(t);
+      let note = 'Giáo viên bộ môn';
+      if (isLeader) note = 'Tổ trưởng chuyên môn (Ưu tiên nghỉ T7)';
+      if (t === 'T.Trang') note = 'GV Toán (Nghỉ điều trị T2,T4,T6)';
+
+      teacherRows.push({
+        stt: idx + 1,
+        name: t,
+        note,
+        isLeader,
+        total: s.total,
+        T2: s.T2, T3: s.T3, T4: s.T4, T5: s.T5, T6: s.T6, T7: s.T7,
+        daysOffCount: daysOff.length,
+        daysOffList: daysOff.join(', ')
+      });
+    });
+
+    return {
+      fileName,
+      totalActs: Object.keys(actDef).length,
+      placedActs: Object.keys(placed).length,
+      teachersCount: teachersList.length,
+      max2Errors,
+      roomErrors,
+      buildingErrors,
+      satP5Errors,
+      leaderStatus,
+      teacherRows
+    };
+  }
+
+  function renderAuditUI(res) {
+    document.getElementById('exportExcelBtn').disabled = false;
+    document.getElementById('actionBar').style.display = 'flex';
+    document.getElementById('tableCard').style.display = 'block';
+
+    // 1. KPI Cards
+    const kpiMax2 = document.getElementById('kpiMax2');
+    kpiMax2.innerHTML = res.max2Errors.length === 0
+      ? '<span class="status-badge badge-success">✓ ĐẠT 100% (0 lỗi)</span>'
+      : '<span class="status-badge badge-danger">✗ LỖI (' + res.max2Errors.length + ' vi phạm)</span>';
+
+    const kpiRooms = document.getElementById('kpiRooms');
+    kpiRooms.innerHTML = res.roomErrors.length === 0
+      ? '<span class="status-badge badge-success">✓ ĐẠT 100% (0 trùng)</span>'
+      : '<span class="status-badge badge-danger">✗ LỖI (' + res.roomErrors.length + ' trùng phòng)</span>';
+
+    const kpiBuilding = document.getElementById('kpiBuilding');
+    kpiBuilding.innerHTML = res.buildingErrors.length === 0
+      ? '<span class="status-badge badge-success">✓ ĐẠT 100% (Nghỉ ≥ 1t)</span>'
+      : '<span class="status-badge badge-danger">✗ LỖI (' + res.buildingErrors.length + ' vi phạm)</span>';
+
+    const kpiSatP5 = document.getElementById('kpiSatP5');
+    kpiSatP5.innerHTML = res.satP5Errors.length === 0
+      ? '<span class="status-badge badge-success">✓ ĐÃ KHÓA 100% (0 lớp)</span>'
+      : '<span class="status-badge badge-danger">✗ LỖI (' + res.satP5Errors.length + ' lớp học)</span>';
+
+    const allLeadersOff = res.leaderStatus.every(l => l.isOff);
+    const kpiLeaders = document.getElementById('kpiLeaders');
+    kpiLeaders.innerHTML = allLeadersOff
+      ? '<span class="status-badge badge-success">✓ 5/5 NGHỈ THỨ 7</span>'
+      : '<span class="status-badge badge-danger">✗ CÓ TỔ TRƯỞNG DẠY T7</span>';
+
+    const kpiStats = document.getElementById('kpiStats');
+    kpiStats.innerHTML = '<span class="status-badge badge-info">' + res.teachersCount + ' GV / ' + res.placedActs + ' tiết</span>';
+
+    // 2. Violations alert box
+    const violBox = document.getElementById('violationsContainer');
+    const allViolations = [];
+    if (res.max2Errors.length > 0) {
+      allViolations.push('<div class="violation-card"><div class="violation-title">⚠️ Lỗi Môn Học Quá 2 Tiết/Ngày (' + res.max2Errors.length + ' vi phạm)</div>' +
+        res.max2Errors.map(e => '<div class="violation-item">• Lớp ' + e.class + ' ' + e.day + ': Môn ' + e.subject + ' học ' + e.periods + ' tiết!</div>').join('') + '</div>');
+    }
+    if (res.roomErrors.length > 0) {
+      allViolations.push('<div class="violation-card"><div class="violation-title">⚠️ Xung Đột Phòng Học Chức Năng (' + res.roomErrors.length + ' xung đột)</div>' +
+        res.roomErrors.map(e => '<div class="violation-item">• Phòng ' + e.room + ' (' + e.slot + '): ' + e.details + '</div>').join('') + '</div>');
+    }
+    if (res.buildingErrors.length > 0) {
+      allViolations.push('<div class="violation-card"><div class="violation-title">⚠️ Vi Phạm Di Chuyển Điểm Trường (' + res.buildingErrors.length + ' vi phạm)</div>' +
+        res.buildingErrors.map(e => '<div class="violation-item">• GV ' + e.teacher + ' (' + e.session + '): từ ' + e.from + ' sang ' + e.to + '</div>').join('') + '</div>');
+    }
+    if (allViolations.length > 0) {
+      violBox.innerHTML = allViolations.join('');
+      violBox.style.display = 'block';
+    } else {
+      violBox.style.display = 'none';
+    }
+
+    renderTableRows(res.teacherRows);
+  }
+
+  function renderTableRows(rows) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = rows.map(r => {
+      const formatCell = (val) => val === 0 ? '<span class="cell-off">NGHỈ</span>' : (val + ' tiết');
+      const rowClass = r.isLeader ? 'cell-leader' : '';
+      return '<tr class="' + rowClass + '">' +
+        '<td>' + r.stt + '</td>' +
+        '<td style="font-weight: 600;">' + r.name + '</td>' +
+        '<td style="color: var(--text-muted); font-size: 0.82rem;">' + r.note + '</td>' +
+        '<td style="text-align: center; font-weight: 700;">' + r.total + '</td>' +
+        '<td style="text-align: center;">' + formatCell(r.T2) + '</td>' +
+        '<td style="text-align: center;">' + formatCell(r.T3) + '</td>' +
+        '<td style="text-align: center;">' + formatCell(r.T4) + '</td>' +
+        '<td style="text-align: center;">' + formatCell(r.T5) + '</td>' +
+        '<td style="text-align: center;">' + formatCell(r.T6) + '</td>' +
+        '<td style="text-align: center;">' + formatCell(r.T7) + '</td>' +
+        '<td style="text-align: center; font-weight: 700; color: #38bdf8;">' + r.daysOffCount + '</td>' +
+        '<td style="color: var(--text-muted);">' + (r.daysOffList || 'Không có') + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function applyFilters() {
+    if (!auditResult) return;
+    const search = document.getElementById('searchInput').value.trim().toLowerCase();
+    const dayFilter = document.getElementById('dayFilter').value;
+
+    const filtered = auditResult.teacherRows.filter(r => {
+      const matchSearch = r.name.toLowerCase().includes(search) || r.note.toLowerCase().includes(search);
+      let matchDay = true;
+      if (dayFilter === 'LEADER') {
+        matchDay = r.isLeader;
+      } else if (dayFilter !== 'ALL') {
+        matchDay = r.daysOffList.includes(dayFilter);
+      }
+      return matchSearch && matchDay;
+    });
+
+    renderTableRows(filtered);
+  }
+
+  function exportToExcel() {
+    if (!auditResult) return;
+    const excelRows = auditResult.teacherRows.map(r => ({
+      'STT': r.stt,
+      'Tên Giáo Viên': r.name,
+      'Chức Vụ / Ghi Chú': r.note,
+      'Tổng Tiết': r.total,
+      'Thứ 2': r.T2 > 0 ? (r.T2 + ' tiết') : 'NGHỈ',
+      'Thứ 3': r.T3 > 0 ? (r.T3 + ' tiết') : 'NGHỈ',
+      'Thứ 4': r.T4 > 0 ? (r.T4 + ' tiết') : 'NGHỈ',
+      'Thứ 5': r.T5 > 0 ? (r.T5 + ' tiết') : 'NGHỈ',
+      'Thứ 6': r.T6 > 0 ? (r.T6 + ' tiết') : 'NGHỈ',
+      'Thứ 7': r.T7 > 0 ? (r.T7 + ' tiết') : 'NGHỈ',
+      'Số Ngày Nghỉ': r.daysOffCount,
+      'Chi Tiết Ngày Nghỉ': r.daysOffList
+    }));
+
+    const summaryRows = [
+      { 'Hạng Mục Kiểm Định': 'Không quá 2 tiết/môn/ngày', 'Kết Quả': auditResult.max2Errors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + auditResult.max2Errors.length + ' vi phạm)') },
+      { 'Hạng Mục Kiểm Định': 'Không trùng phòng chức năng (Tin, Nhạc)', 'Kết Quả': auditResult.roomErrors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + auditResult.roomErrors.length + ' xung đột)') },
+      { 'Hạng Mục Kiểm Định': 'Nghỉ ít nhất 1 tiết khi đổi điểm trường', 'Kết Quả': auditResult.buildingErrors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + auditResult.buildingErrors.length + ' vi phạm)') },
+      { 'Hạng Mục Kiểm Định': 'Khóa cứng Tiết 5 Thứ 7', 'Kết Quả': auditResult.satP5Errors.length === 0 ? 'ĐẠT 100%' : ('LỖI (' + auditResult.satP5Errors.length + ' chưa khóa)') },
+      { 'Hạng Mục Kiểm Định': '5 Tổ trưởng chuyên môn nghỉ Thứ 7', 'Kết Quả': auditResult.leaderStatus.every(l => l.isOff) ? 'ĐẠT 100% (5/5 Tổ trưởng nghỉ T7)' : 'CÓ VI PHẠM' }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.json_to_sheet(excelRows);
+    const ws2 = XLSX.utils.json_to_sheet(summaryRows);
+
+    XLSX.utils.book_append_sheet(wb, ws1, 'Ngay_Nghi_Giao_Vien');
+    XLSX.utils.book_append_sheet(wb, ws2, 'Ket_Qua_Kiem_Dinh');
+
+    const cleanName = auditResult.fileName.replace('.fet', '').replace('.xml', '');
+    XLSX.writeFile(wb, 'Bao_Cao_Ngay_Nghi_' + cleanName + '.xlsx');
+  }
+</script>
+
+</body>
+</html>

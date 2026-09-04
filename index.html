@@ -27,7 +27,10 @@
                 <p style="font-size: 0.75rem; color: var(--text-muted);">Hệ thống phân công chuyên môn số hóa chuẩn Việt Nam</p>
             </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <a href="tool_kiem_tra_tkb_fet.html" target="_blank" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border-radius: 8px; background: linear-gradient(135deg, #4f46e5, #06b6d4); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);">
+                <span class="material-icons-round" style="font-size: 1.1rem;">verified_user</span> 🛡️ Tool Kiểm Định TKB FET
+            </a>
             <div class="sync-indicator">
                 <span id="syncDot" class="dot dot-grey"></span>
                 <span id="syncStatusText" style="color: var(--text-muted);">Đang dùng Offline</span>
@@ -68,9 +71,12 @@
                 <button id="loginBtn" class="btn btn-primary" onclick="login()" style="width: 100%; justify-content: center; margin-top: 10px;">
                     <span>Đăng nhập</span> <span class="material-icons-round" style="margin-left: 6px;">login</span>
                 </button>
-                <div style="text-align: center; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+                <div style="text-align: center; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
                     <a href="#" onclick="showPublicTimetable(); return false;" style="color: var(--primary-light); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
                         <span class="material-icons-round" style="font-size: 1.15rem;">search</span> Tra cứu Thời khóa biểu Công khai (Online)
+                    </a>
+                    <a href="tool_kiem_tra_tkb_fet.html" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: 600; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+                        <span class="material-icons-round" style="font-size: 1.15rem;">verified_user</span> 🛡️ Mở Tool Kiểm Định Ràng Buộc FET & Ngày Nghỉ
                     </a>
                 </div>
             </div>
@@ -1053,20 +1059,31 @@
                         <div style="background: rgba(99, 102, 241, 0.12); border: 1.5px solid rgba(129, 140, 248, 0.45); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <span class="badge" style="background: #4f46e5; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;">⭐ PHƯƠNG ÁN 1 (KHUYÊN DÙNG)</span>
+                                    <span class="badge" style="background: #10b981; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;">⭐ BẢN V13 HOÀN CHỈNH MỚI NHẤT (KHUYÊN DÙNG)</span>
                                     <span class="material-icons-round" style="color: #a5b4fc;">open_in_browser</span>
                                 </div>
-                                <h4 style="color: #fff; font-size: 1.05rem; margin: 0 0 6px 0; font-weight: 700;">Tệp Dự Án FET Hoàn Chỉnh (.fet / XML)</h4>
+                                <h4 style="color: #fff; font-size: 1.05rem; margin: 0 0 6px 0; font-weight: 700;">Tệp Dự Án FET V13 & Tool Kiểm Định</h4>
                                 <p style="color: #c7d2fe; font-size: 0.82rem; margin: 0 0 14px 0; line-height: 1.45;">
-                                    Tạo 1 tệp duy nhất chứa <b>đầy đủ 100%</b>: Môn học, Giáo viên, Khối lớp (đầy đủ 6A10...), Phòng học & Tiết giảng.
+                                    <b>5 Tổ trưởng nghỉ Thứ 7</b> (Thầy Lợi, Cô M.Hằng, Cô T.Thúy, Thầy Tình, Thầy Tú), <b>khóa cứng Tiết 5 Thứ 7</b>, <b>0 tiết trống</b>, <b>học từ Tiết 1</b>, <b>nghỉ 1 tiết khi đổi điểm trường</b>, <b>phòng Tin/Nhạc chuẩn 100%</b>.
                                 </p>
                                 <div style="background: rgba(15, 23, 42, 0.6); border-radius: 6px; padding: 8px 10px; font-size: 0.78rem; color: #94a3b8; margin-bottom: 14px;">
-                                    💡 <b>Cách dùng:</b> Vào FET chọn <code>Tệp -&gt; Mở... (Ctrl+O)</code> và chọn file vừa tải về.
+                                    💡 <b>Cách dùng:</b> Tải tệp <code>.fet</code> về, mở trong FET hoặc nạp vào Tool Kiểm Định để kiểm tra và xuất Excel.
                                 </div>
                             </div>
-                            <button class="btn btn-primary" onclick="exportFetXmlProject()" style="width: 100%; justify-content: center; font-weight: 700; background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; padding: 10px 16px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <span class="material-icons-round">rocket_launch</span> Tải Tệp Dự Án .fet Ngay
-                            </button>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <a href="./THCS_TKB_FET_Project_V13.fet" download="THCS_TKB_FET_Project_V13.fet" class="btn btn-primary" style="width: 100%; justify-content: center; font-weight: 700; background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; padding: 10px 16px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; border-radius: 6px; color: #fff;">
+                                    <span class="material-icons-round">rocket_launch</span> Tải Tệp Dự Án .fet (Bản V13)
+                                </a>
+                                <a href="./THCS_TKB_FET_Project_V13_data_and_timetable.fet" download="THCS_TKB_FET_Project_V13_data_and_timetable.fet" class="btn btn-outline-secondary" style="width: 100%; justify-content: center; font-size: 0.82rem; padding: 7px 10px; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.08); display: inline-flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer; border-radius: 6px;">
+                                    <span class="material-icons-round" style="font-size: 1.1rem;">calendar_month</span> Tải TKB Đã Xếp Sẵn (V13 Solved)
+                                </a>
+                                <a href="./Danh_Sach_Giao_Vien_Ngay_Nghi_V13.xlsx" download="Danh_Sach_Giao_Vien_Ngay_Nghi_V13.xlsx" class="btn btn-outline-secondary" style="width: 100%; justify-content: center; font-size: 0.82rem; padding: 7px 10px; color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.08); display: inline-flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer; border-radius: 6px;">
+                                    <span class="material-icons-round" style="font-size: 1.1rem;">table_view</span> Tải Bảng Excel Ngày Nghỉ V13 (.xlsx)
+                                </a>
+                                <a href="tool_kiem_tra_tkb_fet.html" target="_blank" class="btn btn-outline-secondary" style="width: 100%; justify-content: center; font-size: 0.82rem; padding: 7px 10px; color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.08); display: inline-flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer; border-radius: 6px;">
+                                    <span class="material-icons-round" style="font-size: 1.1rem;">verified_user</span> 🛡️ Mở Tool Kiểm Định Trực Tiếp
+                                </a>
+                            </div>
                         </div>
 
                         <!-- Card 2: Full ZIP package (5 CSVs) -->
@@ -1323,6 +1340,22 @@
                     <p class="tab-desc" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 6px;">
                         Tải lên tệp kết quả từ phần mềm FET (<code>.fet</code>, <code>.xml</code>) hoặc tệp bảng tính Excel (<code>.xlsx</code>, <code>.xls</code>) đã được điều chỉnh để nạp vào hệ thống, xuất bản cho toàn trường và đồng bộ tức thì cho Zalo Bot.
                     </p>
+                </div>
+
+                <!-- Banner Link to Standalone FET Auditor Tool -->
+                <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(6, 182, 212, 0.15)); border: 1.5px solid rgba(129, 140, 248, 0.4); border-radius: 12px; padding: 18px 22px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+                    <div style="flex: 1; min-width: 280px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span class="badge" style="background: #10b981; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;">MỚI 2026</span>
+                            <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700; margin: 0;">Công Cụ Kiểm Định Ràng Buộc TKB FET & Xuất Ngày Nghỉ</h4>
+                        </div>
+                        <p style="color: #cbd5e1; font-size: 0.84rem; margin: 0; line-height: 1.45;">
+                            Tự động quét: <b>Không quá 2 tiết/môn/ngày</b>, <b>không trùng phòng chức năng Tin & Âm nhạc tại 3 điểm trường</b>, <b>di chuyển điểm trường nghỉ ≥1 tiết</b>, <b>khóa Tiết 5 Thứ 7</b>, <b>Tổ trưởng nghỉ Thứ 7</b> và xuất file Excel (.xlsx).
+                        </p>
+                    </div>
+                    <a href="tool_kiem_tra_tkb_fet.html" target="_blank" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.9rem; font-weight: 700; text-decoration: none; border-radius: 10px; background: linear-gradient(135deg, #4f46e5, #06b6d4); box-shadow: 0 4px 14px rgba(79, 70, 229, 0.45); display: inline-flex; align-items: center; gap: 8px; color: #fff; white-space: nowrap;">
+                        <span class="material-icons-round" style="font-size: 1.25rem;">verified_user</span> Mở Tool Kiểm Định Ngay
+                    </a>
                 </div>
 
                 <!-- Drag & Drop Upload Zone -->

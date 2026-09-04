@@ -9107,19 +9107,29 @@ function generateFetStudentsCSV() {
     return content;
 }
 
+// Hàm xác định Điểm trường / Khối nhà theo lớp học
+function getCampusBuildingForClass(clsName) {
+    const name = (clsName || '').trim().replace(/^P\./, '');
+    const dt1 = ['6A1', '7A1', '8A1', '9A1', '9A2'];
+    const dt2 = ['6A13', '7A7', '8A7', '8A8', '9A9', '9A10'];
+    if (dt1.includes(name)) return 'Điểm trường 1';
+    if (dt2.includes(name)) return 'Điểm trường 2';
+    return 'Điểm trường 3';
+}
+
 // 4. Tạo nội dung CSV Phòng học / Tòa nhà cho FET
 function generateFetRoomsCSV() {
     let content = `"Building","Name","Capacity","Comments"\n`;
     const officialClasses = sortClassesStandard((state.classes || []).filter(c => c && c.name));
 
-    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : officialClasses.map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
-    roomsList.forEach(r => {
-        content += `"${(r.building || 'Khu A').replace(/"/g, '""')}","${(r.name || '').replace(/"/g, '""')}",${r.capacity || 45},""\n`;
+    officialClasses.forEach(c => {
+        const building = getCampusBuildingForClass(c.name);
+        content += `"${building}","P.${c.name.replace(/"/g, '""')}",45,""\n`;
     });
     return content;
 }
 
-// 5. Tạo nội dung CSV Tiết giảng (Hoạt động) cho FET (Quy đổi HĐTN+SHL sang 1 tiết TKB)
+// 5. Tạo nội dung CSV Tiết giảng (Hoạt động) cho FET
 function generateFetActivitiesCSV() {
     syncGvcnAndHomeroom();
 
@@ -9148,24 +9158,25 @@ function generateFetActivitiesCSV() {
         const subId = parsedKey.subId;
         const val = state.assignments[key];
 
-        // Chỉ xuất phân công của các lớp chính thức
         if (val && val.teacher && val.periods > 0 && cls !== 'Kiêm nhiệm' && officialClassSet.has(cls)) {
             const sub = (state.subjects || []).find(s => s && s.id === subId);
             const subName = sub ? sub.name.trim() : (subId || 'Môn học');
 
             const isGDTC = /^(gdtc|thể dục|td|thể chất)$/i.test(subName);
-            if (excludeGDTC && isGDTC) {
-                return;
-            }
+            if (excludeGDTC && isGDTC) return;
 
             const isSHL = /^(hdtn \+ shl|hđtn \+ shl|hđtn|hdtn|sinh hoạt lớp|shl)$/i.test(subName);
             const isCC = /^(chào cờ|chao co|hdtn_chao_co|hđtn \(chào cờ\))$/i.test(subName);
+            const isPD = cls.startsWith('PĐ') || cls.startsWith('PD');
 
             // Môn HĐTN+SHL và Chào cờ khi xếp TKB chỉ chiếm 1 tiết trên thời khóa biểu lớp
             let effectivePeriods = (isSHL || isCC) ? 1 : val.periods;
 
             let split = effectivePeriods.toString();
-            if (effectivePeriods >= 7) {
+            if (isPD) {
+                // Phân tách các tiết dạy PĐ các khối ra tiết đơn (1+1+...)
+                split = Array(effectivePeriods).fill('1').join('+');
+            } else if (effectivePeriods >= 7) {
                 const pairs = Math.floor(effectivePeriods / 2);
                 const remainder = effectivePeriods % 2;
                 const parts = [];
@@ -9187,7 +9198,7 @@ function generateFetActivitiesCSV() {
             if (effectivePeriods === 1) {
                 csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",1,"",,,,""\n`;
             } else {
-                csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",${effectivePeriods},"${split}",1,98,1,""\n`;
+                csvContent += `"${cls.replace(/"/g, '""')}","${subName.replace(/"/g, '""')}","${val.teacher.replace(/"/g, '""')}","",${effectivePeriods},"${split}",1,95,1,""\n`;
             }
         }
     });
@@ -9196,8 +9207,10 @@ function generateFetActivitiesCSV() {
 }
 
 // 6. Tạo Tệp Dự Án Hoàn Chỉnh Cho FET (.fet / XML) - Chuẩn Xếp Thời Khóa Biểu THCS Việt Nam
-function generateFetFullXML() {
+function generateFetFullXML(options = {}) {
     syncGvcnAndHomeroom();
+    const enableGvcnSatP1 = options.gvcnSatPeriod1 !== false;
+    const assignedGvcnSatP1Class = {};
 
     // Đảm bảo 6B1, 6B2, 6B3 có trong danh mục lớp nếu có phân công
     const existingNames = new Set((state.classes || []).map(c => c && c.name ? c.name.trim() : ''));
@@ -9220,6 +9233,10 @@ function generateFetFullXML() {
     const allTeachersSet = new Set();
     const allSubjectsSet = new Set();
     const validActivities = [];
+
+    // Tính tổng số tiết thực tế của từng lớp để khóa chỗ trống chính xác
+    const classEffectivePeriods = {};
+    officialClassesList.forEach(c => { classEffectivePeriods[c.name] = 0; });
 
     // Pre-populate từ hệ thống
     (state.teachers || []).forEach(t => { if (t && t.shortName) allTeachersSet.add(t.shortName.trim()); });
@@ -9246,9 +9263,14 @@ function generateFetFullXML() {
 
             const isSHL = /^(hdtn \+ shl|hđtn \+ shl|hđtn|hdtn|sinh hoạt lớp|shl)$/i.test(subName);
             const isCC = /^(chào cờ|chao co|hdtn_chao_co|hđtn \(chào cờ\))$/i.test(subName);
+            const isPD = cls.startsWith('PĐ') || cls.startsWith('PD');
 
             // Môn HĐTN+SHL và Chào cờ khi lên TKB chỉ chiếm 1 tiết
             const effectivePeriods = (isSHL || isCC) ? 1 : val.periods;
+
+            if (classEffectivePeriods[cls] !== undefined) {
+                classEffectivePeriods[cls] += effectivePeriods;
+            }
 
             const teacherName = val.teacher.trim();
             const className = cls.trim();
@@ -9262,7 +9284,8 @@ function generateFetFullXML() {
                 teacher: teacherName,
                 periods: effectivePeriods,
                 isSHL: isSHL,
-                isCC: isCC
+                isCC: isCC,
+                isPD: isPD
             });
         }
     });
@@ -9297,26 +9320,49 @@ function generateFetFullXML() {
         teachersXml += `    <Teacher>\n      <Name>${escapeXml(tName)}</Name>\n      <Comments></Comments>\n    </Teacher>\n`;
     });
 
-    // 5. Danh sách phòng học & điểm trường
-    let buildingsXml = `    <Building>\n      <Name>Khu A</Name>\n      <Comments></Comments>\n    </Building>\n`;
+    // 5. Danh sách phòng học & điểm trường (Khối nhà)
+    const campuses = ['Điểm trường 1', 'Điểm trường 2', 'Điểm trường 3'];
+    let buildingsXml = '';
+    campuses.forEach(bName => {
+        buildingsXml += `    <Building>\n      <Name>${escapeXml(bName)}</Name>\n      <Comments></Comments>\n    </Building>\n`;
+    });
+
     let roomsXml = '';
-    const roomsList = (state.rooms && state.rooms.length > 0) ? state.rooms : officialClassesList.map(c => ({ name: `P.${c.name}`, building: 'Khu A', capacity: 45 }));
-    roomsList.forEach(r => {
-        roomsXml += `    <Room>\n      <Name>${escapeXml(r.name)}</Name>\n      <Building>${escapeXml(r.building || 'Khu A')}</Building>\n      <Capacity>${r.capacity || 45}</Capacity>\n      <Comments></Comments>\n    </Room>\n`;
+    officialClassesList.forEach(c => {
+        const clsName = c.name;
+        const bName = getCampusBuildingForClass(clsName);
+        roomsXml += `    <Room>\n      <Name>P.${escapeXml(clsName)}</Name>\n      <Building>${escapeXml(bName)}</Building>\n      <Capacity>45</Capacity>\n      <Comments></Comments>\n    </Room>\n`;
+    });
+
+    // Thêm các phòng thực hành Tin học & Âm nhạc cho các Điểm trường
+    const labRoomsList = [
+        { name: 'P.Tin_D1', building: 'Điểm trường 1' },
+        { name: 'P.AmNhac_D1', building: 'Điểm trường 1' },
+        { name: 'P.Tin_D2', building: 'Điểm trường 2' },
+        { name: 'P.AmNhac_D2', building: 'Điểm trường 2' },
+        { name: 'P.Tin_D3_1', building: 'Điểm trường 3' },
+        { name: 'P.Tin_D3_2', building: 'Điểm trường 3' },
+        { name: 'P.Tin_D3_3', building: 'Điểm trường 3' },
+        { name: 'P.AmNhac_D3', building: 'Điểm trường 3' }
+    ];
+    labRoomsList.forEach(lr => {
+        roomsXml += `    <Room>\n      <Name>${lr.name}</Name>\n      <Building>${lr.building}</Building>\n      <Capacity>45</Capacity>\n      <Comments></Comments>\n    </Room>\n`;
     });
 
     // 6. Danh sách tiết giảng (Activities) & Sinh Ràng Buộc Giãn Cách / Tiết Ghim
     let activitiesXml = '';
     let minDaysConstraintsXml = '';
     let preferredTimesXml = '';
+    let labRoomConstraintsXml = '';
     let actId = 1;
     let actGroupId = 1;
 
-    const hoursOfDay = ['Tiết 1', 'Tiết 2', 'Tiết 3', 'Tiết 4', 'Tiết 5'];
-
     validActivities.forEach(act => {
         let splits = [act.periods];
-        if (act.periods >= 7) {
+        if (act.isPD) {
+            // Phụ đạo: nén thành cụm 3 tiết liền kề Tiết 1-2-3 (mỗi tuần 2 buổi x 3 tiết)
+            splits = (act.periods === 6) ? [3, 3] : (act.periods === 3) ? [3] : Array(act.periods).fill(1);
+        } else if (act.periods >= 7) {
             const pairs = Math.floor(act.periods / 2);
             const remainder = act.periods % 2;
             splits = [];
@@ -9328,58 +9374,154 @@ function generateFetFullXML() {
         else if (act.periods === 3) splits = rule3.split('+').map(Number);
         else if (act.periods === 2) splits = rule2.split('+').map(Number);
 
-        const curGroupId = splits.length > 1 ? actGroupId++ : 0;
+        // Đối với lớp PĐ tiết đơn, không gán nhóm MinDays cứng để xếp linh hoạt
+        const curGroupId = (splits.length > 1 && !act.isPD) ? actGroupId++ : 0;
         const currentGroupActIds = [];
 
-        // Xác định ca học của lớp (Sáng hay Chiều)
+        // Xác định ca học của lớp (Sáng hay Chiều) trực tiếp từ session trong state.classes
         const matchedClass = officialClassesList.find(c => c.name === act.cls);
-        const grade = (matchedClass && matchedClass.grade) ? matchedClass.grade : (act.cls.match(/\d+/) ? act.cls.match(/\d+/)[0] : '6');
-        const isAfternoon = (matchedClass && matchedClass.session === 'chiều') || (!matchedClass && (grade === '6' || grade === '8'));
+        const session = (matchedClass && matchedClass.session) ? matchedClass.session.toLowerCase() : 'sáng';
+        const isAfternoon = session === 'chiều';
 
         splits.forEach((dur, splitIdx) => {
             const curActId = actId++;
-            currentGroupActIds.push(curActId);
+            if (!act.isPD) currentGroupActIds.push(curActId);
 
             activitiesXml += `    <Activity>\n      <Teacher>${escapeXml(act.teacher)}</Teacher>\n      <Subject>${escapeXml(act.subName)}</Subject>\n      <Activity_Tag></Activity_Tag>\n      <Students>${escapeXml(act.cls)}</Students>\n      <Duration>${dur}</Duration>\n      <Total_Duration>${act.periods}</Total_Duration>\n      <Id>${curActId}</Id>\n      <Activity_Group_Id>${curGroupId}</Activity_Group_Id>\n      <Active>true</Active>\n      <Comments></Comments>\n    </Activity>\n`;
 
-            // Tự động ghim Chào cờ vào Tiết 1 Thứ 2
+            // Ghim Chào cờ:
+            // - Lớp Sáng: Tiết 1 Thứ 2 (S.T2 Tiết 1)
+            // - Lớp Chiều: Tiết 5 Thứ 2 (C.T2 Tiết 5)
             if (act.isCC && splitIdx === 0) {
                 const prefDay = isAfternoon ? 'C.T2' : 'S.T2';
-                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 1</Preferred_Hour>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Chào Cờ Đầu Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+                const prefHour = isAfternoon ? 'Tiết 5' : 'Tiết 1';
+                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>${prefHour}</Preferred_Hour>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Chào Cờ Đầu Tuần (${isAfternoon ? 'Chiều Tiết 5' : 'Sáng Tiết 1'})</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
             }
 
-            // Tự động ghim Sinh hoạt lớp vào Tiết 4 Thứ 7
+            // Ghim Sinh hoạt lớp (HĐTN + SHL):
+            // - Lớp Sáng: Tiết 4 Thứ 7 (S.T7 Tiết 4)
+            // - Lớp Chiều: Tiết 4 Thứ 7 (C.T7 Tiết 4)
             if (act.isSHL && splitIdx === 0) {
                 const prefDay = isAfternoon ? 'C.T7' : 'S.T7';
-                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 4</Preferred_Hour>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Sinh Hoạt Lớp Cuối Tuần</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 4</Preferred_Hour>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Ghim Sinh Hoạt Lớp Cuối Tuần (Tiết 4 Thứ 7)</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+            }
+
+            // Ghim GVCN dạy Tiết 1 Thứ 7 tại chính lớp chủ nhiệm (V2) để quản lớp đầu giờ
+            const clsGvcn = (officialClassesList.find(c => c.name === act.cls) || {}).gvcn || '';
+            if (enableGvcnSatP1 && !assignedGvcnSatP1Class[act.cls] && clsGvcn && act.teacher === clsGvcn && !act.isCC && !act.isSHL && !act.isPD) {
+                assignedGvcnSatP1Class[act.cls] = true;
+                const prefDay = isAfternoon ? 'C.T7' : 'S.T7';
+                preferredTimesXml += `    <ConstraintActivityPreferredStartingTime>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Preferred_Day>${prefDay}</Preferred_Day>\n      <Preferred_Hour>Tiết 1</Preferred_Hour>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>GVCN ${escapeXml(act.teacher)} day Tiet 1 Thu 7 quan lop ${escapeXml(act.cls)}</Comments>\n    </ConstraintActivityPreferredStartingTime>\n`;
+            }
+
+            // Gán phòng thực hành Tin học & Âm nhạc không được trùng nhau:
+            const isTin = /^(tin|tin học)$/i.test(act.subName);
+            const isNhac = /^(âm nhạc|â\.nhạc|am nhac)$/i.test(act.subName);
+            if (isTin || isNhac) {
+                const bName = getCampusBuildingForClass(act.cls);
+                if (bName === 'Điểm trường 1') {
+                    const rName = isTin ? 'P.Tin_D1' : 'P.AmNhac_D1';
+                    labRoomConstraintsXml += `    <ConstraintActivityPreferredRoom>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Room>${rName}</Room>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>${isTin ? 'Tin hoc' : 'Am nhac'} Diem 1</Comments>\n    </ConstraintActivityPreferredRoom>\n`;
+                } else if (bName === 'Điểm trường 2') {
+                    const rName = isTin ? 'P.Tin_D2' : 'P.AmNhac_D2';
+                    labRoomConstraintsXml += `    <ConstraintActivityPreferredRoom>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Room>${rName}</Room>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>${isTin ? 'Tin hoc' : 'Am nhac'} Diem 2</Comments>\n    </ConstraintActivityPreferredRoom>\n`;
+                } else {
+                    // Điểm trường 3: có 2 phòng Tin và 1 phòng Âm nhạc duy nhất
+                    if (isNhac) {
+                        // Tiết quản lớp GVCN (Hà 6A12 và L.D.An 8B3 ghim C.T7 Tiết 1) học tại phòng học lớp
+                        const isGvcnSatP1 = (act.teacher === 'Hà' && act.cls === '6A12') || (act.teacher === 'L.D.An' && act.cls === '8B3');
+                        if (!isGvcnSatP1) {
+                            labRoomConstraintsXml += `    <ConstraintActivityPreferredRoom>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Room>P.AmNhac_D3</Room>\n      <Permanently_Locked>false</Permanently_Locked>\n      <Active>true</Active>\n      <Comments>Am nhac Diem 3 duy nhat 1 phong</Comments>\n    </ConstraintActivityPreferredRoom>\n`;
+                        }
+                    } else if (isTin) {
+                        const r1 = 'P.Tin_D3_1';
+                        const r2 = 'P.Tin_D3_2';
+                        const r3 = 'P.Tin_D3_3';
+                        labRoomConstraintsXml += `    <ConstraintActivityPreferredRooms>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Activity_Id>${curActId}</Activity_Id>\n      <Number_of_Preferred_Rooms>3</Number_of_Preferred_Rooms>\n      <Preferred_Room>${r1}</Preferred_Room>\n      <Preferred_Room>${r2}</Preferred_Room>\n      <Preferred_Room>${r3}</Preferred_Room>\n      <Active>true</Active>\n      <Comments>Tin hoc Diem 3 (3 phong)</Comments>\n    </ConstraintActivityPreferredRooms>\n`;
+                    }
+                }
             }
         });
 
-        // Tự động tạo ràng buộc giãn cách ngày (ConstraintMinDaysBetweenActivities) cho các môn tách buổi
-        if (currentGroupActIds.length > 1) {
+        // Ràng buộc giãn cách ngày (ConstraintMinDaysBetweenActivities) cho các môn chính khóa tách buổi
+        if (currentGroupActIds.length > 1 && !act.isPD) {
             minDaysConstraintsXml += `    <ConstraintMinDaysBetweenActivities>\n      <Weight_Percentage>95</Weight_Percentage>\n      <Consecutive_If_Same_Day>true</Consecutive_If_Same_Day>\n      <Number_of_Activities>${currentGroupActIds.length}</Number_of_Activities>\n${currentGroupActIds.map(id => `      <Activity_Id>${id}</Activity_Id>`).join('\n')}\n      <MinDays>1</MinDays>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintMinDaysBetweenActivities>\n`;
         }
     });
 
-    // 7. Ràng buộc Buổi Học Cho Từng Lớp (ConstraintStudentsSetNotAvailableTimes)
+    // 7. Ràng buộc Buổi Học & Khóa Chỗ Trống Cho Từng Lớp (ConstraintStudentsSetNotAvailableTimes)
     let classSessionConstraintsXml = '';
+    let pdMaxDaysConstraintsXml = '';
+    const allDays = ['S.T2', 'C.T2', 'S.T3', 'C.T3', 'S.T4', 'C.T4', 'S.T5', 'C.T5', 'S.T6', 'C.T6', 'S.T7', 'C.T7'];
+    const allHours = ['Tiết 1', 'Tiết 2', 'Tiết 3', 'Tiết 4', 'Tiết 5'];
+
     officialClassesList.forEach(c => {
         const clsName = c.name;
-        const grade = c.grade || (clsName.match(/\d+/) ? clsName.match(/\d+/)[0] : '6');
-        const isAfternoon = (c.session === 'chiều') || (!c.session && (grade === '6' || grade === '8'));
+        const isPD = clsName.startsWith('PĐ') || clsName.startsWith('PD');
+        const session = (c.session || '').toLowerCase();
+        const isAfternoon = session === 'chiều';
+        const totalP = classEffectivePeriods[clsName] || (isPD ? 6 : 26);
 
-        // Lớp học sáng thì KHÔNG HỌC các buổi chiều (C.T2 -> C.T7)
-        // Lớp học chiều thì KHÔNG HỌC các buổi sáng (S.T2 -> S.T7)
-        const disabledDays = isAfternoon ? ['S.T2', 'S.T3', 'S.T4', 'S.T5', 'S.T6', 'S.T7'] : ['C.T2', 'C.T3', 'C.T4', 'C.T5', 'C.T6', 'C.T7'];
-        
-        let notAvailSlotsXml = '';
-        disabledDays.forEach(d => {
-            hoursOfDay.forEach(h => {
-                notAvailSlotsXml += `      <Not_Available_Time>\n        <Day>${d}</Day>\n        <Hour>${h}</Hour>\n      </Not_Available_Time>\n`;
+        const disabledSlots = [];
+
+        if (isPD) {
+            // Lớp phụ đạo: Khóa hoàn toàn Thứ 2 và Thứ 7! Khóa Tiết 4, 5 (chỉ học Tiết 1, 2, 3)!
+            allDays.forEach(d => {
+                const isOpposite = isAfternoon ? d.startsWith('S.') : d.startsWith('C.');
+                const isT2orT7 = d.endsWith('.T2') || d.endsWith('.T7');
+                if (isOpposite || isT2orT7) {
+                    allHours.forEach(h => disabledSlots.push({ day: d, hour: h }));
+                } else {
+                    disabledSlots.push({ day: d, hour: 'Tiết 4' });
+                    disabledSlots.push({ day: d, hour: 'Tiết 5' });
+                }
             });
+
+            // Gán số ngày học tối đa = 2 để nén 6 tiết PĐ vào đúng 2 buổi (mỗi buổi 3 tiết)
+            pdMaxDaysConstraintsXml += `    <ConstraintStudentsSetMaxDaysPerWeek>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Max_Days_Per_Week>2</Max_Days_Per_Week>\n      <Active>true</Active>\n      <Comments>Lop phu dao hoc dung 2 buoi/tuan</Comments>\n    </ConstraintStudentsSetMaxDaysPerWeek>\n`;
+        } else {
+            // Lớp chính khóa
+            if (!isAfternoon) {
+                // Lớp học SÁNG: Khóa toàn bộ 6 buổi chiều
+                allDays.filter(d => d.startsWith('C.')).forEach(d => {
+                    allHours.forEach(h => disabledSlots.push({ day: d, hour: h }));
+                });
+
+                // Khóa chỗ trống Tiết 5:
+                // - Lớp 26 tiết (Khối 6, 7): khóa 4 chỗ trống (Tiết 5 Thứ 3, 4, 5, 6)
+                // - Lớp 27 tiết (Khối 8, 9): khóa 3 chỗ trống (Tiết 5 Thứ 3, 4, 5)
+                if (totalP <= 24) {
+                    ['S.T3', 'S.T4', 'S.T5', 'S.T6', 'S.T7'].forEach(d => disabledSlots.push({ day: d, hour: 'Tiết 5' }));
+                } else if (totalP <= 26) {
+                    ['S.T3', 'S.T4', 'S.T5', 'S.T6'].forEach(d => disabledSlots.push({ day: d, hour: 'Tiết 5' }));
+                } else if (totalP === 27) {
+                    ['S.T3', 'S.T4', 'S.T5'].forEach(d => disabledSlots.push({ day: d, hour: 'Tiết 5' }));
+                }
+            } else {
+                // Lớp học CHIỀU: Khóa toàn bộ 6 buổi sáng
+                allDays.filter(d => d.startsWith('S.')).forEach(d => {
+                    allHours.forEach(h => disabledSlots.push({ day: d, hour: h }));
+                });
+
+                // Khóa chỗ trống Tiết 5 (chiều Thứ 2 mở Tiết 5 cho Chào cờ! Thứ 7 mở Tiết 4-5 cho SHL!):
+                // - Lớp 26 tiết (Khối 6, 7 chiều): khóa 4 chỗ trống (Tiết 5 Thứ 3, 4, 5, 6)
+                // - Lớp 27 tiết (Khối 8, 9 chiều): khóa 3 chỗ trống (Tiết 5 Thứ 3, 4, 5)
+                if (totalP <= 24) {
+                    ['C.T3', 'C.T4', 'C.T5', 'C.T6', 'C.T7'].forEach(d => disabledSlots.push({ day: d, hour: 'Tiết 5' }));
+                } else if (totalP <= 26) {
+                    ['C.T3', 'C.T4', 'C.T5', 'C.T6'].forEach(d => disabledSlots.push({ day: d, hour: 'Tiết 5' }));
+                } else if (totalP === 27) {
+                    ['C.T3', 'C.T4', 'C.T5'].forEach(d => disabledSlots.push({ day: d, hour: 'Tiết 5' }));
+                }
+            }
+        }
+
+        let notAvailSlotsXml = '';
+        disabledSlots.forEach(s => {
+            notAvailSlotsXml += `      <Not_Available_Time>\n        <Day>${s.day}</Day>\n        <Hour>${s.hour}</Hour>\n      </Not_Available_Time>\n`;
         });
 
-        classSessionConstraintsXml += `    <ConstraintStudentsSetNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Number_of_Not_Available_Times>${disabledDays.length * hoursOfDay.length}</Number_of_Not_Available_Times>\n${notAvailSlotsXml}      <Active>true</Active>\n      <Comments>Khoa ca hoc ${isAfternoon ? 'Chieu' : 'Sang'}</Comments>\n    </ConstraintStudentsSetNotAvailableTimes>\n`;
+        classSessionConstraintsXml += `    <ConstraintStudentsSetNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Number_of_Not_Available_Times>${disabledSlots.length}</Number_of_Not_Available_Times>\n${notAvailSlotsXml}      <Active>true</Active>\n      <Comments>Khoa ca hoc ${isAfternoon ? 'Chieu' : 'Sang'} va cho trong cho ${clsName}</Comments>\n    </ConstraintStudentsSetNotAvailableTimes>\n`;
     });
 
     // 8. Ràng buộc Phòng Học Cố Định Cho Từng Lớp (ConstraintStudentsSetHomeRoom)
@@ -9387,6 +9529,85 @@ function generateFetFullXML() {
     officialClassesList.forEach(c => {
         const clsName = c.name;
         homeRoomConstraintsXml += `    <ConstraintStudentsSetHomeRoom>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Students>${escapeXml(clsName)}</Students>\n      <Room>P.${escapeXml(clsName)}</Room>\n      <Active>true</Active>\n      <Comments></Comments>\n    </ConstraintStudentsSetHomeRoom>\n`;
+    });
+
+    // 8b. Ràng buộc ngày nghỉ cho Giáo viên:
+    // - Danh sách ưu tiên nghỉ Thứ 7 (Mặc định: 5 Tổ trưởng; hoặc danh sách tùy chọn V3)
+    let teacherDayOffConstraintsXml = '';
+    const defaultSaturdayOff = ['Lợi', 'M.Hằng', 'T.Thúy', 'Tình', 'Tú'];
+    const saturdayOffNames = (options.saturdayOffTeachers && options.saturdayOffTeachers.length > 0)
+        ? [...options.saturdayOffTeachers]
+        : [...defaultSaturdayOff];
+
+    (state.teachers || []).forEach(t => {
+        const name = t.shortName || t.fullName;
+        const pos = (t.position || t.role || '').toLowerCase();
+        if ((pos.includes('tổ trưởng') || pos.includes('ttcm')) && !saturdayOffNames.includes(name)) {
+            saturdayOffNames.push(name);
+        }
+    });
+
+    const teacherSessionsMap = {};
+    Object.entries(state.assignments || {}).forEach(([k, v]) => {
+        const p = parseAssignmentKey(k);
+        if (v && v.teacher && v.periods > 0 && p.cls !== 'Kiêm nhiệm') {
+            const t = v.teacher.trim();
+            if (!teacherSessionsMap[t]) teacherSessionsMap[t] = new Set();
+            const c = (state.classes || []).find(cl => cl.name === p.cls);
+            if (c && c.session) teacherSessionsMap[t].add(c.session.toLowerCase());
+        }
+    });
+
+    // 1. Khóa Thứ 7 cho danh sách ưu tiên nghỉ Thứ 7 (Tổ trưởng + các thầy cô được chỉ định)
+    saturdayOffNames.forEach(tName => {
+        if (allTeachersSet.has(tName)) {
+            let notAvailXml = '';
+            ['S.T7', 'C.T7'].forEach(d => {
+                allHours.forEach(h => {
+                    notAvailXml += `      <Not_Available_Time>\n        <Day>${d}</Day>\n        <Hour>${h}</Hour>\n      </Not_Available_Time>\n`;
+                });
+            });
+            teacherDayOffConstraintsXml += `    <ConstraintTeacherNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Teacher>${escapeXml(tName)}</Teacher>\n      <Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>\n${notAvailXml}      <Active>true</Active>\n      <Comments>Uu tien nghi Thu 7 cho ${escapeXml(tName)}</Comments>\n    </ConstraintTeacherNotAvailableTimes>\n`;
+        }
+    });
+
+    // 2. Bố trí nghỉ 1 ngày cho các giáo viên còn lại (KHÔNG nằm trong danh sách đã nghỉ Thứ 7)
+    const midWeekDays = ['T3', 'T4', 'T5', 'T6'];
+    let midWeekIdx = 0;
+    Array.from(allTeachersSet).sort().forEach(tName => {
+        if (!saturdayOffNames.includes(tName)) {
+            const sessions = teacherSessionsMap[tName] || new Set();
+            if (sessions.size === 1) {
+                // GV 1 ca: nghỉ 1 ngày trong ca của mình
+                teacherDayOffConstraintsXml += `    <ConstraintTeacherMaxDaysPerWeek>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Teacher_Name>${escapeXml(tName)}</Teacher_Name>\n      <Max_Days_Per_Week>5</Max_Days_Per_Week>\n      <Active>true</Active>\n      <Comments>Giao vien 1 ca nghi 1 ngay trong tuan</Comments>\n    </ConstraintTeacherMaxDaysPerWeek>\n`;
+            } else if (sessions.size === 2) {
+                // GV 2 ca: nghỉ trọn vẹn cả ngày (cả Sáng và Chiều) vào Thứ 3, 4, 5 hoặc 6
+                const offDay = midWeekDays[midWeekIdx % midWeekDays.length];
+                midWeekIdx++;
+                let notAvailXml = '';
+                [`S.${offDay}`, `C.${offDay}`].forEach(d => {
+                    allHours.forEach(h => {
+                        notAvailXml += `      <Not_Available_Time>\n        <Day>${d}</Day>\n        <Hour>${h}</Hour>\n      </Not_Available_Time>\n`;
+                    });
+                });
+                teacherDayOffConstraintsXml += `    <ConstraintTeacherNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Teacher>${escapeXml(tName)}</Teacher>\n      <Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>\n${notAvailXml}      <Active>true</Active>\n      <Comments>Giao vien 2 ca nghi tron ngay ${offDay}</Comments>\n    </ConstraintTeacherNotAvailableTimes>\n`;
+            }
+        }
+    });
+
+    // 3. Ưu tiên đặc biệt Cô T.Trang: Đau ốm phải đi bệnh viện Thứ 2, 4, 6 -> Khóa T2, T4, T6 (4 tiết Toán 6A9 xếp vào T3, T5, T7)
+    let trangNotAvailXml = '';
+    ['S.T2', 'C.T2', 'S.T4', 'C.T4', 'S.T6', 'C.T6'].forEach(d => {
+        allHours.forEach(h => {
+            trangNotAvailXml += `      <Not_Available_Time>\n        <Day>${d}</Day>\n        <Hour>${h}</Hour>\n      </Not_Available_Time>\n`;
+        });
+    });
+    teacherDayOffConstraintsXml += `    <ConstraintTeacherNotAvailableTimes>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Teacher>T.Trang</Teacher>\n      <Number_of_Not_Available_Times>30</Number_of_Not_Available_Times>\n${trangNotAvailXml}      <Active>true</Active>\n      <Comments>Uu tien Co T.Trang nghi T2, T4, T6 di benh vien</Comments>\n    </ConstraintTeacherNotAvailableTimes>\n`;
+
+    // 4. Đảm bảo giáo viên không nghỉ quá 1 ngày (dạy ít nhất 5 ngày / tuần, trừ nhóm đặc biệt <= 4 tiết)
+    const teachersToEnsureMinDays = ['Hoài', 'Hồng', 'Minh', 'P.Thúy', 'Quyên', 'T.Thúy', 'Tý'];
+    teachersToEnsureMinDays.forEach(t => {
+        teacherDayOffConstraintsXml += `    <ConstraintTeacherMinDaysPerWeek>\n      <Weight_Percentage>100</Weight_Percentage>\n      <Teacher_Name>${t}</Teacher_Name>\n      <Minimum_Days_Per_Week>5</Minimum_Days_Per_Week>\n      <Active>true</Active>\n      <Comments>Giao vien ${t} day it nhat 5 ngay (nghi toi da 1 ngay)</Comments>\n    </ConstraintTeacherMinDaysPerWeek>\n`;
     });
 
     const targetFetVersion = (document.getElementById('fetVersionSelect') && document.getElementById('fetVersionSelect').value) ? document.getElementById('fetVersionSelect').value : '6.25.0';
@@ -9449,13 +9670,23 @@ ${activitiesXml}  </Activities_List>
       <Max_Gaps>1</Max_Gaps>
       <Active>true</Active>
     </ConstraintTeachersMaxGapsPerDay>
-${minDaysConstraintsXml}${classSessionConstraintsXml}${preferredTimesXml}  </Time_Constraints_List>
+${minDaysConstraintsXml}${classSessionConstraintsXml}${pdMaxDaysConstraintsXml}${preferredTimesXml}${teacherDayOffConstraintsXml}  </Time_Constraints_List>
   <Space_Constraints_List>
     <ConstraintBasicCompulsorySpace>
       <Weight_Percentage>100</Weight_Percentage>
       <Active>true</Active>
     </ConstraintBasicCompulsorySpace>
-${homeRoomConstraintsXml}  </Space_Constraints_List>
+${options.useMinGaps ? `    <ConstraintTeachersMinGapsBetweenBuildingChanges>
+      <Weight_Percentage>100</Weight_Percentage>
+      <Min_Gaps_Between_Building_Changes>1</Min_Gaps_Between_Building_Changes>
+      <Active>true</Active>
+      <Comments>Nghi it nhat 1 tiet khi doi diem truong</Comments>
+    </ConstraintTeachersMinGapsBetweenBuildingChanges>\n` : `    <ConstraintTeachersMaxBuildingChangesPerDay>
+      <Weight_Percentage>100</Weight_Percentage>
+      <Max_Building_Changes_Per_Day>0</Max_Building_Changes_Per_Day>
+      <Active>true</Active>
+      <Comments>Khong doi diem truong trong cung mot buoi hoc</Comments>
+    </ConstraintTeachersMaxBuildingChangesPerDay>\n`}${homeRoomConstraintsXml}${labRoomConstraintsXml}  </Space_Constraints_List>
 </fet>`;
 }
 
@@ -9474,10 +9705,154 @@ function triggerFileDownload(filename, content, mimeType) {
 }
 
 // 7. Xuất Tệp Dự Án FET (.fet)
-function exportFetXmlProject() {
-    const xml = generateFetFullXML();
-    triggerFileDownload('THCS_TKB_FET_Project.fet', xml, 'application/xml;charset=utf-8;');
-    showToast('🎉 Đã xuất tệp dự án FET (.fet) thành công! Hãy vào FET chọn [Tệp -> Mở...] để sử dụng ngay.', 'success');
+const FET_V3_SATURDAY_OFF_TEACHERS = [
+    'Lợi', 'M.Hằng', 'T.Thúy', 'Tình', 'Tú', // 5 Tổ trưởng
+    'Tuấn', 'Anh', 'Hồng', 'Trà', 'Trọng', 'Tôn', 'Lệ' // 7 giáo viên tối ưu nghỉ trọn vẹn Thứ 7
+];
+
+const FET_V4_SATURDAY_OFF_TEACHERS = [
+    'Lợi', 'M.Hằng', 'T.Thúy', 'Tình', 'Tú', // 5 Tổ trưởng
+    'Tuấn', 'Anh', 'Hồng', 'Trà', 'Trọng', 'Tôn', 'Lệ', 'Lan' // 8 giáo viên tối ưu nghỉ trọn vẹn Thứ 7
+];
+
+const FET_V5_SATURDAY_OFF_TEACHERS = [
+    'Lợi', 'M.Hằng', 'T.Thúy', 'Tình', 'Tú', // 5 Tổ trưởng
+    'Tuấn', 'H.Loan', 'Thắm', 'Uyên', 'Anh', 'Hồng', 'Lan', 'Trọng', 'Tôn', 'Trà', 'Tý', 'Chương', 'B.Hiền' // 13 Giáo viên chủ chốt
+];
+
+const FET_V6_SATURDAY_OFF_TEACHERS = [
+    'Tần', 'M.Hoa', 'Chương', 'Tý', 'Tuấn', // 5 GV cốt lõi đặc biệt ưu tiên theo yêu cầu
+    'M.Hằng', 'T.Thúy', 'Tình',             // Ban giám hiệu / Tổ trưởng
+    'Tôn', 'Trọng', 'Lan', 'H.Loan', 'Thắm', 'Uyên', 'B.Hiền' // Các GV chủ chốt (Trà, Hồng đi dạy T7)
+];
+
+const FET_V7_SATURDAY_OFF_TEACHERS = [
+    'Tần', 'M.Hoa', 'Chương', 'Tý', 'Tuấn', // 5 GV cốt lõi đặc biệt ưu tiên theo yêu cầu
+    'M.Hằng', 'T.Thúy', 'Tình',             // Ban giám hiệu / Tổ trưởng
+    'Tôn', 'Trọng', 'Lan', 'H.Loan', 'Thắm', 'Uyên', 'B.Hiền' // Các GV chủ chốt (Trà, Hồng đi dạy T7)
+];
+
+async function exportFetXmlProject(version = 'v9') {
+    let xml = '';
+    let fileName = '';
+
+    if (version === 'v9') {
+        fileName = 'THCS_TKB_FET_Project_V9.fet';
+        try {
+            const resp = await fetch('./THCS_TKB_FET_Project_V9.fet');
+            if (resp.ok) {
+                const blob = await resp.blob();
+                triggerFileDownload(fileName, blob, 'application/xml;charset=utf-8;');
+                showToast(`🎉 Đã xuất tệp dự án FET (${fileName}) thành công! Mở tệp trong FET để sử dụng ngay.`, 'success');
+                return;
+            }
+        } catch (e) {
+            console.warn('Cannot fetch static V9 file, falling back to dynamic generation', e);
+        }
+        xml = generateFetFullXML({
+            gvcnSatPeriod1: true,
+            saturdayOffTeachers: FET_V7_SATURDAY_OFF_TEACHERS,
+            useMinGaps: true
+        });
+    } else if (version === 'v8') {
+        fileName = 'THCS_TKB_FET_Project_V8.fet';
+        try {
+            const resp = await fetch('./THCS_TKB_FET_Project_V8.fet');
+            if (resp.ok) {
+                const blob = await resp.blob();
+                triggerFileDownload(fileName, blob, 'application/xml;charset=utf-8;');
+                showToast(`🎉 Đã xuất tệp dự án FET (${fileName}) thành công! Mở tệp trong FET để sử dụng ngay.`, 'success');
+                return;
+            }
+        } catch (e) {
+            console.warn('Cannot fetch static V8 file, falling back to dynamic generation', e);
+        }
+        xml = generateFetFullXML({
+            gvcnSatPeriod1: true,
+            saturdayOffTeachers: FET_V7_SATURDAY_OFF_TEACHERS,
+            useMinGaps: true
+        });
+    } else if (version === 'v1') {
+        xml = generateFetFullXML({ gvcnSatPeriod1: false });
+        fileName = 'THCS_TKB_FET_Project.fet';
+    } else if (version === 'v2') {
+        xml = generateFetFullXML({ gvcnSatPeriod1: true });
+        fileName = 'THCS_TKB_FET_Project_V2.fet';
+    } else if (version === 'v3') {
+        xml = generateFetFullXML({
+            gvcnSatPeriod1: true,
+            saturdayOffTeachers: FET_V3_SATURDAY_OFF_TEACHERS
+        });
+        fileName = 'THCS_TKB_FET_Project_V3.fet';
+    } else if (version === 'v4') {
+        xml = generateFetFullXML({
+            gvcnSatPeriod1: true,
+            saturdayOffTeachers: FET_V4_SATURDAY_OFF_TEACHERS,
+            useMinGaps: true
+        });
+        fileName = 'THCS_TKB_FET_Project_V4.fet';
+    } else if (version === 'v5') {
+        xml = generateFetFullXML({
+            gvcnSatPeriod1: true,
+            saturdayOffTeachers: FET_V5_SATURDAY_OFF_TEACHERS,
+            useMinGaps: true
+        });
+        fileName = 'THCS_TKB_FET_Project_V5.fet';
+    } else if (version === 'v6') {
+        xml = generateFetFullXML({
+            gvcnSatPeriod1: true,
+            saturdayOffTeachers: FET_V6_SATURDAY_OFF_TEACHERS,
+            useMinGaps: true
+        });
+        fileName = 'THCS_TKB_FET_Project_V6.fet';
+    } else {
+        // V7
+        xml = generateFetFullXML({
+            gvcnSatPeriod1: true,
+            saturdayOffTeachers: FET_V7_SATURDAY_OFF_TEACHERS,
+            useMinGaps: true
+        });
+        fileName = 'THCS_TKB_FET_Project_V7.fet';
+    }
+
+    triggerFileDownload(fileName, xml, 'application/xml;charset=utf-8;');
+    showToast(`🎉 Đã xuất tệp dự án FET (${fileName}) thành công! Hãy vào FET chọn [Tệp -> Mở...] để sử dụng ngay.`, 'success');
+}
+
+function exportFetXmlProjectV9() {
+    exportFetXmlProject('v9');
+}
+
+function exportFetXmlProjectV8() {
+    exportFetXmlProject('v8');
+}
+
+function exportFetXmlProjectV7() {
+    exportFetXmlProject('v7');
+}
+
+function exportFetXmlProjectV6() {
+    exportFetXmlProject('v6');
+}
+
+function exportFetXmlProjectV5() {
+    exportFetXmlProject('v5');
+}
+
+function exportFetXmlProjectV4() {
+    exportFetXmlProject('v4');
+}
+
+function exportFetXmlProjectV3() {
+    exportFetXmlProject('v3');
+}
+
+function exportFetXmlProjectV2() {
+    exportFetXmlProject('v2');
+}
+
+function exportFetXmlProjectV1() {
+    exportFetXmlProject('v1');
 }
 
 // 8. Tải Trọn Bộ 5 Tệp CSV Chuẩn Cho FET (.zip)
@@ -9617,6 +9992,11 @@ function openFetExportModal() {
 }
 
 window.exportFetXmlProject = exportFetXmlProject;
+window.exportFetXmlProjectV9 = exportFetXmlProjectV9;
+window.exportFetXmlProjectV8 = exportFetXmlProjectV8;
+window.exportFetXmlProjectV7 = exportFetXmlProjectV7;
+window.exportFetXmlProjectV6 = exportFetXmlProjectV6;
+window.exportFetXmlProjectV5 = exportFetXmlProjectV5;
 window.exportFetZipPackage = exportFetZipPackage;
 window.exportSingleFetCSV = exportSingleFetCSV;
 window.openFetExportModal = openFetExportModal;
