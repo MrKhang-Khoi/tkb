@@ -472,18 +472,31 @@
 
   <!-- Action & Filter Bar -->
   <div class="action-bar" id="actionBar" style="display: none;">
-    <h2 style="font-size: 1.15rem;">📋 Danh Sách Ngày Nghỉ Giáo Viên</h2>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <h2 style="font-size: 1.15rem;">📋 Danh Sách Ngày Nghỉ Giáo Viên</h2>
+      <span id="teacherCountBadge" style="font-size: 0.85rem; font-weight: 600; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); padding: 3px 10px; border-radius: 6px;"></span>
+    </div>
     <div class="filter-group">
       <input type="text" id="searchInput" class="search-box" placeholder="🔍 Tìm kiếm giáo viên..." oninput="applyFilters()">
       <select id="dayFilter" class="select-filter" onchange="applyFilters()">
-        <option value="ALL">Tất cả ngày nghỉ</option>
+        <option value="ALL">📅 Tất cả thứ nghỉ</option>
         <option value="Thứ 2">Nghỉ Thứ 2</option>
         <option value="Thứ 3">Nghỉ Thứ 3</option>
         <option value="Thứ 4">Nghỉ Thứ 4</option>
         <option value="Thứ 5">Nghỉ Thứ 5</option>
         <option value="Thứ 6">Nghỉ Thứ 6</option>
         <option value="Thứ 7">Nghỉ Thứ 7</option>
-        <option value="LEADER">5 Tổ trưởng chuyên môn</option>
+        <option value="LEADER">⭐ 5 Tổ trưởng chuyên môn</option>
+      </select>
+      <select id="daysOffCountFilter" class="select-filter" onchange="applyFilters()" style="border-color: rgba(56, 189, 248, 0.4); font-weight: 600;">
+        <option value="ALL">🔢 Tất cả số ngày nghỉ</option>
+        <option value="0">Nghỉ 0 ngày (dạy đủ 6 ngày)</option>
+        <option value="1">Nghỉ đúng 1 ngày</option>
+        <option value="2">Nghỉ đúng 2 ngày</option>
+        <option value="3">Nghỉ đúng 3 ngày</option>
+        <option value=">=1">Từ 1 ngày nghỉ trở lên (≥ 1 ngày)</option>
+        <option value=">=2">Từ 2 ngày nghỉ trở lên (≥ 2 ngày)</option>
+        <option value=">=3">Từ 3 ngày nghỉ trở lên (≥ 3 ngày)</option>
       </select>
     </div>
   </div>
@@ -494,17 +507,17 @@
       <table id="teachersTable">
         <thead>
           <tr>
-            <th style="width: 50px;">STT</th>
-            <th>Tên Giáo Viên</th>
+            <th style="width: 50px; cursor: pointer;" onclick="sortTable('stt')" title="Bấm để sắp xếp theo STT">STT ⬍</th>
+            <th style="cursor: pointer;" onclick="sortTable('name')" title="Bấm để sắp xếp theo tên giáo viên">Tên Giáo Viên ⬍</th>
             <th>Chức Vụ / Ghi Chú</th>
-            <th style="text-align: center;">Tổng Tiết</th>
+            <th style="text-align: center; cursor: pointer;" onclick="sortTable('total')" title="Bấm để sắp xếp theo tổng số tiết">Tổng Tiết ⬍</th>
             <th style="text-align: center;">Thứ 2</th>
             <th style="text-align: center;">Thứ 3</th>
             <th style="text-align: center;">Thứ 4</th>
             <th style="text-align: center;">Thứ 5</th>
             <th style="text-align: center;">Thứ 6</th>
             <th style="text-align: center;">Thứ 7</th>
-            <th style="text-align: center;">Số Ngày Nghỉ</th>
+            <th style="text-align: center; cursor: pointer; color: #38bdf8; background: rgba(56, 189, 248, 0.1);" onclick="sortTable('daysOffCount')" title="Bấm để sắp xếp tăng/giảm theo số ngày nghỉ">Số Ngày Nghỉ ⬍</th>
             <th>Chi Tiết Ngày Nghỉ</th>
           </tr>
         </thead>
@@ -1085,8 +1098,30 @@
     renderTableRows(res.teacherRows);
   }
 
+  let currentSort = { key: 'stt', asc: true };
+
+  function sortTable(key) {
+    if (currentSort.key === key) {
+      currentSort.asc = !currentSort.asc;
+    } else {
+      currentSort.key = key;
+      currentSort.asc = true;
+    }
+    applyFilters();
+  }
+
   function renderTableRows(rows) {
     const tbody = document.getElementById('tableBody');
+    const countBadge = document.getElementById('teacherCountBadge');
+    if (countBadge) {
+      countBadge.textContent = 'Hiển thị: ' + rows.length + ' giáo viên';
+    }
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 35px; color: var(--text-muted); font-size: 0.95rem;">Không tìm thấy giáo viên nào phù hợp với điều kiện lọc hiện tại.</td></tr>';
+      return;
+    }
+
     tbody.innerHTML = rows.map(r => {
       const formatCell = (val) => val === 0 ? '<span class="cell-off">NGHỈ</span>' : (val + ' tiết');
       const rowClass = r.isLeader ? 'cell-leader' : '';
@@ -1101,7 +1136,7 @@
         '<td style="text-align: center;">' + formatCell(r.T5) + '</td>' +
         '<td style="text-align: center;">' + formatCell(r.T6) + '</td>' +
         '<td style="text-align: center;">' + formatCell(r.T7) + '</td>' +
-        '<td style="text-align: center; font-weight: 700; color: #38bdf8;">' + r.daysOffCount + '</td>' +
+        '<td style="text-align: center; font-weight: 700; color: #38bdf8; font-size: 0.95rem;">' + r.daysOffCount + '</td>' +
         '<td style="color: var(--text-muted);">' + (r.daysOffList || 'Không có') + '</td>' +
       '</tr>';
     }).join('');
@@ -1111,14 +1146,38 @@
     if (!auditResult) return;
     const q = document.getElementById('searchInput').value.toLowerCase().trim();
     const day = document.getElementById('dayFilter').value;
+    const countFilter = document.getElementById('daysOffCountFilter') ? document.getElementById('daysOffCountFilter').value : 'ALL';
 
-    const filtered = auditResult.teacherRows.filter(r => {
+    let filtered = auditResult.teacherRows.filter(r => {
       const matchName = r.name.toLowerCase().includes(q) || r.note.toLowerCase().includes(q);
       let matchDay = true;
       if (day === 'LEADER') matchDay = r.isLeader;
       else if (day !== 'ALL') matchDay = r.daysOffList.includes(day);
-      return matchName && matchDay;
+
+      let matchCount = true;
+      if (countFilter !== 'ALL') {
+        if (countFilter === '0') matchCount = r.daysOffCount === 0;
+        else if (countFilter === '1') matchCount = r.daysOffCount === 1;
+        else if (countFilter === '2') matchCount = r.daysOffCount === 2;
+        else if (countFilter === '3') matchCount = r.daysOffCount === 3;
+        else if (countFilter === '>=1') matchCount = r.daysOffCount >= 1;
+        else if (countFilter === '>=2') matchCount = r.daysOffCount >= 2;
+        else if (countFilter === '>=3') matchCount = r.daysOffCount >= 3;
+      }
+
+      return matchName && matchDay && matchCount;
     });
+
+    if (currentSort.key) {
+      filtered.sort((a, b) => {
+        let valA = a[currentSort.key];
+        let valB = b[currentSort.key];
+        if (typeof valA === 'string') {
+          return currentSort.asc ? valA.localeCompare(valB, 'vi') : valB.localeCompare(valA, 'vi');
+        }
+        return currentSort.asc ? (valA - valB) : (valB - valA);
+      });
+    }
 
     renderTableRows(filtered);
   }
