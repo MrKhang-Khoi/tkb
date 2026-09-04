@@ -12009,7 +12009,7 @@
 	<Comments></Comments>
 </ConstraintTeachersMaxGapsPerDay>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>6</Activity_Id>
@@ -12019,7 +12019,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>9</Activity_Id>
@@ -12029,7 +12029,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>16</Activity_Id>
@@ -12039,7 +12039,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>25</Activity_Id>
@@ -12049,7 +12049,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>28</Activity_Id>
@@ -12059,7 +12059,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>35</Activity_Id>
@@ -12069,7 +12069,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>44</Activity_Id>
@@ -12079,7 +12079,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>47</Activity_Id>
@@ -12089,7 +12089,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>54</Activity_Id>
@@ -12099,7 +12099,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>63</Activity_Id>
@@ -12109,7 +12109,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>66</Activity_Id>
@@ -12119,7 +12119,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>73</Activity_Id>
@@ -12129,7 +12129,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>82</Activity_Id>
@@ -12139,7 +12139,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>85</Activity_Id>
@@ -12149,7 +12149,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>92</Activity_Id>
@@ -12159,7 +12159,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>101</Activity_Id>
@@ -12169,7 +12169,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>104</Activity_Id>
@@ -12179,7 +12179,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>111</Activity_Id>
@@ -12189,7 +12189,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>120</Activity_Id>
@@ -12199,7 +12199,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>123</Activity_Id>
@@ -12209,7 +12209,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>130</Activity_Id>
@@ -12219,7 +12219,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>139</Activity_Id>
@@ -12229,7 +12229,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>142</Activity_Id>
@@ -12239,7 +12239,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>149</Activity_Id>
@@ -12249,7 +12249,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>158</Activity_Id>
@@ -12259,7 +12259,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>161</Activity_Id>
@@ -12269,7 +12269,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>168</Activity_Id>
@@ -12279,7 +12279,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>177</Activity_Id>
@@ -12289,7 +12289,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>180</Activity_Id>
@@ -12299,7 +12299,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>187</Activity_Id>
@@ -12309,7 +12309,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>196</Activity_Id>
@@ -12319,7 +12319,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>199</Activity_Id>
@@ -12329,7 +12329,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>206</Activity_Id>
@@ -12339,7 +12339,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>215</Activity_Id>
@@ -12349,7 +12349,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>218</Activity_Id>
@@ -12359,7 +12359,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>225</Activity_Id>
@@ -12369,7 +12369,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>234</Activity_Id>
@@ -12379,7 +12379,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>237</Activity_Id>
@@ -12389,7 +12389,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>244</Activity_Id>
@@ -12399,7 +12399,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>249</Activity_Id>
@@ -12409,7 +12409,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>252</Activity_Id>
@@ -12419,7 +12419,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>258</Activity_Id>
@@ -12429,7 +12429,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>268</Activity_Id>
@@ -12439,7 +12439,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>271</Activity_Id>
@@ -12449,7 +12449,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>277</Activity_Id>
@@ -12459,7 +12459,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>287</Activity_Id>
@@ -12469,7 +12469,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>290</Activity_Id>
@@ -12479,7 +12479,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>296</Activity_Id>
@@ -12489,7 +12489,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>306</Activity_Id>
@@ -12499,7 +12499,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>309</Activity_Id>
@@ -12509,7 +12509,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>315</Activity_Id>
@@ -12519,7 +12519,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>325</Activity_Id>
@@ -12529,7 +12529,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>328</Activity_Id>
@@ -12539,7 +12539,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>334</Activity_Id>
@@ -12549,7 +12549,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>344</Activity_Id>
@@ -12559,7 +12559,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>347</Activity_Id>
@@ -12569,7 +12569,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>353</Activity_Id>
@@ -12579,7 +12579,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>363</Activity_Id>
@@ -12589,7 +12589,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>366</Activity_Id>
@@ -12599,7 +12599,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>372</Activity_Id>
@@ -12609,7 +12609,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>382</Activity_Id>
@@ -12619,7 +12619,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>385</Activity_Id>
@@ -12629,7 +12629,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>391</Activity_Id>
@@ -12639,7 +12639,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>401</Activity_Id>
@@ -12649,7 +12649,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>404</Activity_Id>
@@ -12659,7 +12659,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>410</Activity_Id>
@@ -12669,7 +12669,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>420</Activity_Id>
@@ -12679,7 +12679,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>423</Activity_Id>
@@ -12689,7 +12689,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>429</Activity_Id>
@@ -12699,7 +12699,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>443</Activity_Id>
@@ -12709,7 +12709,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>445</Activity_Id>
@@ -12719,7 +12719,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>451</Activity_Id>
@@ -12729,7 +12729,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>462</Activity_Id>
@@ -12739,7 +12739,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>464</Activity_Id>
@@ -12749,7 +12749,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>470</Activity_Id>
@@ -12759,7 +12759,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>481</Activity_Id>
@@ -12769,7 +12769,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>483</Activity_Id>
@@ -12779,7 +12779,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>489</Activity_Id>
@@ -12789,7 +12789,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>500</Activity_Id>
@@ -12799,7 +12799,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>502</Activity_Id>
@@ -12809,7 +12809,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>508</Activity_Id>
@@ -12819,7 +12819,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>519</Activity_Id>
@@ -12829,7 +12829,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>521</Activity_Id>
@@ -12839,7 +12839,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>527</Activity_Id>
@@ -12849,7 +12849,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>538</Activity_Id>
@@ -12859,7 +12859,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>540</Activity_Id>
@@ -12869,7 +12869,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>546</Activity_Id>
@@ -12879,7 +12879,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>557</Activity_Id>
@@ -12889,7 +12889,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>559</Activity_Id>
@@ -12899,7 +12899,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>565</Activity_Id>
@@ -12909,7 +12909,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>576</Activity_Id>
@@ -12919,7 +12919,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>578</Activity_Id>
@@ -12929,7 +12929,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>584</Activity_Id>
@@ -12939,7 +12939,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>595</Activity_Id>
@@ -12949,7 +12949,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>597</Activity_Id>
@@ -12959,7 +12959,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>603</Activity_Id>
@@ -12969,7 +12969,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>614</Activity_Id>
@@ -12979,7 +12979,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>616</Activity_Id>
@@ -12989,7 +12989,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>622</Activity_Id>
@@ -12999,7 +12999,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>633</Activity_Id>
@@ -13009,7 +13009,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>635</Activity_Id>
@@ -13019,7 +13019,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>641</Activity_Id>
@@ -13029,7 +13029,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>653</Activity_Id>
@@ -13039,7 +13039,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>657</Activity_Id>
@@ -13049,7 +13049,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>660</Activity_Id>
@@ -13059,7 +13059,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>672</Activity_Id>
@@ -13069,7 +13069,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>676</Activity_Id>
@@ -13079,7 +13079,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>679</Activity_Id>
@@ -13089,7 +13089,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>691</Activity_Id>
@@ -13099,7 +13099,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>695</Activity_Id>
@@ -13109,7 +13109,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>698</Activity_Id>
@@ -13119,7 +13119,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>710</Activity_Id>
@@ -13129,7 +13129,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>714</Activity_Id>
@@ -13139,7 +13139,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>717</Activity_Id>
@@ -13149,7 +13149,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>729</Activity_Id>
@@ -13159,7 +13159,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>733</Activity_Id>
@@ -13169,7 +13169,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>736</Activity_Id>
@@ -13179,7 +13179,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>748</Activity_Id>
@@ -13189,7 +13189,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>752</Activity_Id>
@@ -13199,7 +13199,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>755</Activity_Id>
@@ -13209,7 +13209,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>767</Activity_Id>
@@ -13219,7 +13219,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>771</Activity_Id>
@@ -13229,7 +13229,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>774</Activity_Id>
@@ -13239,7 +13239,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>786</Activity_Id>
@@ -13249,7 +13249,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>790</Activity_Id>
@@ -13259,7 +13259,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>793</Activity_Id>
@@ -13269,7 +13269,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>805</Activity_Id>
@@ -13279,7 +13279,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>809</Activity_Id>
@@ -13289,7 +13289,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>812</Activity_Id>
@@ -13299,7 +13299,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>824</Activity_Id>
@@ -13309,7 +13309,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>828</Activity_Id>
@@ -13319,7 +13319,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>831</Activity_Id>
@@ -13329,7 +13329,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>843</Activity_Id>
@@ -13339,7 +13339,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>847</Activity_Id>
@@ -13349,7 +13349,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>850</Activity_Id>
@@ -13359,7 +13359,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>862</Activity_Id>
@@ -13369,7 +13369,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>866</Activity_Id>
@@ -13379,7 +13379,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>869</Activity_Id>
@@ -13389,7 +13389,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>881</Activity_Id>
@@ -13399,7 +13399,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>885</Activity_Id>
@@ -13409,7 +13409,7 @@
 	<Comments></Comments>
 </ConstraintMinDaysBetweenActivities>
 <ConstraintMinDaysBetweenActivities>
-	<Weight_Percentage>98</Weight_Percentage>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Consecutive_If_Same_Day>false</Consecutive_If_Same_Day>
 	<Number_of_Activities>2</Number_of_Activities>
 	<Activity_Id>888</Activity_Id>
@@ -23911,7 +23911,6 @@
 	<Active>true</Active>
 	<Comments></Comments>
 </ConstraintActivityPreferredStartingTime>
-
 <ConstraintTeacherNotAvailableTimes>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Teacher>M.Ngọc</Teacher>
@@ -24412,6 +24411,100 @@
 <ConstraintTeacherNotAvailableTimes>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Teacher>Tuân</Teacher>
+	<Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintTeacherNotAvailableTimes>
+<ConstraintTeacherNotAvailableTimes>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Teacher>Thuỷ</Teacher>
+	<Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintTeacherNotAvailableTimes>
+<ConstraintTeacherNotAvailableTimes>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Teacher>Thương</Teacher>
 	<Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>
 	<Not_Available_Time>
 		<Day>S.T3</Day>
