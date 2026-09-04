@@ -24532,15 +24532,6 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>39</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>44</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
@@ -24604,15 +24595,6 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>71</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>82</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
@@ -24625,15 +24607,6 @@
 	<Activity_Id>83</Activity_Id>
 	<Preferred_Day>S.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>96</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -24839,15 +24812,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>224</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>229</Activity_Id>
 	<Preferred_Day>C.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -25317,15 +25281,6 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>359</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>362</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -25837,15 +25792,6 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>487</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>489</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
@@ -26053,15 +25999,6 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>554</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>561</Activity_Id>
 	<Preferred_Day>S.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
@@ -26089,15 +26026,6 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>567</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>568</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
@@ -26110,15 +26038,6 @@
 	<Activity_Id>572</Activity_Id>
 	<Preferred_Day>S.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>573</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -26155,15 +26074,6 @@
 	<Activity_Id>582</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>586</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -26407,15 +26317,6 @@
 	<Activity_Id>654</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>655</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -27127,15 +27028,6 @@
 	<Activity_Id>822</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>823</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -28855,11 +28747,262 @@
 	<Active>true</Active>
 	<Comments></Comments>
 </ConstraintTeacherNotAvailableTimes>
+<ConstraintTeacherNotAvailableTimes>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Teacher>N.Hoa</Teacher>
+	<Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T3</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T3</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintTeacherNotAvailableTimes>
+<ConstraintTeacherNotAvailableTimes>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Teacher>D.Ngọc</Teacher>
+	<Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintTeacherNotAvailableTimes>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>105</Activity_Id>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>162</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintTeacherNotAvailableTimes>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Teacher>Liên</Teacher>
+	<Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>
+	<Not_Available_Time>
+		<Day>S.T4</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T4</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T4</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T4</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T4</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T4</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T4</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T4</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T4</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T4</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintTeacherNotAvailableTimes>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>506</Activity_Id>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintTeacherNotAvailableTimes>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Teacher>Tiếp</Teacher>
+	<Number_of_Not_Available_Times>10</Number_of_Not_Available_Times>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>S.T5</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 1</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 2</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 3</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 4</Hour>
+	</Not_Available_Time>
+	<Not_Available_Time>
+		<Day>C.T5</Day>
+		<Hour>Tiết 5</Hour>
+	</Not_Available_Time>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintTeacherNotAvailableTimes>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>20</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>172</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>134</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>153</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>1</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -28868,7 +29011,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>2</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -28876,7 +29019,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>3</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -28886,7 +29029,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>4</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -28894,7 +29037,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>5</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Day>C.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -28913,7 +29056,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>7</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -28921,8 +29064,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>9</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -28930,7 +29073,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>10</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -28939,24 +29082,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>11</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>13</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>14</Activity_Id>
 	<Preferred_Day>C.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -28965,8 +29090,8 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>15</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Activity_Id>13</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -28974,8 +29099,8 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>20</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Activity_Id>14</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -28983,9 +29108,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>15</Activity_Id>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>21</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -28994,7 +29128,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>22</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29002,7 +29136,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>23</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29011,7 +29145,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>24</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29020,7 +29154,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>25</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29029,8 +29163,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>26</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29038,7 +29172,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>28</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Day>C.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29047,7 +29181,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>30</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29056,8 +29190,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>32</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29074,6 +29208,15 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>35</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>36</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -29082,8 +29225,8 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>36</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
+	<Activity_Id>39</Activity_Id>
+	<Preferred_Day>C.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29093,7 +29236,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>40</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29101,8 +29244,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>41</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29111,7 +29254,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>42</Activity_Id>
 	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29119,7 +29262,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>43</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
+	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29128,8 +29271,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>46</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29146,8 +29289,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>48</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29155,8 +29298,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>50</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29164,8 +29307,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>51</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T7</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29173,8 +29316,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>52</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29182,8 +29325,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>53</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29200,7 +29343,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>60</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29218,7 +29361,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>65</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29227,8 +29370,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>66</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29236,8 +29379,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>67</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29253,9 +29396,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>72</Activity_Id>
+	<Activity_Id>71</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>72</Activity_Id>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29264,7 +29416,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>74</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29273,7 +29425,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>77</Activity_Id>
 	<Preferred_Day>S.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29291,7 +29443,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>79</Activity_Id>
 	<Preferred_Day>S.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29299,6 +29451,24 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>80</Activity_Id>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>81</Activity_Id>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>84</Activity_Id>
 	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -29307,27 +29477,9 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>81</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>84</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>85</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29335,8 +29487,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>86</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29363,7 +29515,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>89</Activity_Id>
 	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29371,8 +29523,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>90</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29380,15 +29532,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>92</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>93</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -29397,9 +29540,27 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>97</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Activity_Id>93</Activity_Id>
+	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>96</Activity_Id>
+	<Preferred_Day>C.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>97</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29408,15 +29569,6 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>98</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>99</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29424,9 +29576,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>99</Activity_Id>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>103</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29434,16 +29595,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>104</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>105</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29452,8 +29604,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>106</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29462,7 +29614,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>109</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29470,8 +29622,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>110</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29479,8 +29631,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>115</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29497,8 +29649,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>118</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29506,8 +29658,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>119</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29515,8 +29667,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>122</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29525,7 +29677,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>123</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29533,8 +29685,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>124</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29542,8 +29694,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>125</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29551,8 +29703,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>126</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29560,97 +29712,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>127</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>128</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>129</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>134</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>135</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>136</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>137</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>138</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>141</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>142</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>143</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29658,16 +29720,16 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>144</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Activity_Id>128</Activity_Id>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>145</Activity_Id>
+	<Activity_Id>129</Activity_Id>
 	<Preferred_Day>C.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -29676,8 +29738,89 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>146</Activity_Id>
+	<Activity_Id>135</Activity_Id>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>136</Activity_Id>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>137</Activity_Id>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>138</Activity_Id>
+	<Preferred_Day>C.T7</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>141</Activity_Id>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>142</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>143</Activity_Id>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>144</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>145</Activity_Id>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>146</Activity_Id>
+	<Preferred_Day>C.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29695,8 +29838,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>148</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29714,16 +29857,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>150</Activity_Id>
 	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>153</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29732,7 +29866,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>154</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29741,7 +29875,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>156</Activity_Id>
 	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29749,7 +29883,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>157</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29758,8 +29892,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>160</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>C.T7</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29767,16 +29901,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>161</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>162</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29794,8 +29919,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>164</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29803,8 +29928,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>165</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29813,7 +29938,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>166</Activity_Id>
 	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29821,8 +29946,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>167</Activity_Id>
-	<Preferred_Day>C.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29831,7 +29956,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>168</Activity_Id>
 	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29847,18 +29972,9 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>172</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>175</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29876,7 +29992,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>179</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29894,7 +30010,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>182</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29902,7 +30018,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>183</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Day>C.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29911,8 +30027,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>184</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29920,16 +30036,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>185</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>186</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Day>C.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -29937,9 +30044,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>191</Activity_Id>
+	<Activity_Id>186</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>191</Activity_Id>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29956,15 +30072,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>194</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>195</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -29973,9 +30080,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>198</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
+	<Activity_Id>195</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>198</Activity_Id>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -29993,7 +30109,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>200</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30001,7 +30117,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>201</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30010,8 +30126,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>202</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30019,8 +30135,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>205</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30028,8 +30144,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>210</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30047,7 +30163,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>212</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30055,8 +30171,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>213</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30064,8 +30180,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>217</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30073,8 +30189,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>218</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30082,8 +30198,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>219</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30091,8 +30207,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>220</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30110,7 +30226,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>222</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30127,8 +30243,17 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>226</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>229</Activity_Id>
+	<Preferred_Day>C.T7</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30136,8 +30261,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>230</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30154,8 +30279,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>232</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30181,8 +30306,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>236</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30191,7 +30316,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>237</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30209,7 +30334,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>241</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30218,7 +30343,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>242</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30226,8 +30351,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>248</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30244,8 +30369,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>256</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30253,8 +30378,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>257</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30289,33 +30414,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>267</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>270</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>271</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>272</Activity_Id>
 	<Preferred_Day>S.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -30324,7 +30422,7 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>273</Activity_Id>
+	<Activity_Id>270</Activity_Id>
 	<Preferred_Day>S.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -30333,8 +30431,35 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>275</Activity_Id>
+	<Activity_Id>271</Activity_Id>
+	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>272</Activity_Id>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>273</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>275</Activity_Id>
+	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30352,8 +30477,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>282</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30362,7 +30487,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>286</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30370,7 +30495,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>289</Activity_Id>
-	<Preferred_Day>S.T7</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30380,7 +30505,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>290</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30388,8 +30513,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>291</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30397,7 +30522,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>292</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30407,7 +30532,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>294</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30415,8 +30540,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>301</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30424,8 +30549,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>305</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30479,7 +30604,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>311</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30488,15 +30613,6 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>313</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>314</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30504,9 +30620,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>314</Activity_Id>
+	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>315</Activity_Id>
-	<Preferred_Day>S.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30514,7 +30639,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>316</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30532,8 +30657,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>325</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30541,8 +30666,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>326</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30550,8 +30675,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>327</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30577,8 +30702,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>330</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30596,7 +30721,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>339</Activity_Id>
 	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30657,9 +30782,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>363</Activity_Id>
+	<Activity_Id>362</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>363</Activity_Id>
+	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30667,6 +30801,15 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>364</Activity_Id>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>368</Activity_Id>
 	<Preferred_Day>S.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -30675,18 +30818,9 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>368</Activity_Id>
+	<Activity_Id>369</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>369</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30703,7 +30837,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>373</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30712,8 +30846,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>374</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30722,7 +30856,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>376</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30730,8 +30864,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>377</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30748,8 +30882,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>385</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30757,8 +30891,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>386</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30811,8 +30945,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>401</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30838,8 +30972,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>406</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30847,8 +30981,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>409</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30874,8 +31008,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>415</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30883,8 +31017,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>419</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30901,8 +31035,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>424</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30910,8 +31044,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>431</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30937,7 +31071,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>440</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30956,15 +31090,6 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>450</Activity_Id>
 	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>453</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -30972,9 +31097,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>453</Activity_Id>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>457</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -30982,8 +31116,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>459</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31000,8 +31134,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>462</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31009,8 +31143,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>463</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31027,8 +31161,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>468</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31037,7 +31171,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>469</Activity_Id>
 	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31045,6 +31179,15 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>470</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>472</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -31053,18 +31196,9 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>472</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>473</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31082,7 +31216,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>478</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31090,8 +31224,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>480</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31117,16 +31251,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>485</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>488</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31134,7 +31259,16 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>491</Activity_Id>
+	<Activity_Id>487</Activity_Id>
+	<Preferred_Day>C.T7</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>488</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -31143,9 +31277,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>492</Activity_Id>
+	<Activity_Id>491</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>492</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31162,8 +31305,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>498</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31171,8 +31314,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>499</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31180,7 +31323,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>500</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31199,16 +31342,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>504</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>506</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31216,6 +31350,24 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>507</Activity_Id>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>510</Activity_Id>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>511</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -31224,27 +31376,9 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>510</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>511</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>514</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31253,7 +31387,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>515</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31270,8 +31404,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>519</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31279,7 +31413,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>520</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Day>C.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31288,8 +31422,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>523</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31307,7 +31441,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>529</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31324,8 +31458,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>533</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31333,42 +31467,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>534</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>535</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>537</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>538</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>542</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -31377,9 +31475,45 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>545</Activity_Id>
+	<Activity_Id>535</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>537</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>538</Activity_Id>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>542</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>545</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31396,7 +31530,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>547</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Day>C.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31414,8 +31548,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>549</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31423,33 +31557,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>552</Activity_Id>
-	<Preferred_Day>S.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>553</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>556</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>557</Activity_Id>
 	<Preferred_Day>S.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -31458,9 +31565,45 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>553</Activity_Id>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>554</Activity_Id>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>556</Activity_Id>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>557</Activity_Id>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>558</Activity_Id>
 	<Preferred_Day>S.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31468,8 +31611,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>564</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31477,8 +31620,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>565</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T7</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31494,8 +31637,17 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>571</Activity_Id>
+	<Activity_Id>567</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>571</Activity_Id>
+	<Preferred_Day>S.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31503,9 +31655,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>574</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Activity_Id>573</Activity_Id>
+	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>574</Activity_Id>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31522,7 +31683,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>576</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31531,7 +31692,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>577</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31558,7 +31719,16 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>585</Activity_Id>
-	<Preferred_Day>S.T7</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>586</Activity_Id>
+	<Preferred_Day>S.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31567,15 +31737,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>590</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>593</Activity_Id>
 	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -31584,9 +31745,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>593</Activity_Id>
+	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>594</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>C.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31612,8 +31782,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>599</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31621,8 +31791,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>601</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31630,7 +31800,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>602</Activity_Id>
-	<Preferred_Day>C.T4</Preferred_Day>
+	<Preferred_Day>C.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31648,8 +31818,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>606</Activity_Id>
-	<Preferred_Day>C.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31657,8 +31827,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>609</Activity_Id>
-	<Preferred_Day>C.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31666,8 +31836,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>610</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31684,8 +31854,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>613</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31712,7 +31882,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>621</Activity_Id>
 	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31721,7 +31891,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>624</Activity_Id>
 	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31729,8 +31899,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>625</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>C.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31757,7 +31927,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>632</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31766,7 +31936,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>634</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31774,8 +31944,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>635</Activity_Id>
-	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>C.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31783,8 +31953,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>636</Activity_Id>
-	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>C.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31793,7 +31963,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>637</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31811,7 +31981,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>640</Activity_Id>
 	<Preferred_Day>C.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31820,7 +31990,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>643</Activity_Id>
 	<Preferred_Day>C.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31828,6 +31998,15 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>649</Activity_Id>
+	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>650</Activity_Id>
 	<Preferred_Day>S.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -31836,9 +32015,9 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>650</Activity_Id>
+	<Activity_Id>655</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31847,7 +32026,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>656</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31864,8 +32043,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>658</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31874,7 +32053,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>660</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31891,7 +32070,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>666</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31900,7 +32079,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>669</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31909,7 +32088,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>670</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31927,7 +32106,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>674</Activity_Id>
-	<Preferred_Day>S.T7</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31954,8 +32133,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>689</Activity_Id>
-	<Preferred_Day>S.T7</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31963,7 +32142,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>690</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31972,7 +32151,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>693</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Day>S.T7</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -31982,7 +32161,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>700</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31990,8 +32169,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>701</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -31999,6 +32178,15 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>707</Activity_Id>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>708</Activity_Id>
 	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -32007,17 +32195,8 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>708</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>709</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32026,7 +32205,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>717</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32035,8 +32214,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>718</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32044,8 +32223,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>720</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32062,7 +32241,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>726</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32080,7 +32259,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>728</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Day>S.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32098,15 +32277,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>739</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>742</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -32115,9 +32285,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>742</Activity_Id>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>744</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32125,8 +32304,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>745</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32143,7 +32322,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>747</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32153,7 +32332,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>751</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32162,7 +32341,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>757</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32170,7 +32349,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>758</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32188,8 +32367,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>763</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32198,7 +32377,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>765</Activity_Id>
 	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32206,8 +32385,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>766</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32224,8 +32403,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>780</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32233,7 +32412,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>782</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32243,7 +32422,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>783</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32251,8 +32430,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>784</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32261,7 +32440,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>785</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32287,8 +32466,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>801</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32296,8 +32475,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>802</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32305,8 +32484,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>803</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32323,8 +32502,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>808</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32332,7 +32511,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>809</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T2</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32341,7 +32520,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>810</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32351,7 +32530,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>812</Activity_Id>
 	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32377,7 +32556,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>815</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Day>S.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32395,8 +32574,17 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>821</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>823</Activity_Id>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32413,7 +32601,7 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>829</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -32422,15 +32610,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>831</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>832</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -32439,9 +32618,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>832</Activity_Id>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>837</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32449,8 +32637,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>839</Activity_Id>
-	<Preferred_Day>S.T2</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32467,8 +32655,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>842</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T2</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32503,24 +32691,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>858</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>859</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 4</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>860</Activity_Id>
 	<Preferred_Day>S.T5</Preferred_Day>
 	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -32529,9 +32699,27 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>861</Activity_Id>
+	<Activity_Id>859</Activity_Id>
 	<Preferred_Day>S.T6</Preferred_Day>
 	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>860</Activity_Id>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>861</Activity_Id>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 4</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32557,8 +32745,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>875</Activity_Id>
-	<Preferred_Day>S.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Day>S.T5</Preferred_Day>
+	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32566,8 +32754,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>877</Activity_Id>
-	<Preferred_Day>S.T6</Preferred_Day>
-	<Preferred_Hour>Tiết 5</Preferred_Hour>
+	<Preferred_Day>S.T4</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32602,8 +32790,8 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>891</Activity_Id>
-	<Preferred_Day>S.T5</Preferred_Day>
-	<Preferred_Hour>Tiết 2</Preferred_Hour>
+	<Preferred_Day>S.T6</Preferred_Day>
+	<Preferred_Hour>Tiết 5</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32611,15 +32799,6 @@
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>896</Activity_Id>
-	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredStartingTime>
-<ConstraintActivityPreferredStartingTime>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>897</Activity_Id>
 	<Preferred_Day>S.T4</Preferred_Day>
 	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -32628,16 +32807,16 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>898</Activity_Id>
+	<Activity_Id>897</Activity_Id>
 	<Preferred_Day>S.T3</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>899</Activity_Id>
+	<Activity_Id>898</Activity_Id>
 	<Preferred_Day>S.T3</Preferred_Day>
 	<Preferred_Hour>Tiết 2</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -32646,9 +32825,18 @@
 </ConstraintActivityPreferredStartingTime>
 <ConstraintActivityPreferredStartingTime>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>899</Activity_Id>
+	<Preferred_Day>S.T3</Preferred_Day>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredStartingTime>
+<ConstraintActivityPreferredStartingTime>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>904</Activity_Id>
 	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 3</Preferred_Hour>
+	<Preferred_Hour>Tiết 1</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -32657,7 +32845,7 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>905</Activity_Id>
 	<Preferred_Day>C.T4</Preferred_Day>
-	<Preferred_Hour>Tiết 1</Preferred_Hour>
+	<Preferred_Hour>Tiết 3</Preferred_Hour>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -33593,30 +33781,6 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>554</Activity_Id>
-	<Room>P.AmNhac_D2</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments>Am nhac Diem 2</Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>573</Activity_Id>
-	<Room>P.AmNhac_D2</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments>Am nhac Diem 2</Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>655</Activity_Id>
-	<Room>P.AmNhac_D2</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments>Am nhac Diem 2</Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>668</Activity_Id>
 	<Room>P.Tin_D1</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -33713,14 +33877,6 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>39</Activity_Id>
-	<Room>P.6A12</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>44</Activity_Id>
 	<Room>P.6A12</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -33785,14 +33941,6 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>71</Activity_Id>
-	<Room>P.6A13</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>75</Activity_Id>
 	<Room>P.6A13</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -33827,14 +33975,6 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>94</Activity_Id>
 	<Room>P.6A1</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>96</Activity_Id>
-	<Room>P.6A2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -34131,14 +34271,6 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>228</Activity_Id>
 	<Room>P.6A8</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>229</Activity_Id>
-	<Room>P.6A9</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -34651,14 +34783,6 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>361</Activity_Id>
 	<Room>P.7A6</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>362</Activity_Id>
-	<Room>P.7A7</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -35441,14 +35565,6 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>567</Activity_Id>
-	<Room>P.8A7</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>568</Activity_Id>
 	<Room>P.8A7</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -35506,14 +35622,6 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>582</Activity_Id>
-	<Room>P.8A8</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>586</Activity_Id>
 	<Room>P.8A8</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -36601,14 +36709,6 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
-	<Activity_Id>823</Activity_Id>
-	<Room>P.9A9</Room>
-	<Permanently_Locked>false</Permanently_Locked>
-	<Active>true</Active>
-	<Comments></Comments>
-</ConstraintActivityPreferredRoom>
-<ConstraintActivityPreferredRoom>
-	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>824</Activity_Id>
 	<Room>P.9A9</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -37346,7 +37446,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>21</Activity_Id>
-	<Room>P.Tin_D3_3</Room>
+	<Room>P.Tin_D3_2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -37465,8 +37565,16 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>39</Activity_Id>
+	<Room>P.6A12</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>40</Activity_Id>
-	<Room>P.Tin_D3_2</Room>
+	<Room>P.Tin_D3_3</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -37618,6 +37726,14 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>69</Activity_Id>
+	<Room>P.6A13</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>71</Activity_Id>
 	<Room>P.6A13</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -37777,6 +37893,14 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>96</Activity_Id>
+	<Room>P.6A2</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>97</Activity_Id>
 	<Room>P.6A2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -37850,7 +37974,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>116</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -37954,7 +38078,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>135</Activity_Id>
-	<Room>P.Tin_D3_2</Room>
+	<Room>P.Tin_D3_1</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -38074,7 +38198,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>154</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -38459,6 +38583,14 @@
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>227</Activity_Id>
 	<Room>P.6A8</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>229</Activity_Id>
+	<Room>P.6A9</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -38945,6 +39077,14 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>362</Activity_Id>
+	<Room>P.7A7</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>363</Activity_Id>
 	<Room>P.7A7</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -39386,7 +39526,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>488</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -39466,7 +39606,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>507</Activity_Id>
-	<Room>P.Tin_D3_3</Room>
+	<Room>P.Tin_D3_2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -39538,7 +39678,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>526</Activity_Id>
-	<Room>P.Tin_D3_3</Room>
+	<Room>P.Tin_D3_2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -39610,7 +39750,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>545</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_3</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -39666,6 +39806,14 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>553</Activity_Id>
+	<Room>P.8A7</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>554</Activity_Id>
 	<Room>P.8A7</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -39737,7 +39885,23 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>567</Activity_Id>
+	<Room>P.8A7</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>571</Activity_Id>
+	<Room>P.8A8</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>573</Activity_Id>
 	<Room>P.8A8</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -39809,6 +39973,14 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>586</Activity_Id>
+	<Room>P.8A8</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>590</Activity_Id>
 	<Room>P.8B1</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -39866,7 +40038,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>602</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_3</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -40034,7 +40206,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>640</Activity_Id>
-	<Room>P.Tin_D3_2</Room>
+	<Room>P.Tin_D3_3</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -40058,6 +40230,14 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>650</Activity_Id>
+	<Room>P.9A10</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>655</Activity_Id>
 	<Room>P.9A10</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
@@ -40290,7 +40470,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>744</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_3</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -40354,7 +40534,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>763</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_2</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -40394,7 +40574,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>782</Activity_Id>
-	<Room>P.Tin_D3_3</Room>
+	<Room>P.Tin_D3_1</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -40529,6 +40709,14 @@
 </ConstraintActivityPreferredRoom>
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
+	<Activity_Id>823</Activity_Id>
+	<Room>P.9A9</Room>
+	<Permanently_Locked>false</Permanently_Locked>
+	<Active>true</Active>
+	<Comments></Comments>
+</ConstraintActivityPreferredRoom>
+<ConstraintActivityPreferredRoom>
+	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>831</Activity_Id>
 	<Room>P.9A9</Room>
 	<Permanently_Locked>false</Permanently_Locked>
@@ -40602,7 +40790,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>858</Activity_Id>
-	<Room>P.Tin_D3_2</Room>
+	<Room>P.Tin_D3_1</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
@@ -40658,7 +40846,7 @@
 <ConstraintActivityPreferredRoom>
 	<Weight_Percentage>100</Weight_Percentage>
 	<Activity_Id>877</Activity_Id>
-	<Room>P.Tin_D3_1</Room>
+	<Room>P.Tin_D3_3</Room>
 	<Permanently_Locked>false</Permanently_Locked>
 	<Active>true</Active>
 	<Comments></Comments>
