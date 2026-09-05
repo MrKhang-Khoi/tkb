@@ -89,7 +89,8 @@ function formatClassTimetable(classObj, scheduleData, options = {}) {
     text += `   🏫 THỜI KHÓA BIỂU LỚP HỌC\n`;
     text += `╚══════════════════════════╝\n`;
     text += `📚 Lớp: ${classObj.name} (Buổi ${session === 'chiều' ? 'Chiều' : 'Sáng'})\n`;
-    if (classObj.gvcn) text += `👨‍🏫 GVCN: ${classObj.gvcn}\n`;
+    const gvcnDisplay = options.gvcn || classObj.gvcn;
+    if (gvcnDisplay) text += `👨‍🏫 GVCN: ${gvcnDisplay}\n`;
     if (weekName) text += `📌 Đợt áp dụng: ${weekName} ${applyDate ? `(từ ${applyDate})` : ''}\n`;
     text += `────────────────────────────\n`;
 

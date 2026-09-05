@@ -128,6 +128,104 @@ function normToken(str) {
 }
 
 /**
+ * Chuẩn hóa vị trí dấu thanh tiếng Việt (xử lý triệt để thúy/thuý, thùy/thuỳ, thủy/thuỷ, hòa/hoà)
+ */
+function canonicalizeVietnameseTone(str) {
+    if (!str) return '';
+    let s = str.normalize('NFC').toLowerCase();
+    
+    // Chuẩn hóa vị trí dấu vần 'uy'
+    s = s.replace(/úy/g, 'uý')
+         .replace(/ùy/g, 'uỳ')
+         .replace(/ủy/g, 'uỷ')
+         .replace(/ũy/g, 'uỹ')
+         .replace(/ụy/g, 'uỵ');
+
+    // Chuẩn hóa vị trí dấu vần 'oa'
+    s = s.replace(/óa/g, 'oá')
+         .replace(/òa/g, 'oà')
+         .replace(/ỏa/g, 'oả')
+         .replace(/õa/g, 'oã')
+         .replace(/ọa/g, 'oạ');
+
+    // Chuẩn hóa vị trí dấu vần 'oe'
+    s = s.replace(/óe/g, 'oé')
+         .replace(/òe/g, 'oè')
+         .replace(/ỏe/g, 'oẻ')
+         .replace(/õe/g, 'oẽ')
+         .replace(/ọe/g, 'oẹ');
+
+    return s;
+}
+
+/**
+ * Tự động trích xuất thông tin Giáo Viên Chủ Nhiệm (GVCN) của Lớp
+ */
+function getHomeroomTeacher(classObj, timetable, assignments, teachers) {
+    if (!classObj) return null;
+    
+    // 1. Kiểm tra nếu lớp đã có trường gvcn trực tiếp
+    if (classObj.gvcn && classObj.gvcn.trim()) {
+        const rawGv = classObj.gvcn.trim();
+        const t = teachers ? teachers.find(x => x && (x.shortName === rawGv || x.fullName === rawGv)) : null;
+        return t ? `${t.fullName} (${t.shortName})` : rawGv;
+    }
+    
+    const className = classObj.name;
+    let gvShort = '';
+
+    // 2. Tìm trong TKB lớp các tiết đặc trưng của GVCN: HĐTN + SHL, Sinh hoạt, Chào Cờ
+    const clsSchedule = (timetable && timetable[className]) ? timetable[className] : {};
+    const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    
+    for (let d = 0; d < days.length; d++) {
+        const daySlots = clsSchedule[days[d]] || {};
+        for (let p = 1; p <= 5; p++) {
+            const slot = daySlots[p];
+            if (slot && slot.teacher && slot.subject) {
+                const sub = slot.subject.toLowerCase();
+                if (sub.includes('shl') || sub.includes('sinh hoat') || sub.includes('hdtn')) {
+                    gvShort = slot.teacher;
+                    break;
+                }
+            }
+        }
+        if (gvShort) break;
+    }
+
+    if (!gvShort) {
+        for (let d = 0; d < days.length; d++) {
+            const daySlots = clsSchedule[days[d]] || {};
+            for (let p = 1; p <= 5; p++) {
+                const slot = daySlots[p];
+                if (slot && slot.teacher && slot.subject && slot.subject.toLowerCase().includes('chao co')) {
+                    gvShort = slot.teacher;
+                    break;
+                }
+            }
+            if (gvShort) break;
+        }
+    }
+
+    // 3. Nếu chưa có trong TKB, tìm trong bảng phân công assignments
+    if (!gvShort && assignments) {
+        for (const key of Object.keys(assignments)) {
+            if (key.startsWith(className + '_') && assignments[key] && assignments[key].teacher) {
+                const lowerKey = key.toLowerCase();
+                if (lowerKey.includes('hdtn') || lowerKey.includes('shl') || lowerKey.includes('chao_co')) {
+                    gvShort = assignments[key].teacher;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!gvShort) return null;
+    const tObj = teachers ? teachers.find(x => x && x.shortName === gvShort) : null;
+    return tObj ? `${tObj.fullName} (${tObj.shortName})` : gvShort;
+}
+
+/**
  * Thuật toán tìm Lớp học chuẩn xác, chống va chạm 6A10 -> 6A1
  */
 function findMatchingClass(query, classes) {
@@ -226,21 +324,28 @@ function findMatchingTeacher(rawQuery, teachers) {
     }
 
     cleanTarget = cleanTarget.replace(/(?:^|[^a-z0-9])(hom nay|hn|today|ngay mai|mai|tomorrow|thu \d|t\d|thu hai|thu ba|thu tu|thu nam|thu sau|thu bay)(?:[^a-z0-9]|$)/g, ' ').trim();
+    const targetCanon = canonicalizeVietnameseTone(target).replace(/[^a-z0-9à-ỹ]/g, '');
     const targetToken = normToken(cleanTarget);
 
-    // 1. Khớp chính xác shortName giữ nguyên dấu
+    // 1. Khớp chính xác shortName với dấu thanh đã chuẩn hóa (thúy == thuý, thùy == thuỳ, thủy == thuỷ)
     for (let i = 0; i < teachers.length; i++) {
         const t = teachers[i];
-        if (t && t.shortName && t.shortName.toLowerCase() === target.toLowerCase()) {
-            return t;
+        if (t && t.shortName) {
+            const tCanon = canonicalizeVietnameseTone(t.shortName).replace(/[^a-z0-9à-ỹ]/g, '');
+            if (tCanon && tCanon === targetCanon) {
+                return t;
+            }
         }
     }
 
-    // 2. Khớp chính xác fullName giữ nguyên dấu
+    // 2. Khớp chính xác fullName với dấu thanh đã chuẩn hóa
     for (let i = 0; i < teachers.length; i++) {
         const t = teachers[i];
-        if (t && t.fullName && t.fullName.toLowerCase() === target.toLowerCase()) {
-            return t;
+        if (t && t.fullName) {
+            const tCanon = canonicalizeVietnameseTone(t.fullName).replace(/[^a-z0-9à-ỹ]/g, '');
+            if (tCanon && tCanon === targetCanon) {
+                return t;
+            }
         }
     }
 
@@ -249,16 +354,16 @@ function findMatchingTeacher(rawQuery, teachers) {
         const shortMatches = teachers.filter(t => t && t.shortName && normToken(t.shortName) === targetToken);
         if (shortMatches.length === 1) return shortMatches[0];
         if (shortMatches.length > 1) {
-            const exactAcc = shortMatches.find(t => t.shortName.toLowerCase() === target.toLowerCase());
-            if (exactAcc) return exactAcc;
+            const exactCanon = shortMatches.find(t => canonicalizeVietnameseTone(t.shortName).replace(/[^a-z0-9à-ỹ]/g, '') === targetCanon);
+            if (exactCanon) return exactCanon;
             return shortMatches[0];
         }
 
         const fullMatches = teachers.filter(t => t && t.fullName && normToken(t.fullName) === targetToken);
         if (fullMatches.length === 1) return fullMatches[0];
         if (fullMatches.length > 1) {
-            const exactAcc = fullMatches.find(t => t.fullName.toLowerCase() === target.toLowerCase());
-            if (exactAcc) return exactAcc;
+            const exactCanon = fullMatches.find(t => canonicalizeVietnameseTone(t.fullName).replace(/[^a-z0-9à-ỹ]/g, '') === targetCanon);
+            if (exactCanon) return exactCanon;
             return fullMatches[0];
         }
     }
@@ -341,11 +446,13 @@ async function handleZaloQuery(messageText) {
     // A. Thử xử lý theo Lớp học trước (chính xác 100%, 6A10 không ra 6A1)
     if (matchedClass) {
         const classSchedule = activeTimetable[matchedClass.name] || {};
+        const gvcnInfo = getHomeroomTeacher(matchedClass, activeTimetable, cachedData.assignments, cachedData.teachers);
         return formatClassTimetable(matchedClass, classSchedule, {
             dayKey: dayFilter,
             weekName: weekName,
             applyDate: applyDate,
-            substitutions: cachedData.substitutions
+            substitutions: cachedData.substitutions,
+            gvcn: gvcnInfo
         });
     }
 
