@@ -123,6 +123,156 @@ function parseDayFilter(keyword) {
     return null;
 }
 
+function normToken(str) {
+    return removeVietnameseTones(str).replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Thuật toán tìm Lớp học chuẩn xác, chống va chạm 6A10 -> 6A1
+ */
+function findMatchingClass(query, classes) {
+    if (!query || !classes || classes.length === 0) return null;
+    const raw = query.trim();
+    const clean = removeVietnameseTones(raw);
+
+    let target = raw;
+    let cleanTarget = clean;
+    const prefixes = ['thoi khoa bieu', 'lich day', 'lich hoc', 'xem tkb', 'in tkb', 'tkb', 'lop'];
+    for (let i = 0; i < prefixes.length; i++) {
+        const p = prefixes[i];
+        if (cleanTarget.startsWith(p)) {
+            target = target.substring(p.length).trim();
+            cleanTarget = cleanTarget.substring(p.length).trim();
+            break;
+        }
+    }
+
+    cleanTarget = cleanTarget.replace(/(?:^|[^a-z0-9])(hom nay|hn|today|ngay mai|mai|tomorrow|thu \d|t\d|thu hai|thu ba|thu tu|thu nam|thu sau|thu bay)(?:[^a-z0-9]|$)/g, ' ').trim();
+    const targetToken = normToken(cleanTarget);
+    const sortedClasses = classes.slice().sort((a, b) => (b.name || '').length - (a.name || '').length);
+
+    // 1. Khớp chính xác hoàn toàn token
+    if (targetToken) {
+        for (let i = 0; i < sortedClasses.length; i++) {
+            const c = sortedClasses[i];
+            if (c && normToken(c.name) === targetToken) {
+                return c;
+            }
+        }
+    }
+
+    // 2. Khớp token trong câu
+    const queryTokens = clean.split(/[^a-z0-9]+/).filter(Boolean);
+    for (let i = 0; i < sortedClasses.length; i++) {
+        const c = sortedClasses[i];
+        if (c && queryTokens.indexOf(removeVietnameseTones(c.name)) !== -1) {
+            return c;
+        }
+    }
+
+    // 3. Khớp regex có ranh giới từ (chống 6a10 dính 6a1)
+    for (let i = 0; i < sortedClasses.length; i++) {
+        const c = sortedClasses[i];
+        if (c && c.name) {
+            const cClean = removeVietnameseTones(c.name);
+            const regex = new RegExp('(?:^|[^a-z0-9])' + cClean + '(?:[^a-z0-9]|$)', 'i');
+            if (regex.test(clean)) {
+                return c;
+            }
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Thuật toán tìm Giáo viên chuẩn xác, chống va chạm P.Thúy -> Thu
+ */
+function findMatchingTeacher(rawQuery, teachers) {
+    if (!rawQuery || !teachers || teachers.length === 0) return null;
+    const text = rawQuery.trim();
+    const clean = removeVietnameseTones(text);
+    
+    let target = text;
+    let cleanTarget = clean;
+    const prefixes = ['thoi khoa bieu', 'lich day', 'lich hoc', 'xem tkb', 'in tkb', 'tkb', 'thay', 'co', 'gv'];
+    for (let i = 0; i < prefixes.length; i++) {
+        const p = prefixes[i];
+        if (cleanTarget.startsWith(p)) {
+            target = target.substring(p.length).trim();
+            cleanTarget = cleanTarget.substring(p.length).trim();
+            break;
+        }
+    }
+
+    cleanTarget = cleanTarget.replace(/(?:^|[^a-z0-9])(hom nay|hn|today|ngay mai|mai|tomorrow|thu \d|t\d|thu hai|thu ba|thu tu|thu nam|thu sau|thu bay)(?:[^a-z0-9]|$)/g, ' ').trim();
+    const targetToken = normToken(cleanTarget);
+
+    // 1. Khớp chính xác shortName giữ nguyên dấu
+    for (let i = 0; i < teachers.length; i++) {
+        const t = teachers[i];
+        if (t && t.shortName && t.shortName.toLowerCase() === target.toLowerCase()) {
+            return t;
+        }
+    }
+
+    // 2. Khớp chính xác fullName giữ nguyên dấu
+    for (let i = 0; i < teachers.length; i++) {
+        const t = teachers[i];
+        if (t && t.fullName && t.fullName.toLowerCase() === target.toLowerCase()) {
+            return t;
+        }
+    }
+
+    // 3. Khớp token chuẩn hóa (p.thuy -> pthuy, thu -> thu, t.thuy -> tthuy)
+    if (targetToken) {
+        const shortMatches = teachers.filter(t => t && t.shortName && normToken(t.shortName) === targetToken);
+        if (shortMatches.length === 1) return shortMatches[0];
+        if (shortMatches.length > 1) {
+            const exactAcc = shortMatches.find(t => t.shortName.toLowerCase() === target.toLowerCase());
+            if (exactAcc) return exactAcc;
+            return shortMatches[0];
+        }
+
+        const fullMatches = teachers.filter(t => t && t.fullName && normToken(t.fullName) === targetToken);
+        if (fullMatches.length === 1) return fullMatches[0];
+        if (fullMatches.length > 1) {
+            const exactAcc = fullMatches.find(t => t.fullName.toLowerCase() === target.toLowerCase());
+            if (exactAcc) return exactAcc;
+            return fullMatches[0];
+        }
+    }
+
+    // 4. Khớp shortName với ranh giới từ trong câu (Sắp xếp độ dài shortName giảm dần)
+    const sortedByShort = teachers.slice().sort((a, b) => (b.shortName || '').length - (a.shortName || '').length);
+    for (let i = 0; i < sortedByShort.length; i++) {
+        const t = sortedByShort[i];
+        if (!t || !t.shortName) continue;
+        const sClean = removeVietnameseTones(t.shortName);
+        const sPattern = sClean.replace(/\./g, '[._\\s]?');
+        const regex = new RegExp('(?:^|[^a-z0-9])' + sPattern + '(?:[^a-z0-9]|$)', 'i');
+        if (regex.test(clean)) {
+            return t;
+        }
+    }
+
+    // 5. Khớp fullName với ranh giới từ
+    const sortedByFull = teachers.slice().sort((a, b) => (b.fullName || '').length - (a.fullName || '').length);
+    for (let i = 0; i < sortedByFull.length; i++) {
+        const t = sortedByFull[i];
+        if (!t || !t.fullName) continue;
+        const fClean = removeVietnameseTones(t.fullName);
+        if (fClean.length >= 4) {
+            const regex = new RegExp('(?:^|[^a-z0-9])' + fClean.replace(/\s+/g, '\\s+') + '(?:[^a-z0-9]|$)', 'i');
+            if (regex.test(clean)) {
+                return t;
+            }
+        }
+    }
+
+    return null;
+}
+
 /**
  * Xử lý tin nhắn văn bản từ Zalo và trả lời
  */
@@ -141,22 +291,15 @@ async function handleZaloQuery(messageText) {
         return formatHelpMessage();
     }
 
-    // 2. Tra cứu Thời khóa biểu (Bắt đầu bằng tkb, thoi khoa bieu, lich day, lich hoc)
+    // Kiểm tra xem có khớp với Lớp học hoặc Giáo viên không (hỗ trợ cả gõ trực tiếp tên lớp 6A10 hoặc P.Thúy)
+    const matchedClass = findMatchingClass(text, cachedData.classes);
+    const matchedTeacher = findMatchingTeacher(text, cachedData.teachers);
+
+    // 2. Tra cứu Thời khóa biểu (Bắt đầu bằng tkb, thoi khoa bieu, lich day, lich hoc hoặc trực tiếp Lớp/GV)
     const isTkbCommand = cleanText.startsWith('tkb') || cleanText.startsWith('thoi khoa bieu') || cleanText.startsWith('lich day') || cleanText.startsWith('lich hoc');
     
-    if (!isTkbCommand) {
-        return null; // Không phải lệnh tra cứu
-    }
-
-    // Tách các từ khóa sau tiền tố lệnh
-    let queryPart = text;
-    if (cleanText.startsWith('thoi khoa bieu')) queryPart = text.substring(14).trim();
-    else if (cleanText.startsWith('lich day')) queryPart = text.substring(8).trim();
-    else if (cleanText.startsWith('lich hoc')) queryPart = text.substring(8).trim();
-    else if (cleanText.startsWith('tkb')) queryPart = text.substring(3).trim();
-
-    if (!queryPart) {
-        return `⚠️ Vui lòng nhập thêm tên Giáo viên hoặc Lớp học!\nVí dụ: "tkb Hiển" hoặc "tkb 6A1".\nGõ "help" để xem hướng dẫn.`;
+    if (!isTkbCommand && !matchedClass && !matchedTeacher) {
+        return null; // Không phải lệnh tra cứu và không khớp đối tượng nào
     }
 
     // Xác định đợt TKB hiện hành
@@ -173,17 +316,9 @@ async function handleZaloQuery(messageText) {
         }
     }
 
-    const parts = queryPart.split(/\s+/);
-    let targetKeyword = parts[0];
-    let timeKeyword = parts.slice(1).join(' ');
+    const dayFilter = parseDayFilter(cleanText);
 
-    // Nếu từ đầu tiên là số lớp ghép (VD: 6A1, 9B2)
-    const dayFilter = parseDayFilter(timeKeyword);
-
-    // A. Thử tìm kiếm theo Lớp học trước
-    const targetClean = removeVietnameseTones(targetKeyword);
-    const matchedClass = cachedData.classes.find(c => c && removeVietnameseTones(c.name) === targetClean);
-
+    // A. Thử xử lý theo Lớp học trước (chính xác 100%, 6A10 không ra 6A1)
     if (matchedClass) {
         const classSchedule = activeTimetable[matchedClass.name] || {};
         return formatClassTimetable(matchedClass, classSchedule, {
@@ -194,23 +329,9 @@ async function handleZaloQuery(messageText) {
         });
     }
 
-    // B. Thử tìm kiếm theo Giáo viên (Tìm theo shortName hoặc fullName)
-    const fullQueryClean = removeVietnameseTones(queryPart);
-    let matchedTeacher = cachedData.teachers.find(t => t && t.shortName && removeVietnameseTones(t.shortName) === targetClean);
-
-    if (!matchedTeacher) {
-        // Tìm theo tên đầy đủ
-        matchedTeacher = cachedData.teachers.find(t => t && t.fullName && removeVietnameseTones(t.fullName).includes(targetClean));
-    }
-
-    if (!matchedTeacher) {
-        // Thử tìm theo toàn bộ cụm từ nếu không có bộ lọc ngày
-        matchedTeacher = cachedData.teachers.find(t => t && t.fullName && removeVietnameseTones(t.fullName) === fullQueryClean);
-    }
-
+    // B. Thử xử lý theo Giáo viên (chính xác 100%, P.Thúy không ra Thu)
     if (matchedTeacher) {
-        // Thu thập lịch dạy của GV này ở các lớp sáng và chiều
-        const teacherSchedule = { sáng: {}, chiều: {} };
+        const teacherSchedule = { 'sáng': {}, 'chiều': {} };
         const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
         cachedData.classes.forEach(c => {
@@ -243,7 +364,7 @@ async function handleZaloQuery(messageText) {
     }
 
     // C. Không tìm thấy đối tượng nào
-    return `❌ Không tìm thấy Giáo viên hoặc Lớp học có tên: "${targetKeyword}"\n💡 Mẹo: Bạn hãy nhập đúng Tên viết tắt (VD: "Hiển", "Trọng") hoặc Tên lớp (VD: "6A1", "9B2").`;
+    return `❌ Không tìm thấy Giáo viên hoặc Lớp học phù hợp.\n💡 Mẹo: Bạn hãy nhập đúng Tên viết tắt (VD: "P.Thúy", "Thu", "Trọng") hoặc Tên lớp (VD: "6A10", "6A1", "9B2").`;
 }
 
 module.exports = {

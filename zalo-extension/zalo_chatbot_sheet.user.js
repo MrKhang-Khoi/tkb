@@ -43,8 +43,19 @@
 
                 const cleanText = textContent.toLowerCase().trim();
 
-                // Kiểm tra từ khóa tra cứu TKB
-                if (cleanText.includes('tkb') || cleanText.includes('thoi khoa bieu') || cleanText.includes('lich day') || cleanText.includes('lich hoc')) {
+                // Kiểm tra từ khóa tra cứu TKB (kể cả gõ trực tiếp tên lớp 6A10, giáo viên P.Thúy hoặc có tiền tố tkb)
+                const isTkbQuery = cleanText.includes('tkb') || 
+                                   cleanText.includes('thoi khoa bieu') || 
+                                   cleanText.includes('lich day') || 
+                                   cleanText.includes('lich hoc') ||
+                                   cleanText.startsWith('in tkb') ||
+                                   cleanText.startsWith('tim gv') ||
+                                   cleanText === 'menu' ||
+                                   cleanText === 'help' ||
+                                   /^(tkb\s*)?[6-9][a-b]\d{1,2}$/i.test(cleanText) ||
+                                   /^(tkb\s*)?[a-z]\.[a-zà-ỹ]+$/i.test(cleanText);
+
+                if (isTkbQuery) {
                     processedMessages.add(msgId);
                     
                     // Trích xuất đoạn lệnh TKB
