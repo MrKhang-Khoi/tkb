@@ -14014,7 +14014,10 @@ function renderGroupTimetableStats(groupId, activeTimetable) {
                 for (let p = 1; p <= 5; p++) {
                     if (activeTimetable[c.name] && activeTimetable[c.name][day] && activeTimetable[c.name][day][p]) {
                         const act = activeTimetable[c.name][day][p];
-                        if (act.teacher === t.shortName && act.subject) {
+                        const actTeacher = (act.teacher || '').trim().normalize('NFC').toLowerCase();
+                        const tShort = (t.shortName || '').trim().normalize('NFC').toLowerCase();
+                        const tFull = (t.fullName || '').trim().normalize('NFC').toLowerCase();
+                        if (actTeacher && (actTeacher === tShort || actTeacher === tFull) && act.subject) {
                             if (c.session === 'sáng') {
                                 morningPeriods++;
                             } else {
@@ -14148,13 +14151,10 @@ function renderGroupTimetableGrid() {
                         if (c.session === sessionName.toLowerCase()) {
                             if (activeTimetable[c.name] && activeTimetable[c.name][day] && activeTimetable[c.name][day][p]) {
                                 const act = activeTimetable[c.name][day][p];
-                                const actTeacher = (act.teacher || '').trim().toLowerCase();
-                                const isTeacherMatch = actTeacher && (
-                                    actTeacher === (t.shortName || '').trim().toLowerCase() ||
-                                    actTeacher === (t.fullName || '').trim().toLowerCase() ||
-                                    (typeof normalizeVietnameseName === 'function' && 
-                                     normalizeVietnameseName(actTeacher) === normalizeVietnameseName(t.shortName || ''))
-                                );
+                                const actTeacher = (act.teacher || '').trim().normalize('NFC').toLowerCase();
+                                const tShort = (t.shortName || '').trim().normalize('NFC').toLowerCase();
+                                const tFull = (t.fullName || '').trim().normalize('NFC').toLowerCase();
+                                const isTeacherMatch = actTeacher && (actTeacher === tShort || actTeacher === tFull);
                                 if (isTeacherMatch && act.subject) {
                                     matched.push(getDisplayCode(act.subject, c.name));
                                 }
@@ -14314,13 +14314,10 @@ function generateGroupSpreadsheetML(localClasses, groupTeachers, localTimetable,
                         if (c.session === sessionName.toLowerCase()) {
                             if (localTimetable[c.name] && localTimetable[c.name][day] && localTimetable[c.name][day][p]) {
                                 const act = localTimetable[c.name][day][p];
-                                const actTeacher = (act.teacher || '').trim().toLowerCase();
-                                const isTeacherMatch = actTeacher && (
-                                    actTeacher === (t.shortName || '').trim().toLowerCase() ||
-                                    actTeacher === (t.fullName || '').trim().toLowerCase() ||
-                                    (typeof normalizeVietnameseName === 'function' && 
-                                     normalizeVietnameseName(actTeacher) === normalizeVietnameseName(t.shortName || ''))
-                                );
+                                const actTeacher = (act.teacher || '').trim().normalize('NFC').toLowerCase();
+                                const tShort = (t.shortName || '').trim().normalize('NFC').toLowerCase();
+                                const tFull = (t.fullName || '').trim().normalize('NFC').toLowerCase();
+                                const isTeacherMatch = actTeacher && (actTeacher === tShort || actTeacher === tFull);
                                 if (isTeacherMatch && act.subject) {
                                     matched.push(getDisplayCode(act.subject, c.name));
                                 }
