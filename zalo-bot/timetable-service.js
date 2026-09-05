@@ -138,12 +138,22 @@ function findMatchingClass(query, classes) {
     let target = raw;
     let cleanTarget = clean;
     const prefixes = ['thoi khoa bieu', 'lich day', 'lich hoc', 'xem tkb', 'in tkb', 'tkb', 'lop'];
-    for (let i = 0; i < prefixes.length; i++) {
-        const p = prefixes[i];
-        if (cleanTarget.startsWith(p)) {
-            target = target.substring(p.length).trim();
-            cleanTarget = cleanTarget.substring(p.length).trim();
-            break;
+    let matchedPrefix = true;
+    while (matchedPrefix) {
+        matchedPrefix = false;
+        for (let i = 0; i < prefixes.length; i++) {
+            const p = prefixes[i];
+            if (cleanTarget === p) {
+                target = '';
+                cleanTarget = '';
+                matchedPrefix = true;
+                break;
+            } else if (cleanTarget.startsWith(p + ' ')) {
+                target = target.substring(p.length).trim();
+                cleanTarget = cleanTarget.substring(p.length).trim();
+                matchedPrefix = true;
+                break;
+            }
         }
     }
 
@@ -196,12 +206,22 @@ function findMatchingTeacher(rawQuery, teachers) {
     let target = text;
     let cleanTarget = clean;
     const prefixes = ['thoi khoa bieu', 'lich day', 'lich hoc', 'xem tkb', 'in tkb', 'tkb', 'thay', 'co', 'gv'];
-    for (let i = 0; i < prefixes.length; i++) {
-        const p = prefixes[i];
-        if (cleanTarget.startsWith(p)) {
-            target = target.substring(p.length).trim();
-            cleanTarget = cleanTarget.substring(p.length).trim();
-            break;
+    let matchedPrefixT = true;
+    while (matchedPrefixT) {
+        matchedPrefixT = false;
+        for (let i = 0; i < prefixes.length; i++) {
+            const p = prefixes[i];
+            if (cleanTarget === p) {
+                target = '';
+                cleanTarget = '';
+                matchedPrefixT = true;
+                break;
+            } else if (cleanTarget.startsWith(p + ' ')) {
+                target = target.substring(p.length).trim();
+                cleanTarget = cleanTarget.substring(p.length).trim();
+                matchedPrefixT = true;
+                break;
+            }
         }
     }
 
