@@ -10776,8 +10776,14 @@ let newlyCreatedClassesThisImport = [];
 
 function ensureClassExists(className, session) {
     if (!className) return '';
-    let matchedClass = state.classes.find(c => (c.name || '').toLowerCase() === className.toLowerCase());
+    let matchedClass = (state.classes || []).find(c => (c.name || '').toLowerCase() === className.toLowerCase());
     if (!matchedClass) {
+        matchedClass = {
+            name: className,
+            session: session || 'sáng'
+        };
+        state.classes = state.classes || [];
+        state.classes.push(matchedClass);
         if (!newlyCreatedClassesThisImport.includes(className)) {
             newlyCreatedClassesThisImport.push(className);
         }
@@ -11415,13 +11421,24 @@ function handleExcelTimetableUpload(file) {
             const classesMetadata = [];
 
             const dayMap = {
-                'thứ 2': 'T2', 'thu 2': 'T2', 't2': 'T2',
-                'thứ 3': 'T3', 'thu 3': 'T3', 't3': 'T3',
-                'thứ 4': 'T4', 'thu 4': 'T4', 't4': 'T4',
-                'thứ 5': 'T5', 'thu 5': 'T5', 't5': 'T5',
-                'thứ 6': 'T6', 'thu 6': 'T6', 't6': 'T6',
-                'thứ 7': 'T7', 'thu 7': 'T7', 't7': 'T7'
+                'thứ 2': 'T2', 'thu 2': 'T2', 't2': 'T2', 's.t2': 'T2', 'c.t2': 'T2', 'sáng t2': 'T2', 'chiều t2': 'T2', 's.thứ 2': 'T2', 'c.thứ 2': 'T2',
+                'thứ 3': 'T3', 'thu 3': 'T3', 't3': 'T3', 's.t3': 'T3', 'c.t3': 'T3', 'sáng t3': 'T3', 'chiều t3': 'T3', 's.thứ 3': 'T3', 'c.thứ 3': 'T3',
+                'thứ 4': 'T4', 'thu 4': 'T4', 't4': 'T4', 's.t4': 'T4', 'c.t4': 'T4', 'sáng t4': 'T4', 'chiều t4': 'T4', 's.thứ 4': 'T4', 'c.thứ 4': 'T4',
+                'thứ 5': 'T5', 'thu 5': 'T5', 't5': 'T5', 's.t5': 'T5', 'c.t5': 'T5', 'sáng t5': 'T5', 'chiều t5': 'T5', 's.thứ 5': 'T5', 'c.thứ 5': 'T5',
+                'thứ 6': 'T6', 'thu 6': 'T6', 't6': 'T6', 's.t6': 'T6', 'c.t6': 'T6', 'sáng t6': 'T6', 'chiều t6': 'T6', 's.thứ 6': 'T6', 'c.thứ 6': 'T6',
+                'thứ 7': 'T7', 'thu 7': 'T7', 't7': 'T7', 's.t7': 'T7', 'c.t7': 'T7', 'sáng t7': 'T7', 'chiều t7': 'T7', 's.thứ 7': 'T7', 'c.thứ 7': 'T7'
             };
+
+            function resolveDayKeyFromCell(cellVal) {
+                if (!cellVal) return null;
+                const s = String(cellVal).trim().toLowerCase();
+                if (dayMap[s]) return dayMap[s];
+                const clean = s.replace(/[\s._-]+/g, '');
+                if (dayMap[clean]) return dayMap[clean];
+                const m = s.match(/(?:s\.|c\.|sáng|chiều|thứ|thu|t)?\s*t?0?([2-7])/);
+                if (m && m[1]) return 'T' + m[1];
+                return null;
+            }
 
             // Duyệt qua tất cả các Sheet trong Workbook
             workbook.SheetNames.forEach(sheetName => {
@@ -11477,9 +11494,10 @@ function handleExcelTimetableUpload(file) {
                     const row = rows[r];
                     if (!row || row.length === 0) continue;
 
-                    const dayCell = String(row[0] || '').trim().toLowerCase();
-                    if (dayMap[dayCell]) {
-                        currentDay = dayMap[dayCell];
+                    const dayCell = String(row[0] || '').trim();
+                    const detectedDay = resolveDayKeyFromCell(dayCell);
+                    if (detectedDay) {
+                        currentDay = detectedDay;
                     }
 
                     const periodCell = String(row[1] || '').trim();
@@ -14130,7 +14148,14 @@ function renderGroupTimetableGrid() {
                         if (c.session === sessionName.toLowerCase()) {
                             if (activeTimetable[c.name] && activeTimetable[c.name][day] && activeTimetable[c.name][day][p]) {
                                 const act = activeTimetable[c.name][day][p];
-                                if (act.teacher === t.shortName && act.subject) {
+                                const actTeacher = (act.teacher || '').trim().toLowerCase();
+                                const isTeacherMatch = actTeacher && (
+                                    actTeacher === (t.shortName || '').trim().toLowerCase() ||
+                                    actTeacher === (t.fullName || '').trim().toLowerCase() ||
+                                    (typeof normalizeVietnameseName === 'function' && 
+                                     normalizeVietnameseName(actTeacher) === normalizeVietnameseName(t.shortName || ''))
+                                );
+                                if (isTeacherMatch && act.subject) {
                                     matched.push(getDisplayCode(act.subject, c.name));
                                 }
                             }
@@ -14289,7 +14314,14 @@ function generateGroupSpreadsheetML(localClasses, groupTeachers, localTimetable,
                         if (c.session === sessionName.toLowerCase()) {
                             if (localTimetable[c.name] && localTimetable[c.name][day] && localTimetable[c.name][day][p]) {
                                 const act = localTimetable[c.name][day][p];
-                                if (act.teacher === t.shortName && act.subject) {
+                                const actTeacher = (act.teacher || '').trim().toLowerCase();
+                                const isTeacherMatch = actTeacher && (
+                                    actTeacher === (t.shortName || '').trim().toLowerCase() ||
+                                    actTeacher === (t.fullName || '').trim().toLowerCase() ||
+                                    (typeof normalizeVietnameseName === 'function' && 
+                                     normalizeVietnameseName(actTeacher) === normalizeVietnameseName(t.shortName || ''))
+                                );
+                                if (isTeacherMatch && act.subject) {
                                     matched.push(getDisplayCode(act.subject, c.name));
                                 }
                             }
